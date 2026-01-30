@@ -1,0 +1,51 @@
+.miniBlogList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.7em;
+  margin-top: 0.5em;
+}
+
+.miniBlogCard {
+  display: flex;
+  flex-direction: column;
+  background: var(--pnw-cream);
+  border-radius: 8px;
+  border: 1px solid var(--pnw-copper);
+  box-shadow: 0 1px 4px rgba(35, 66, 54, 0.06);
+  padding: 0.7em 1em 0.6em 1em;
+  text-decoration: none;
+  transition:
+    box-shadow 0.18s,
+    border 0.18s,
+    background 0.18s;
+  cursor: pointer;
+}
+.miniBlogCard:hover {
+  background: var(--accent-sand);
+  border-color: var(--accent-gold);
+  box-shadow: 0 2px 10px rgba(35, 66, 54, 0.13);
+}
+
+.miniBlogTitle {
+  color: var(--pnw-copper);
+  font-family: "Geist", "Inter", sans-serif;
+  font-size: 1.08em;
+  font-weight: 600;
+  margin-bottom: 0.2em;
+  letter-spacing: 0.2px;
+}
+
+.miniBlogMeta {
+  color: var(--pnw-forest);
+  font-size: 0.93em;
+  font-family: "Geist", "Inter", sans-serif;
+}
+
+@media (max-width: 600px) {
+  .miniBlogCard {
+    padding: 0.5em 0.6em 0.5em 0.6em;
+  }
+  .miniBlogTitle {
+    font-size: 1em;
+  }
+}

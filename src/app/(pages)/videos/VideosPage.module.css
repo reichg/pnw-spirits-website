@@ -1,0 +1,38 @@
+/* Use dynamic viewport height for mobile browsers */
+/* Main content wrapper uses dynamic viewport height for robust mobile support */
+/* Main content wrapper uses dynamic viewport height for robust mobile support */
+.container {
+  display: flex;
+  min-height: calc(var(--vh, 1vh) * 100);
+  flex-direction: column;
+  padding: 64px;
+}
+
+/* Use --vh for robust mobile height */
+/* Use 100% min-height for main content */
+.main {
+  min-height: 100%;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 2em 0;
+}
+
+@media (max-width: 600px) {
+  .container {
+    padding: 32px 4px 32px 4px;
+  }
+  .main {
+    padding: 1em 0;
+  }
+}
+
+.heading {
+  font-size: 2.2em;
+  font-weight: 700;
+  color: var(--pnw-forest);
+  margin-bottom: 1em;
+  text-align: center;
+}

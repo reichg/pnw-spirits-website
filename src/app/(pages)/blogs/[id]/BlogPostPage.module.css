@@ -1,0 +1,73 @@
+/* Use dynamic viewport height for mobile browsers */
+/* Main content wrapper uses dynamic viewport height for robust mobile support */
+/* Main content wrapper uses dynamic viewport height for robust mobile support */
+.page {
+  min-height: calc(var(--vh, 1vh) * 100);
+  background: linear-gradient(
+    120deg,
+    var(--pnw-cream) 80%,
+    var(--accent-sand) 100%
+  );
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 2.5em 1em 2em 1em;
+}
+
+/* Use --vh for robust mobile height */
+/* Use 100% min-height for main content */
+.main {
+  min-height: 100%;
+  background: var(--pnw-cream);
+  border-radius: 16px;
+  box-shadow: 0 2px 12px rgba(35, 66, 54, 0.09);
+  border: 1.5px solid var(--pnw-copper);
+  max-width: 700px;
+  width: 100%;
+  padding: 2.5em 2em 2em 2em;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+@media (max-width: 600px) {
+  .page {
+    padding: 16px 2px 16px 2px;
+  }
+  .main {
+    padding: 1em 0.5em;
+  }
+}
+
+.title {
+  color: var(--pnw-copper);
+  font-family: "Geist", "Inter", sans-serif;
+  font-size: 2.2rem;
+  font-weight: 700;
+  margin-bottom: 0.5em;
+  letter-spacing: 0.5px;
+}
+
+.meta {
+  color: var(--pnw-forest);
+  font-size: 1.05em;
+  margin-bottom: 1.5em;
+  font-family: "Geist", "Inter", sans-serif;
+}
+
+.content {
+  color: var(--pnw-charcoal);
+  font-size: 1.18em;
+  line-height: 1.7;
+  font-family: "Geist", "Inter", sans-serif;
+  white-space: pre-line;
+}
+
+@media (max-width: 600px) {
+  .main {
+    padding: 1.2em 0.7em 1.2em 0.7em;
+  }
+  .title {
+    font-size: 1.3rem;
+  }
+}

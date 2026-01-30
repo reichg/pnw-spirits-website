@@ -1,0 +1,37 @@
+.footer {
+  width: 100%;
+  background: linear-gradient(
+    90deg,
+    var(--pnw-forest) 80%,
+    var(--pnw-copper) 100%
+  );
+  color: var(--pnw-cream);
+  padding: 2em 0 1em 0;
+  text-align: center;
+  font-size: 1.05em;
+  font-family: "Geist", Arial, Helvetica, sans-serif;
+  box-shadow: 0 -2px 12px rgba(35, 66, 54, 0.08);
+}
+
+.footerLinks {
+  display: flex;
+  justify-content: center;
+  gap: 2em;
+  margin-bottom: 1em;
+}
+
+.footerLink {
+  color: var(--pnw-cream);
+  text-decoration: underline;
+  font-weight: 500;
+  transition: color 0.2s;
+}
+.footerLink:hover {
+  color: var(--pnw-gold);
+}
+
+.copyright {
+  color: var(--accent-sand);
+  font-size: 0.95em;
+  margin-top: 0.5em;
+}

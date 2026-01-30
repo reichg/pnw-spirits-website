@@ -1,0 +1,290 @@
+{
+  "info": {
+    "_postman_id": "pnw-spirits-api-full-collection",
+    "name": "PNW Spirits API (Full)",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "blogs",
+      "item": [
+        {
+          "name": "List Blogs",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "http://localhost:3000/api/blogs",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "blogs"]
+            }
+          }
+        },
+        {
+          "name": "Create Blog",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Test Blog\",\n  \"content\": \"Hello world!\",\n  \"author\": \"Admin\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:3000/api/blogs",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "blogs"]
+            }
+          }
+        },
+        {
+          "name": "Get Blog by ID",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "http://localhost:3000/api/blogs/1",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "blogs", "1"]
+            }
+          }
+        },
+        {
+          "name": "Update Blog by ID",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Updated Title\",\n  \"content\": \"Updated content\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:3000/api/blogs/1",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "blogs", "1"]
+            }
+          }
+        },
+        {
+          "name": "Delete Blog by ID",
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "http://localhost:3000/api/blogs/1",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "blogs", "1"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "comments",
+      "item": [
+        {
+          "name": "List Comments by Blog",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "http://localhost:3000/api/comments?blogId=1",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "comments"],
+              "query": [{ "key": "blogId", "value": "1" }]
+            }
+          }
+        },
+        {
+          "name": "Add Comment",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"blogId\": 1,\n  \"name\": \"Commenter\",\n  \"comment\": \"Nice post!\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:3000/api/comments",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "comments"]
+            }
+          }
+        },
+        {
+          "name": "Delete Comment by ID",
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "http://localhost:3000/api/comments/1",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "comments", "1"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "reactions",
+      "item": [
+        {
+          "name": "List Reactions by Blog",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "http://localhost:3000/api/reactions?blogId=1",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "reactions"],
+              "query": [{ "key": "blogId", "value": "1" }]
+            }
+          }
+        },
+        {
+          "name": "Add Reaction",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"blogId\": 1,\n  \"type\": \"like\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:3000/api/reactions",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "reactions"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "subscribers",
+      "item": [
+        {
+          "name": "List Subscribers",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "http://localhost:3000/api/subscribers",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "subscribers"]
+            }
+          }
+        },
+        {
+          "name": "Add Subscriber",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"Test\",\n  \"lastName\": \"User\",\n  \"email\": \"test@example.com\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:3000/api/subscribers",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "subscribers"]
+            }
+          }
+        },
+        {
+          "name": "Delete Subscriber by ID",
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "http://localhost:3000/api/subscribers/1",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "subscribers", "1"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "admin",
+      "item": [
+        {
+          "name": "Admin Login",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"admin\",\n  \"password\": \"yourpassword\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:3000/api/admin",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "admin"]
+            }
+          }
+        },
+        {
+          "name": "Create Admin User",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"admin\",\n  \"email\": \"admin@example.com\",\n  \"password\": \"yourpassword\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:3000/api/admin/create",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "admin", "create"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "videos",
+      "item": [
+        {
+          "name": "Fetch YouTube Videos",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "http://localhost:3000/api/videos",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "videos"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "test-email",
+      "item": [
+        {
+          "name": "Send Test Email",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"to\": \"your@gmail.com\",\n  \"firstName\": \"YourName\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:3000/api/test-email",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "test-email"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

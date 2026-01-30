@@ -1,6 +1,109 @@
+body::before {
+  content: "";
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: -100;
+  opacity: 0.15;
+  filter: blur(3px) saturate(1.2) brightness(1.1);
+  pointer-events: none;
+}
+
+html,
+body {
+  min-height: 100%;
+  height: auto;
+  width: 100%;
+  max-width: 100vw;
+  overflow-x: hidden;
+}
+
+@media (max-width: 600px) {
+  body::before {
+    background-size: 135%;
+    opacity: 0.17;
+  }
+}
+
+@media (max-width: 600px) {
+  body::before {
+    position: absolute;
+    height: 100%;
+  }
+}
+
+.scrollUpBtn {
+  position: fixed;
+  bottom: 2.2em;
+  right: 2.2em;
+  z-index: 200;
+  background: linear-gradient(
+    90deg,
+    var(--pnw-copper) 70%,
+    var(--accent-gold) 100%
+  );
+  color: var(--pnw-cream);
+  border: none;
+  border-radius: 50%;
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2em;
+  box-shadow: 0 2px 8px rgba(35, 66, 54, 0.13);
+  cursor: pointer;
+  opacity: 0.92;
+  transition:
+    background 0.2s,
+    color 0.2s,
+    opacity 0.2s;
+}
+.scrollUpBtn:hover {
+  background: linear-gradient(
+    90deg,
+    var(--pnw-forest) 70%,
+    var(--accent-rose) 100%
+  );
+  color: var(--accent-gold);
+  opacity: 1;
+}
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* PNW Spirits Color Palette */
+  --pnw-forest: #234236;
+  --pnw-copper: #b87333;
+  --pnw-cream: #f5f3e7;
+  --pnw-charcoal: #222222;
+  --pnw-mist: #7da0a9;
+
+  /* Additional Accent Colors */
+  --pnw-gold: #e6b400;
+  --pnw-rose: #b85c5c;
+  --pnw-sage: #b7c7a3;
+  --pnw-sky: #a3c7e7;
+  --pnw-plum: #6d466b;
+  --pnw-sand: #e9d8a6;
+
+  /* Usage suggestions */
+  --accent-gold: var(--pnw-gold);
+  --accent-rose: var(--pnw-rose);
+  --accent-sage: var(--pnw-sage);
+  --accent-sky: var(--pnw-sky);
+  --accent-plum: var(--pnw-plum);
+  --accent-sand: var(--pnw-sand);
+
+  --background: var(--pnw-cream);
+  --foreground: var(--pnw-charcoal);
+  --primary: var(--pnw-forest);
+  --secondary: var(--pnw-copper);
+  --accent: var(--pnw-mist);
+  --text-primary: var(--pnw-charcoal);
+  --text-secondary: var(--pnw-forest);
+  --button-bg: var(--pnw-copper);
+  --button-text: var(--pnw-cream);
+  --button-hover: var(--pnw-forest);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -14,14 +117,47 @@ html,
 body {
   max-width: 100vw;
   overflow-x: hidden;
-}
-
-body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+  background: transparent !important;
+  color: var(--text-primary);
+  font-family: "Geist", Arial, Helvetica, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  color: var(--primary);
+  font-family: "Geist", Arial, Helvetica, sans-serif;
+  margin-bottom: 0.5em;
+}
+
+a {
+  color: var(--secondary);
+  text-decoration: underline;
+  transition: color 0.2s;
+}
+a:hover {
+  color: var(--accent);
+}
+
+button,
+.button {
+  background: var(--button-bg);
+  color: var(--button-text);
+  border: none;
+  border-radius: 4px;
+  padding: 0.5em 1.2em;
+  font-size: 1em;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+button:hover,
+.button:hover {
+  background: var(--button-hover);
 }
 
 * {

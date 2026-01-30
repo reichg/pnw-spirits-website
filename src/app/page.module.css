@@ -1,3 +1,91 @@
+/* Use dynamic viewport height for mobile browsers */
+/* Main content wrapper uses dynamic viewport height for robust mobile support */
+.landing {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  background: none;
+}
+
+/* Use --vh for robust mobile height */
+.hero {
+  /* min-height: calc(var(--vh, 1vh) * 100); */
+  background: rgba(255, 248, 243, 0.92); /* semi-transparent for cozy overlay */
+  border-radius: 18px;
+  box-shadow: 0 4px 24px rgba(35, 66, 54, 0.1);
+  padding: 3em 2em 2em 2em;
+  max-width: 600px;
+  text-align: center;
+}
+
+.hero h1 {
+  color: var(--pnw-forest);
+  color: var(--pnw-copper);
+  font-weight: 700;
+  margin-bottom: 0.5em;
+  letter-spacing: 1px;
+}
+
+.hero p {
+  color: var(--pnw-charcoal);
+  color: var(--pnw-plum);
+  margin-bottom: 1.5em;
+}
+
+.cta {
+  display: flex;
+  gap: 1em;
+  justify-content: center;
+  margin-bottom: 2em;
+}
+
+.cta button,
+.cta .button {
+  background: var(--pnw-copper);
+  color: var(--pnw-cream);
+  background: linear-gradient(
+    90deg,
+    var(--pnw-copper) 70%,
+    var(--accent-gold) 100%
+  );
+  border-radius: 6px;
+  border: none;
+  padding: 0.75em 2em;
+  font-size: 1.1em;
+  box-shadow: 0 2px 8px rgba(184, 115, 51, 0.1);
+  transition:
+    background 0.2s,
+    color 0.2s;
+}
+
+.cta button:hover,
+.cta .button:hover {
+  background: var(--pnw-forest);
+  color: var(--pnw-copper);
+  background: linear-gradient(
+    90deg,
+    var(--pnw-forest) 70%,
+    var(--accent-rose) 100%
+  );
+}
+.section {
+  width: 100%;
+  max-width: 900px;
+  margin: 2.5em auto 0 auto;
+  background: rgba(255, 255, 255, 0.9); /* semi-transparent for overlay */
+  border-radius: 14px;
+  padding: 2em 1.5em;
+}
+
+@media (max-width: 600px) {
+  .hero {
+    padding: 2em 1em 1.5em 1em;
+  }
+  .section {
+    padding: 1em 0.5em;
+  }
+}
 .page {
   --background: #fafafa;
   --foreground: #fff;
@@ -14,19 +102,20 @@
   align-items: center;
   justify-content: center;
   font-family: var(--font-geist-sans);
-  background-color: var(--background);
+  background: none;
+  padding: 64px;
 }
 
+/* Fix scroll glitching on mobile: use dynamic viewport height */
 .main {
   display: flex;
-  min-height: 100vh;
+  min-height: calc(var(--vh, 1vh) * 100);
   width: 100%;
-  max-width: 800px;
   flex-direction: column;
   align-items: flex-start;
   justify-content: space-between;
-  background-color: var(--foreground);
-  padding: 120px 60px;
+  background: rgba(255, 255, 255, 0.85); /* semi-transparent for overlay */
+  flex: 1 1 auto;
 }
 
 .intro {
@@ -128,9 +217,6 @@ a.secondary {
   }
 
   .page {
-    --background: #000;
-    --foreground: #000;
-
     --text-primary: #ededed;
     --text-secondary: #999;
 
