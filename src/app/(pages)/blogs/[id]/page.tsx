@@ -1,12 +1,11 @@
+import prisma from "@/utils/prisma";
 import { notFound } from "next/navigation";
 import styles from "./BlogPostPage.module.css";
 
 async function getBlog(id: string) {
-  const res = await fetch(
-    `${process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"}/api/blogs/${id}`,
-  );
-  if (!res.ok) return null;
-  return res.json();
+  const parsedId = parseInt(id, 10);
+  if (isNaN(parsedId)) return null;
+  return prisma.blog.findUnique({ where: { id: parsedId } });
 }
 
 export default async function BlogPostPage({
