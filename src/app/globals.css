@@ -7,11 +7,20 @@ body::before {
   height: 100vh;
   z-index: -100;
   opacity: 0.15;
-  background: url("/images/logo.png") center center / cover
-    no-repeat fixed;
+  background: url("/images/logo.png") center center / cover no-repeat;
+  background-attachment: fixed;
   filter: blur(3px) saturate(1.2) brightness(1.1);
   pointer-events: none;
 }
+
+@media (max-width: 600px) {
+    body::before {
+      background-attachment: scroll;
+      opacity: 0.25;
+      background-size: 135%;
+      filter: blur(2px) saturate(1.2) brightness(1.1);
+    }
+  }
 
 html,
 body {
@@ -20,20 +29,6 @@ body {
   width: 100%;
   max-width: 100vw;
   overflow-x: hidden;
-}
-
-@media (max-width: 600px) {
-  body::before {
-    background-size: 135%;
-    opacity: 0.17;
-  }
-}
-
-@media (max-width: 600px) {
-  body::before {
-    position: absolute;
-    height: 100%;
-  }
 }
 
 .scrollUpBtn {
