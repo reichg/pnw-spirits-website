@@ -1,21 +1,12 @@
-/* Use dynamic viewport height for mobile browsers */
-/* Main content wrapper uses dynamic viewport height for robust mobile support */
-/* Main content wrapper uses dynamic viewport height for robust mobile support */
+
 .page {
   min-height: calc(var(--vh, 1vh) * 100);
-  background: linear-gradient(
-    120deg,
-    var(--pnw-cream) 80%,
-    var(--accent-sand) 100%
-  );
   display: flex;
   flex-direction: column;
   align-items: center;
   padding: 2.5em 1em 2em 1em;
 }
 
-/* Use --vh for robust mobile height */
-/* Use 100% min-height for main content */
 .main {
   min-height: 100%;
   background: var(--pnw-cream);
