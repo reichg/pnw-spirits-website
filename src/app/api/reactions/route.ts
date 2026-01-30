@@ -37,4 +37,3 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Failed to add reaction" }, { status: 500 });
   }
 }
-}
