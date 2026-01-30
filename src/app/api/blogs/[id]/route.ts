@@ -1,14 +1,12 @@
 import { requireAdmin } from "@/utils/auth";
-import { logger } from "@/utils/logger";
 import prisma from "@/utils/prisma";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } },
+  context: { params: Promise<{ id: string }> },
 ) {
-  const resolved = params instanceof Promise ? await params : params;
-  const { id } = resolved;
+  const { id } = await context.params;
   const parsedId = parseInt(id, 10);
   if (isNaN(parsedId))
     return NextResponse.json({ error: "Invalid blog id" }, { status: 400 });
@@ -20,17 +18,18 @@ export async function GET(
 
 export async function PUT(
   req: NextRequest,
-  { params }: { params: { id: string } },
+  context: { params: Promise<{ id: string }> },
 ) {
   const authResult = requireAdmin(req);
   if (authResult) return authResult;
-  const id = parseInt(params.id, 10);
-  if (isNaN(id))
+  const { id } = await context.params;
+  const parsedId = parseInt(id, 10);
+  if (isNaN(parsedId))
     return NextResponse.json({ error: "Invalid blog id" }, { status: 400 });
   const data = await req.json();
   const { title, content } = data;
   const updated = await prisma.blog.update({
-    where: { id },
+    where: { id: parsedId },
     data: { title, content },
   });
   return NextResponse.json(updated);
@@ -38,13 +37,14 @@ export async function PUT(
 
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string } },
+  context: { params: Promise<{ id: string }> },
 ) {
   const authResult = requireAdmin(req);
   if (authResult) return authResult;
-  const id = parseInt(params.id, 10);
-  if (isNaN(id))
+  const { id } = await context.params;
+  const parsedId = parseInt(id, 10);
+  if (isNaN(parsedId))
     return NextResponse.json({ error: "Invalid blog id" }, { status: 400 });
-  await prisma.blog.delete({ where: { id } });
+  await prisma.blog.delete({ where: { id: parsedId } });
   return NextResponse.json({ message: "Blog deleted" });
 }
