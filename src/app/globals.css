@@ -6,8 +6,8 @@ body::before {
   width: 100vw;
   height: 100svh;
   z-index: -100;
-  /* opacity: 1; */
-  background: var(--pnw-charcoal);
+  opacity: 0.9;
+  background: var(--pnw-logo-background);
   background-image: url("/images/logo.png");
   background-position: center center;
   background-repeat: no-repeat;
@@ -20,14 +20,7 @@ body::before {
 @media (max-width: 600px) {
   body::before {
     background-attachment: scroll;
-    height: 100%;
-    /* opacity: 1; */
-    background: var(--pnw-charcoal);
-    background-image: url("/images/logo.png");
-    background-position: center center;
-    background-repeat: no-repeat;
     background-size: 135%;
-    filter: blur(1.5px) saturate(1.1) brightness(0.92);
   }
 }
 
@@ -76,6 +69,7 @@ body {
 }
 :root {
   /* PNW Spirits Color Palette */
+  --pnw-logo-background: #39635e;
   --pnw-forest: #234236;
   --pnw-copper: #b87333;
   --pnw-cream: #f5f3e7;

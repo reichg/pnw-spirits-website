@@ -3,7 +3,6 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
 import styles from "./Header.module.css";
 
 const navLinks = [
@@ -15,35 +14,9 @@ const navLinks = [
 ];
 
 const Header = () => {
-  const [show, setShow] = useState(true);
-  const lastScroll = useRef(0);
-
-  useEffect(() => {
-    let ticking = false;
-    const handleScroll = () => {
-      if (!ticking) {
-        window.requestAnimationFrame(() => {
-          const curr = window.scrollY;
-          if (curr <= 0) {
-            setShow(true); // always show at top
-          } else if (curr < lastScroll.current) {
-            setShow(true); // scrolling up, show
-          } else if (curr > lastScroll.current && curr > 60) {
-            setShow(false); // scrolling down, hide
-          }
-          lastScroll.current = curr;
-          ticking = false;
-        });
-        ticking = true;
-      }
-    };
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
-
   const pathname = usePathname();
   return (
-    <header className={show ? styles.header : styles.headerHidden}>
+    <header className={styles.header}>
       <nav className={styles.nav}>
         <Link href="/" className={styles.logo}>
           <Image

@@ -5,7 +5,6 @@
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
-  background: none;
 }
 
 /* Use --vh for robust mobile height */
@@ -86,22 +85,11 @@
   }
 }
 .page {
-  --background: #fafafa;
-  --foreground: #fff;
-
-  --text-primary: #000;
-  --text-secondary: #666;
-
-  --button-primary-hover: #383838;
-  --button-secondary-hover: #f2f2f2;
-  --button-secondary-border: #ebebeb;
-
   display: flex;
   min-height: 100vh;
   align-items: center;
   justify-content: center;
   font-family: var(--font-geist-sans);
-  background: none;
   padding: 64px;
 }
 
