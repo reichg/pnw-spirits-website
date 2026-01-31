@@ -17,7 +17,8 @@
     "next": "16.1.6",
     "nodemailer": "^7.0.13",
     "react": "19.2.3",
-    "react-dom": "19.2.3"
+    "react-dom": "19.2.3",
+    "react-icons": "^5.5.0"
   },
   "devDependencies": {
     "@types/jsonwebtoken": "^9.0.10",
@@ -25,6 +26,7 @@
     "@types/nodemailer": "^7.0.9",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@types/react-icons": "^2.2.7",
     "@typescript-eslint/eslint-plugin": "^8.54.0",
     "@typescript-eslint/parser": "^8.54.0",
     "eslint": "^9.39.2",

@@ -1,5 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
+import { FaArrowUp } from "react-icons/fa";
+import styles from "./ScrollUpButton.module.css";
 
 const ScrollUpButton = () => {
   const [show, setShow] = useState(false);
@@ -12,15 +14,15 @@ const ScrollUpButton = () => {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  if (!show) return null;
-
   return (
     <button
-      className="scrollUpBtn"
-      aria-label="Scroll to top"
+      className={styles.scrollUpButton + (show ? " " + styles.visible : "")}
       onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+      aria-label="Scroll to top"
+      tabIndex={show ? 0 : -1}
+      // ...existing code...
     >
-      ↑
+      <FaArrowUp />
     </button>
   );
 };
