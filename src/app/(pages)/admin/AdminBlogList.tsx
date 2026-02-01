@@ -3,6 +3,39 @@ import { useEffect, useState } from "react";
 import AdminBlogEditor from "./AdminBlogEditor";
 import styles from "./AdminBlogList.module.css";
 
+function Pagination({
+  page,
+  totalPages,
+  setPage,
+}: {
+  page: number;
+  totalPages: number;
+  setPage: (p: number) => void;
+}) {
+  if (totalPages <= 1) return null;
+  return (
+    <div className={styles.pagination}>
+      <button
+        className={styles.pageButton}
+        onClick={() => setPage(Math.max(1, page - 1))}
+        disabled={page === 1}
+      >
+        Previous
+      </button>
+      <span className={styles.pageInfo}>
+        Page {page} of {totalPages}
+      </span>
+      <button
+        className={styles.pageButton}
+        onClick={() => setPage(Math.min(totalPages, page + 1))}
+        disabled={page === totalPages}
+      >
+        Next
+      </button>
+    </div>
+  );
+}
+
 interface Blog {
   id: number;
   title: string;
@@ -17,15 +50,21 @@ export default function AdminBlogList({ adminToken }: { adminToken: string }) {
   const [error, setError] = useState("");
   const [editing, setEditing] = useState<Blog | null>(null);
   const [showEditor, setShowEditor] = useState(false);
+  const [page, setPage] = useState(1);
+  const [total, setTotal] = useState(0);
+  const pageSize = 10;
+  const totalPages = Math.ceil(total / pageSize);
+  // removed scroll-to-top ref
 
   const fetchBlogs = async () => {
     setLoading(true);
     try {
-      const res = await fetch("/api/blogs", {
+      const res = await fetch(`/api/blogs?page=${page}&pageSize=${pageSize}`, {
         headers: adminToken ? { Authorization: `Bearer ${adminToken}` } : {},
       });
       const data = await res.json();
       setBlogs(data.blogs || []);
+      setTotal(data.total || 0);
     } catch {
       setError("Failed to load blogs");
     }
@@ -33,10 +72,11 @@ export default function AdminBlogList({ adminToken }: { adminToken: string }) {
   };
 
   useEffect(() => {
-    (async () => {
-      await fetchBlogs();
-    })();
-  }, []);
+    fetchBlogs();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [page]);
+
+  // removed scroll-to-top effect
 
   const handleEdit = (blog: Blog) => {
     setEditing(blog);
@@ -65,6 +105,7 @@ export default function AdminBlogList({ adminToken }: { adminToken: string }) {
 
   return (
     <>
+      {/* removed scroll-to-top ref div */}
       <div className={styles.container}>
         <button className={styles.newBtn} onClick={handleCreate}>
           + New Blog
@@ -100,6 +141,7 @@ export default function AdminBlogList({ adminToken }: { adminToken: string }) {
             </li>
           ))}
         </ul>
+        <Pagination page={page} totalPages={totalPages} setPage={setPage} />
       </div>
       {showEditor && (
         <AdminBlogEditor
