@@ -43,13 +43,14 @@
   border-radius: 18px;
   box-shadow: 0 4px 32px rgba(35, 66, 54, 0.13);
   border: 1.5px solid var(--pnw-copper, #b85c5c);
-  max-width: 480px;
+  max-width: 1000px;
   width: 100%;
   padding: 2.5em 2em 2em 2em;
   margin-top: 2em;
   display: flex;
   flex-direction: column;
-  align-items: stretch;
+  align-items: center;
+  text-align: center;
   position: relative;
   overflow: hidden;
 }

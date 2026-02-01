@@ -3,7 +3,6 @@ import { useEffect, useState } from "react";
 import AdminBlogList from "./AdminBlogList";
 import AdminLogin from "./AdminLogin";
 import styles from "./AdminPage.module.css";
-import AdminRegister from "./AdminRegister";
 
 export default function AdminPage() {
   const [token, setToken] = useState<string | null>(null);
@@ -34,7 +33,6 @@ export default function AdminPage() {
           <div className={styles.adminCardContent}>
             {showRegister ? (
               <>
-                <AdminRegister onRegister={() => setShowRegister(false)} />
                 <div className={styles.actionRow}>
                   <button
                     type="button"
@@ -49,13 +47,6 @@ export default function AdminPage() {
               <>
                 <AdminLogin onLogin={handleLogin} />
                 <div className={styles.actionRow}>
-                  <button
-                    type="button"
-                    className={styles.actionButton}
-                    onClick={() => setShowRegister(true)}
-                  >
-                    Create Admin Account
-                  </button>
                 </div>
               </>
             )}

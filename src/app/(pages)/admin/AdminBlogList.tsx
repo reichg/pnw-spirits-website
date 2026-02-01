@@ -74,10 +74,14 @@ export default function AdminBlogList({ adminToken }: { adminToken: string }) {
         <ul className={styles.list}>
           {blogs.map((blog) => (
             <li key={blog.id} className={styles.item}>
-              <div className={styles.title}>{blog.title}</div>
-              <div className={styles.meta}>
-                By {blog.author} &middot;{" "}
-                {new Date(blog.createdAt).toLocaleString()}
+              <div className={styles.cardHeader}>
+                <div className={styles.title}>{blog.title}</div>
+              </div>
+              <div className={styles.cardMeta}>
+                <div className={styles.metaAuthor}>By {blog.author}</div>
+                <div className={styles.metaDate}>
+                  {new Date(blog.createdAt).toLocaleString()}
+                </div>
               </div>
               <div className={styles.actions}>
                 <button
