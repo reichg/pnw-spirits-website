@@ -1,0 +1,93 @@
+/* Action row for buttons below forms */
+.actionRow {
+  text-align: center;
+  margin-top: 8px;
+}
+
+.actionButton {
+  background: none;
+  border: none;
+  color: var(--pnw-copper, #b85c5c);
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-thickness: 2px;
+  font-family: "Geist", "Inter", sans-serif;
+  font-weight: 500;
+  font-size: 1em;
+  padding: 4px 12px;
+  border-radius: 6px;
+  transition:
+    color 0.18s,
+    background 0.18s,
+    text-decoration-thickness 0.18s;
+}
+.actionButton:hover {
+  color: #fff;
+  background: var(--pnw-copper, #b85c5c);
+  text-decoration-thickness: 3px;
+  outline: none;
+  box-shadow: 0 2px 8px rgba(35, 66, 54, 0.08);
+}
+.adminPage {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 3em 1em 2em 1em;
+}
+
+.adminCard {
+  background: rgba(255, 248, 240, 0.95); /* var(--pnw-cream) with opacity */
+  border-radius: 18px;
+  box-shadow: 0 4px 32px rgba(35, 66, 54, 0.13);
+  border: 1.5px solid var(--pnw-copper, #b85c5c);
+  max-width: 480px;
+  width: 100%;
+  padding: 2.5em 2em 2em 2em;
+  margin-top: 2em;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  position: relative;
+  overflow: hidden;
+}
+
+.adminCardContent {
+  position: relative;
+  z-index: 1;
+  opacity: 1;
+}
+
+.adminTitle {
+  color: var(--pnw-copper, #b85c5c);
+  font-family: "Geist", "Inter", sans-serif;
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 1.2em;
+  letter-spacing: 0.5px;
+  text-align: center;
+}
+
+@media (max-width: 600px) {
+  .adminPage {
+    padding: 1.2em 0.2em 1.2em 0.2em;
+  }
+  .adminCard {
+    padding: 1em 1.5em 1em 1.5em;
+    margin-top: 0.7em;
+    border-radius: 10px;
+    width: 80%;
+  }
+  .adminTitle {
+    font-size: 1.08rem;
+  }
+  .actionButton:hover,
+  .actionButton:focus {
+    color: var(--pnw-copper, #b85c5c) !important;
+    background: none !important;
+    text-decoration-thickness: 2px !important;
+    box-shadow: none !important;
+  }
+}

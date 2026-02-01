@@ -17,6 +17,12 @@ const Footer = () => {
         <Link className={styles.footerLink} href="/contact">
           Contact
         </Link>
+        <Link
+          className={`${styles.footerLink} ${styles.adminFooterLink}`}
+          href="/admin"
+        >
+          Admin
+        </Link>
       </div>
       <div className={styles.copyright}>
         &copy; {new Date().getFullYear()} PNW Spirits. All rights reserved.

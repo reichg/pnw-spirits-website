@@ -4,9 +4,9 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(
   req: NextRequest,
-  context: { params: Promise<{ id: string }> },
+  context: { params: { id: string } },
 ) {
-  const { id } = await context.params;
+  const { id } = context.params;
   const parsedId = parseInt(id, 10);
   if (isNaN(parsedId))
     return NextResponse.json({ error: "Invalid blog id" }, { status: 400 });
@@ -20,19 +20,33 @@ export async function PUT(
   req: NextRequest,
   context: { params: Promise<{ id: string }> },
 ) {
-  const authResult = requireAdmin(req);
-  if (authResult) return authResult;
-  const { id } = await context.params;
-  const parsedId = parseInt(id, 10);
-  if (isNaN(parsedId))
-    return NextResponse.json({ error: "Invalid blog id" }, { status: 400 });
-  const data = await req.json();
-  const { title, content } = data;
-  const updated = await prisma.blog.update({
-    where: { id: parsedId },
-    data: { title, content },
-  });
-  return NextResponse.json(updated);
+  try {
+    const authResult = requireAdmin(req);
+    if (authResult) return authResult;
+    const { id } = await context.params;
+    const parsedId = parseInt(id, 10);
+    if (isNaN(parsedId))
+      return NextResponse.json({ error: "Invalid blog id" }, { status: 400 });
+    const data = await req.json();
+    console.log("[PUT /api/blogs/:id] Incoming data:", data);
+    const { title, content, author } = data;
+    console.log("[PUT /api/blogs/:id] Before prisma.blog.update");
+    const updated = await prisma.blog.update({
+      where: { id: parsedId },
+      data: { title, content, author },
+    });
+    console.log("[PUT /api/blogs/:id] After prisma.blog.update", updated);
+    return NextResponse.json(updated);
+  } catch (error) {
+    console.error("[PUT /api/blogs/:id] Error:", error);
+    return NextResponse.json(
+      {
+        error: "Failed to update blog",
+        details: error instanceof Error ? error.message : String(error),
+      },
+      { status: 500 },
+    );
+  }
 }
 
 export async function DELETE(

@@ -1,0 +1,105 @@
+.container {
+  max-width: 1000px;
+  margin: 2.5em auto;
+  padding: 0 1em;
+}
+.heading {
+  font-size: 1.7em;
+  font-weight: 700;
+  margin-bottom: 1em;
+}
+.newBtn {
+  margin-bottom: 16px;
+}
+.list {
+  list-style: none;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 2em;
+}
+/* Smaller, more compact card style for admin blog list */
+.item {
+  background: var(--pnw-cream, #fff);
+  border-radius: 12px;
+  box-shadow: 0 1px 8px rgba(35, 66, 54, 0.08);
+  border: 1.2px solid var(--pnw-copper, #b85c5c);
+  padding: 0.8em 0.9em 0.7em 0.9em;
+  display: flex;
+  flex-direction: column;
+  min-height: 90px;
+  transition: box-shadow 0.18s;
+}
+.item:hover {
+  box-shadow: 0 4px 18px rgba(35, 66, 54, 0.13);
+}
+.title {
+  font-weight: 600;
+  font-size: 1.04em;
+  color: var(--pnw-copper, #b85c5c);
+  margin-bottom: 0.1em;
+  font-family: var(--font-sans, "Geist", "Inter", sans-serif);
+}
+.meta {
+  font-size: 0.89em;
+  color: var(--pnw-forest, #3d4a3a);
+  margin-bottom: 0.3em;
+  opacity: 0.7;
+}
+/* .preview removed for compact cards */
+.actions {
+  margin-top: auto;
+  display: flex;
+  gap: 0.5em;
+}
+.editBtn {
+  background: none;
+  border: none;
+  color: var(--pnw-forest, #3d4a3a);
+  font-weight: 500;
+  font-size: 1em;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  border-radius: 5px;
+  padding: 3px 10px;
+  transition:
+    background 0.15s,
+    color 0.15s;
+}
+.editBtn:hover {
+  background: var(--pnw-copper, #b85c5c);
+  color: #fff;
+}
+.deleteBtn {
+  background: none;
+  border: none;
+  color: #b85c5c;
+  font-weight: 500;
+  font-size: 1em;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  border-radius: 5px;
+  padding: 3px 10px;
+  transition:
+    background 0.15s,
+    color 0.15s;
+}
+.deleteBtn:hover {
+  background: #b85c5c;
+  color: #fff;
+}
+@media (max-width: 700px) {
+  .list {
+    grid-template-columns: 1fr;
+    gap: 0.7em;
+  }
+  .item {
+    padding: 0.7em 0.5em 0.6em 0.5em;
+    min-height: 60px;
+  }
+}
+.error {
+  color: red;
+}

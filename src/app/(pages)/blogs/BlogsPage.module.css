@@ -1,17 +1,13 @@
-/* Use dynamic viewport height for mobile browsers */
-/* Main content wrapper uses dynamic viewport height for robust mobile support */
-/* Main content wrapper uses dynamic viewport height for robust mobile support */
+
 .page {
   display: flex;
   min-height: calc(var(--vh, 1vh) * 100);
-  /* align-items: center; */
   font-family: var(--font-geist-sans);
   background: none;
   padding: 64px;
+  justify-content: center;
 }
 
-/* Use --vh for robust mobile height */
-/* Use 100% min-height for main content */
 .main {
   min-height: 100%;
   flex: 1;

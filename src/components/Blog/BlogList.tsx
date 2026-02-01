@@ -47,15 +47,13 @@ const BlogList = () => {
       {blogs.map((blog) => (
         <div className={styles.blogCard} key={blog.id}>
           <div className={styles.blogTitle}>{blog.title}</div>
-          <div className={styles.blogMeta}>
-            By {blog.author} &middot;{" "}
-            {new Date(blog.createdAt).toLocaleDateString()}
+          <div className={styles.blogMetaContainer}>
+            <div className={styles.blogAuthor}>By {blog.author}</div>
+            <div className={styles.blogDate}>
+              {new Date(blog.createdAt).toLocaleDateString()}
+            </div>
           </div>
-          <div className={styles.blogExcerpt}>
-            {blog.content.length > 140
-              ? blog.content.slice(0, 140) + "..."
-              : blog.content}
-          </div>
+          {/* No blog content preview in list */}
           <a className={styles.readMore} href={`/blogs/${blog.id}`}>
             Read More
           </a>

@@ -1,0 +1,11 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Install AWS SDK",
+			"type": "shell",
+			"command": "npm install @aws-sdk/client-s3 @aws-sdk/s3-request-presigner",
+			"group": "build"
+		}
+	]
+}

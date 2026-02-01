@@ -1,6 +1,7 @@
 import MiniBlogList from "@/components/Blog/MiniBlogList";
 import SubscribeForm from "@/components/Subscriber/SubscribeForm";
 import VideoList from "@/components/Video/VideoList";
+import Link from "next/link";
 import styles from "./page.module.css";
 
 export default function Home() {
@@ -23,8 +24,25 @@ export default function Home() {
           </div>
         </div>
         <div className={styles.section} id="blogs">
-          <h2>Latest Blogs</h2>
-          <MiniBlogList />
+          <div className={styles.sectionHeader}>
+            <h2>Latest Blogs</h2>
+          </div>
+          <Link
+            href="/blogs"
+            className={styles.blogsPageLink}
+            aria-label="Go to all blogs"
+            style={{
+              display: "block",
+              margin: "0.5em auto 1.2em auto",
+              textAlign: "center",
+              maxWidth: "220px",
+            }}
+          >
+            View All Blogs
+          </Link>
+          <div className={styles.miniBlogListWrapper}>
+            <MiniBlogList />
+          </div>
         </div>
         <div className={styles.section} id="videos">
           <h2>Latest Videos</h2>

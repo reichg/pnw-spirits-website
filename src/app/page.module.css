@@ -1,3 +1,91 @@
+/* Wrapper to center MiniBlogList in section */
+.miniBlogListWrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+}
+/* Flex row for section header */
+.sectionHeader {
+  position: relative;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  margin-bottom: 1.2em;
+  gap: 0.7em;
+}
+
+.sectionHeader h2 {
+  flex: 0 1 auto;
+  margin: 0 auto;
+  text-align: center;
+  width: 100%;
+}
+
+.blogsPageLink {
+  display: block;
+  position: static;
+  margin: 0.5em auto 1.2em auto;
+  text-align: center;
+  max-width: 220px;
+  color: var(--accent-gold);
+  background: rgba(255, 245, 230, 0.85);
+  font-family: "Geist", "Inter", sans-serif;
+  font-size: 0.88em;
+  font-weight: 600;
+  text-decoration: none;
+  border-radius: 7px;
+  padding: 0.22em 0.6em;
+  border: 1.2px solid var(--pnw-copper);
+  box-shadow: 0 2px 8px rgba(35, 66, 54, 0.07);
+  transition:
+    background 0.18s,
+    color 0.18s,
+    border 0.18s,
+    box-shadow 0.18s;
+  margin-left: 0;
+}
+
+.blogsPageLink {
+  color: var(--accent-gold);
+  background: rgba(255, 245, 230, 0.85);
+  font-family: "Geist", "Inter", sans-serif;
+  font-size: 0.88em;
+  font-weight: 600;
+  text-decoration: none;
+  border-radius: 7px;
+  padding: 0.22em 0.6em;
+  border: 1.2px solid var(--pnw-copper);
+  box-shadow: 0 2px 8px rgba(35, 66, 54, 0.07);
+  transition:
+    background 0.18s,
+    color 0.18s,
+    border 0.18s,
+    box-shadow 0.18s;
+  margin-left: 0.5em;
+}
+.blogsPageLink:hover {
+  background: var(--accent-sand);
+  color: var(--pnw-copper);
+  border-color: var(--accent-gold);
+  box-shadow: 0 4px 16px rgba(35, 66, 54, 0.13);
+}
+
+@media (max-width: 700px) {
+  .sectionHeader {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.5em;
+    margin-bottom: 1em;
+  }
+  .blogsPageLink {
+    font-size: 0.98em;
+    padding: 0.38em 0.7em;
+    margin-left: 0;
+  }
+}
 /* Use dynamic viewport height for mobile browsers */
 /* Main content wrapper uses dynamic viewport height for robust mobile support */
 .landing {
@@ -13,7 +101,7 @@
   border-radius: 18px;
   box-shadow: 0 4px 24px rgba(35, 66, 54, 0.1);
   padding: 3em 2em 2em 2em;
-  max-width: 600px;
+  width: 100%;
   text-align: center;
 }
 
@@ -69,11 +157,11 @@
 }
 .section {
   width: 100%;
-  max-width: 900px;
   margin: 2.5em auto 0 auto;
   background: rgba(255, 255, 255, 0.95); /* semi-transparent for overlay */
   border-radius: 14px;
   padding: 2em 1.5em;
+  text-align: center;
 }
 
 @media (max-width: 600px) {
@@ -99,7 +187,7 @@
   min-height: calc(var(--vh, 1vh) * 100);
   width: 100%;
   flex-direction: column;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
   background: rgba(255, 255, 255, 0.95); /* semi-transparent for overlay */
   flex: 1 1 auto;

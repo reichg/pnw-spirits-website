@@ -35,6 +35,7 @@ const MiniBlogList = () => {
 
   return (
     <div className={styles.miniBlogList}>
+      <div className={styles.miniBlogListHeader}></div>
       {blogs.length === 0 && <div>No blog posts yet.</div>}
       {blogs.map((blog) => {
         return (
@@ -44,9 +45,11 @@ const MiniBlogList = () => {
             href={`/blogs/${blog.id}`}
           >
             <div className={styles.miniBlogTitle}>{blog.title}</div>
-            <div className={styles.miniBlogMeta}>
-              By {blog.author} &middot;{" "}
-              {new Date(blog.createdAt).toLocaleDateString()}
+            <div className={styles.miniBlogMetaContainer}>
+              <div className={styles.miniBlogAuthor}>By {blog.author}</div>
+              <div className={styles.miniBlogDate}>
+                {new Date(blog.createdAt).toLocaleDateString()}
+              </div>
             </div>
           </a>
         );

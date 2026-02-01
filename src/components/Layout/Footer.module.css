@@ -1,3 +1,16 @@
+.adminFooterLink {
+  opacity: 0.7;
+  font-size: 0.98em;
+  font-style: italic;
+  letter-spacing: 0.2px;
+  transition:
+    opacity 0.2s,
+    color 0.2s;
+}
+.adminFooterLink:hover {
+  opacity: 1;
+  color: var(--pnw-gold);
+}
 .footer {
   width: 100%;
   background: linear-gradient(
