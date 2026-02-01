@@ -39,7 +39,7 @@ export default function AdminLogin({
       <h2 className={styles.heading}>Admin Login</h2>
       <div className={styles.field}>
         <label className={styles.label}>
-          Username or Email
+          Username
           <br />
           <input
             className={styles.input}
