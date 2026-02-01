@@ -190,6 +190,7 @@
     text-align: left;
   }
 }
+
 @media (max-width: 600px) {
   .miniBlogList {
     flex-direction: column;

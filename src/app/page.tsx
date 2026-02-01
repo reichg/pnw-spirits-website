@@ -46,6 +46,19 @@ export default function Home() {
         </div>
         <div className={styles.section} id="videos">
           <h2>Latest Videos</h2>
+          <Link
+            href="/videos"
+            className={styles.blogsPageLink}
+            aria-label="Go to all videos"
+            style={{
+              display: "block",
+              margin: "0.5em auto 1.2em auto",
+              textAlign: "center",
+              maxWidth: "220px",
+            }}
+          >
+            View All Videos
+          </Link>
           <VideoList />
         </div>
         <div className={styles.section} id="subscribe">

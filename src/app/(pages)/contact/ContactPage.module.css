@@ -1,17 +1,10 @@
-/* Use dynamic viewport height for mobile browsers */
-/* Main content wrapper uses dynamic viewport height for robust mobile support */
-/* Main content wrapper uses dynamic viewport height for robust mobile support */
 .page {
   display: flex;
   min-height: calc(var(--vh, 1vh) * 100);
-  /* align-items: center; */
   font-family: var(--font-geist-sans);
   padding: 64px 16px 64px 16px;
 }
 
-
-/* Use --vh for robust mobile height */
-/* Use 100% min-height for main content */
 .main {
   min-height: 100%;
   flex: 1;
@@ -22,14 +15,6 @@
   padding: 2em 0;
 }
 
-@media (max-width: 600px) {
-  .page {
-    padding: 32px 4px 32px 4px;
-  }
-  .main {
-    padding: 1em 0;
-  }
-}
 
 .heading {
   font-size: 2.2em;
@@ -50,11 +35,25 @@
   text-align: center;
   line-height: 1.7;
   text-shadow:
-    0 1px 0 var(--pnw-cream),
-    0 2px 8px rgba(35, 66, 54, 0.08);
+  0 1px 0 var(--pnw-cream),
+  0 2px 8px rgba(35, 66, 54, 0.08);
 }
 
 .email {
   color: var(--pnw-copper);
   text-decoration: underline;
+}
+
+@media (max-width: 600px) {
+  .page {
+    padding: 32px 4px 32px 4px;
+  }
+  .main {
+    padding: 1em 0;
+  }
+  .text {
+    font-size: 1em;
+    padding: 1em 0.7em;
+    width: 90%;
+  }
 }

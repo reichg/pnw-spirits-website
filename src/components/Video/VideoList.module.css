@@ -3,6 +3,8 @@
   flex-wrap: wrap;
   gap: 2em;
   justify-content: center;
+  padding: 2em 1em 2em;
+
 }
 
 .videoCard {

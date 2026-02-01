@@ -63,6 +63,13 @@
   cursor: not-allowed;
 }
 
+.error {
+  color: #b85c5c;
+  margin-bottom: 10px;
+  text-align: center;
+  font-size: 1em;
+}
+
 @media (max-width: 600px) {
   .form {
     max-width: 96vw;
@@ -82,11 +89,4 @@
     padding: 9px 0;
     border-radius: 6px;
   }
-}
-
-.error {
-  color: #b85c5c;
-  margin-bottom: 10px;
-  text-align: center;
-  font-size: 1em;
 }
