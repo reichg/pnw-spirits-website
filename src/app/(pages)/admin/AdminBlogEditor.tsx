@@ -2,6 +2,7 @@
 import { useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import styles from "./AdminBlogEditor.module.css";
+import { logger } from "@/utils/logger";
 
 interface Blog {
   id?: number;
@@ -49,6 +50,7 @@ export default function AdminBlogEditor({
           const end = textarea.selectionEnd;
           const url = data.url;
           const poster = data.poster;
+          logger.info(`poster: ${poster}`);
           const isImage = file.type.startsWith("image/");
           const isVideo = file.type.startsWith("video/");
           let insert = url;

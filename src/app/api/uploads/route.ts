@@ -1,10 +1,7 @@
+import { logger } from "@/utils/logger";
 import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
-import { execFile } from "child_process";
+import { v2 as cloudinary } from "cloudinary";
 import { NextRequest, NextResponse } from "next/server";
-import os from "os";
-import path from "path";
-import { promisify } from "util";
-const execFileAsync = promisify(execFile);
 
 export const runtime = "nodejs";
 
@@ -30,6 +27,14 @@ export async function POST(req: NextRequest) {
   });
   const bucket = process.env.AWS_S3_BUCKET!;
 
+  // Cloudinary setup
+  cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME!,
+    api_key: process.env.CLOUDINARY_API_KEY!,
+    api_secret: process.env.CLOUDINARY_API_SECRET!,
+    secure: true,
+  });
+
   // Upload file to S3
   await s3.send(
     new PutObjectCommand({
@@ -39,40 +44,66 @@ export async function POST(req: NextRequest) {
       ContentType: file.type,
     }),
   );
+  // Generate a pre-signed S3 URL for the uploaded video
   const fileUrl = `https://${bucket}.s3.${process.env.AWS_REGION}.amazonaws.com/blog-media/${filename}`;
 
-  // If video, generate a poster image using ffmpeg and upload to S3
+  // If video, generate a poster image using Cloudinary (from S3 URL)
   const isVideo = file.type.startsWith("video/");
   let posterUrl = null;
   if (isVideo) {
-    const posterFilename = `${filename.replace(ext, "")}-poster.jpg`;
-    const tmpDir = os.tmpdir();
-    const tmpVideoPath = path.join(tmpDir, filename);
-    const tmpPosterPath = path.join(tmpDir, posterFilename);
-    // Ensure tmpDir exists (should always exist, but safe on Windows)
-    await import("fs").then((fs) =>
-      fs.promises.mkdir(tmpDir, { recursive: true }),
-    );
-    // Save video to tmp for ffmpeg
-    await import("fs").then((fs) =>
-      fs.promises.writeFile(tmpVideoPath, buffer),
-    );
     try {
-      await execFileAsync("ffmpeg", [
-        "-i",
-        tmpVideoPath,
-        "-ss",
-        "00:00:01.000",
-        "-vframes",
-        "1",
-        "-vf",
-        "scale=640:-1",
-        tmpPosterPath,
-      ]);
-      // Read poster buffer
-      const posterBuffer = await import("fs").then((fs) =>
-        fs.promises.readFile(tmpPosterPath),
-      );
+      // Upload video to Cloudinary using a Promise wrapper
+      logger.info("Uploading video to Cloudinary...");
+      const uploadToCloudinary = (buffer: Buffer, publicId: string) => {
+        return new Promise((resolve, reject) => {
+          const stream = cloudinary.uploader.upload_stream(
+            {
+              resource_type: "video",
+              folder: "blog-media",
+              public_id: publicId,
+            },
+            (error, result) => {
+              if (error) {
+                logger.error(`Cloudinary video upload error: ${error}`);
+                reject(error);
+              } else {
+                logger.info(
+                  `Cloudinary video upload result: ${JSON.stringify(result)}`,
+                );
+                resolve(result);
+              }
+            },
+          );
+          stream.end(buffer);
+        });
+      };
+
+      await uploadToCloudinary(buffer, filename.replace(ext, ""));
+      const cloudName = process.env.CLOUDINARY_CLOUD_NAME!;
+      const cloudinaryVideoPublicId = `blog-media/${filename.replace(ext, "")}`;
+      const cloudinaryPosterUrl = `https://res.cloudinary.com/${cloudName}/video/upload/so_1,w_640,c_scale/${cloudinaryVideoPublicId}.jpg`;
+      logger.info(`Cloudinary poster URL: ${cloudinaryPosterUrl}`);
+
+      // Download the poster image from Cloudinary
+      let posterResponse;
+      try {
+        posterResponse = await fetch(cloudinaryPosterUrl);
+      } catch (fetchErr) {
+        logger.error(`Error fetching poster from Cloudinary: ${fetchErr}`);
+        throw new Error(`Fetch failed: ${fetchErr}`);
+      }
+      if (!posterResponse.ok) {
+        logger.error(
+          `Cloudinary fetch failed. Status: ${posterResponse.status}`,
+        );
+        throw new Error(
+          `Failed to fetch poster from Cloudinary. Status: ${posterResponse.status}`,
+        );
+      }
+      const posterBuffer = Buffer.from(await posterResponse.arrayBuffer());
+
+      // Upload the poster image to S3
+      const posterFilename = `${filename.replace(ext, "")}-poster.jpg`;
       await s3.send(
         new PutObjectCommand({
           Bucket: bucket,
@@ -83,15 +114,9 @@ export async function POST(req: NextRequest) {
       );
       posterUrl = `https://${bucket}.s3.${process.env.AWS_REGION}.amazonaws.com/blog-media/${posterFilename}`;
     } catch (err) {
+      logger.error(`Error generating/uploading poster image: ${err}`);
       posterUrl = null;
     }
-    // Clean up tmp files
-    await import("fs").then((fs) =>
-      Promise.all([
-        fs.promises.unlink(tmpVideoPath),
-        fs.promises.unlink(tmpPosterPath),
-      ]).catch(() => {}),
-    );
   }
   return NextResponse.json({ url: fileUrl, poster: posterUrl });
 }
