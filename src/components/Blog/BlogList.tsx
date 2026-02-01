@@ -45,7 +45,13 @@ const BlogList = () => {
     <div className={styles.blogList}>
       {blogs.length === 0 && <div>No blog posts yet.</div>}
       {blogs.map((blog) => (
-        <div className={styles.blogCard} key={blog.id}>
+        <a
+          href={`/blogs/${blog.id}`}
+          className={styles.blogCard}
+          key={blog.id}
+          tabIndex={0}
+          aria-label={`Read blog post: ${blog.title}`}
+        >
           <div className={styles.blogTitle}>{blog.title}</div>
           <div className={styles.blogMetaContainer}>
             <div className={styles.blogAuthor}>By {blog.author}</div>
@@ -53,11 +59,8 @@ const BlogList = () => {
               {new Date(blog.createdAt).toLocaleDateString()}
             </div>
           </div>
-          {/* No blog content preview in list */}
-          <a className={styles.readMore} href={`/blogs/${blog.id}`}>
-            Read More
-          </a>
-        </div>
+          <span className={styles.readMore}>Read More</span>
+        </a>
       ))}
       {totalPages > 1 && (
         <div className={styles.pagination}>
