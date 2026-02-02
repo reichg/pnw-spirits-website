@@ -26,26 +26,18 @@ function formatMessage(
 export const logger = {
   info(message: string, options: LogOptions = {}) {
     // Only log info in development
-    if (process.env.NODE_ENV !== "production") {
-      // eslint-disable-next-line no-console
-      console.info(
-        formatMessage("info", message, options.context, options.data),
-      );
-    }
+    console.info(formatMessage("info", message, options.context, options.data));
   },
   warn(message: string, options: LogOptions = {}) {
-    // eslint-disable-next-line no-console
     console.warn(formatMessage("warn", message, options.context, options.data));
   },
   error(message: string, options: LogOptions = {}) {
-    // eslint-disable-next-line no-console
     console.error(
       formatMessage("error", message, options.context, options.data),
     );
   },
   debug(message: string, options: LogOptions = {}) {
     if (process.env.NODE_ENV !== "production") {
-      // eslint-disable-next-line no-console
       console.debug(
         formatMessage("debug", message, options.context, options.data),
       );
