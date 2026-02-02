@@ -40,7 +40,7 @@ export async function GET(req: NextRequest) {
   });
   const total = await prisma.blog.count({ where });
   const response = { blogs, total, page, pageSize };
-  await redis.set(cacheKey, JSON.stringify(response), "EX", 8 * 60); // cache for 8 minutes
+  await redis.set(cacheKey, JSON.stringify(response), "EX", 60 * 60); // cache for 60 minutes
   logger?.info?.("Blogs cache miss, fetched and cached (redis)", {
     context: "/api/blogs",
     data: { page, pageSize, search },
