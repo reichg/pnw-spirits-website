@@ -1,6 +1,8 @@
 // API route for /api/blogs
 
+import { logger } from "@/utils/logger";
 import prisma from "@/utils/prisma";
+import redis from "@/utils/redisClient";
 import { NextRequest, NextResponse } from "next/server";
 import { Prisma } from "../../../../generated/prisma";
 
@@ -10,6 +12,16 @@ export async function GET(req: NextRequest) {
   const page = parseInt(searchParams.get("page") || "1", 10);
   const pageSize = parseInt(searchParams.get("pageSize") || "10", 10);
   const search = searchParams.get("search") || "";
+
+  const cacheKey = `blogs:page=${page}:size=${pageSize}:search=${search}`;
+  const cached = await redis.get(cacheKey);
+  if (cached) {
+    logger?.info?.("Blogs cache hit (redis)", {
+      context: "/api/blogs",
+      data: { page, pageSize, search },
+    });
+    return NextResponse.json(JSON.parse(cached));
+  }
 
   const where = search
     ? {
@@ -27,11 +39,16 @@ export async function GET(req: NextRequest) {
     take: pageSize,
   });
   const total = await prisma.blog.count({ where });
-  return NextResponse.json({ blogs, total, page, pageSize });
+  const response = { blogs, total, page, pageSize };
+  await redis.set(cacheKey, JSON.stringify(response), "EX", 8 * 60); // cache for 8 minutes
+  logger?.info?.("Blogs cache miss, fetched and cached (redis)", {
+    context: "/api/blogs",
+    data: { page, pageSize, search },
+  });
+  return NextResponse.json(response);
 }
 
 export async function POST(req: NextRequest) {
-  // Create blog(s) (admin)
   try {
     const data = await req.json();
     // Check if data is an array (batch create) or single object
@@ -60,6 +77,9 @@ export async function POST(req: NextRequest) {
           author,
         })),
       });
+      // Invalidate all blog list cache entries in Redis
+      const keys = await redis.keys("blogs:*");
+      if (keys.length > 0) await redis.del(...keys);
       return NextResponse.json({ count: result.count }, { status: 201 });
     } else {
       const { title, content, author } = data;
@@ -72,6 +92,9 @@ export async function POST(req: NextRequest) {
       const blog = await prisma.blog.create({
         data: { title, content, author },
       });
+      // Invalidate all blog list cache entries in Redis
+      const keys = await redis.keys("blogs:*");
+      if (keys.length > 0) await redis.del(...keys);
       return NextResponse.json(blog, { status: 201 });
     }
   } catch {

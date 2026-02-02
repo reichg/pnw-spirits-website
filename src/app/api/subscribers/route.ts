@@ -1,4 +1,5 @@
 // API route for /api/subscribers
+
 import { sendSubscribeEmail } from "@/utils/email";
 import prisma from "@/utils/prisma";
 import { NextRequest, NextResponse } from "next/server";
