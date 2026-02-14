@@ -25,7 +25,6 @@ function formatMessage(
 
 export const logger = {
   info(message: string, options: LogOptions = {}) {
-    // Only log info in development
     console.info(formatMessage("info", message, options.context, options.data));
   },
   warn(message: string, options: LogOptions = {}) {

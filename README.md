@@ -1,36 +1,126 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# PNW Spirits Website
 
-## Getting Started
+## Overview
 
-First, run the development server:
+PNW Spirits is a modern, cozy, and professional website inspired by the speakeasy era, designed to showcase Pacific Northwest spirits, blogs, videos, and community engagement. The site is built with a focus on warmth, elegance, and responsiveness, ensuring a seamless experience across desktop and mobile devices.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+### Key Features
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+- **Blog System:** Modular blog pages with rich content, admin editing, and mini blog lists for easy navigation.
+- **Video Gallery:** Curated video lists and integration with YouTube API for dynamic content.
+- **Commenting & Reactions:** Interactive comment sections and reaction bars to foster community engagement.
+- **Subscriber Management:** Elegant subscribe forms and admin tools for managing subscribers.
+- **Admin Dashboard:** Secure login, blog editor, comment moderation, and subscriber management.
+- **Contact Page:** Professional contact form for inquiries and feedback.
+- **Media Uploads:** S3 integration for secure media uploads and management.
+- **Responsive Layout:** All UI elements adapt gracefully to any screen size.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Design Philosophy
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- **Warm & Cozy Vibe:** All styling uses global theme colors from `globals.css` to maintain a speakeasy-inspired, inviting atmosphere.
+- **Professional & Elegant:** Modern sans-serif fonts (Geist, Inter) and clean layouts ensure a polished look.
+- **Modular Components:** Each UI element is a focused, reusable React component with strict TypeScript types.
+- **Separation of Concerns:** Styling is handled via CSS modules per component, keeping logic and presentation clean.
 
-## Learn More
+### Tech Stack
 
-To learn more about Next.js, take a look at the following resources:
+- **Next.js & React:** Functional components and hooks for fast, modular development.
+- **TypeScript:** Strict typing for reliability and maintainability.
+- **Prisma:** Database ORM for robust data management.
+- **AWS S3:** Media storage and uploads.
+- **Redis:** Caching and performance optimization.
+- **Postman:** API testing and documentation.
+- **Docker:** Containerized development and deployment.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### Project Structure
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- `src/app/` — Main app pages, layouts, and global styles.
+- `src/components/` — Modular UI components (Blog, Admin, Layout, Video, etc.).
+- `src/models/` — TypeScript models for videos and APIs.
+- `src/utils/` — Utility functions (auth, email, logger, prisma, redis).
+- `src/api/` — API routes for admin, blogs, comments, media, reactions, subscribers, uploads, and videos.
+- `prisma/` — Database schema and migrations.
+- `public/images/` — Static assets and images.
+- `generated/prisma/` — Generated Prisma client files.
+- `postman/` — API collections for testing.
 
-## Deploy on Vercel
+### Styling & UI
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- All colors and themes are defined in `globals.css` for consistency.
+- Responsive design principles ensure usability on all devices.
+- No duplicate styling tags or repeated CSS class definitions.
+- Only modern, elegant sans-serif fonts are used.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### Development Guidelines
+
+- Clean up unused code, imports, and styles after edits.
+- Use descriptive, meaningful names for components, variables, and CSS classes.
+- Document any non-obvious logic with concise comments.
+- Keep components focused and modular—one responsibility per component.
+- Ensure all UI is responsive and error-free after changes.
+
+---
+
+For more details on setup, contributing, or deployment, see the relevant sections below or contact the project maintainer.
+
+---
+
+## Getting Started for Non-Coders
+
+If you are not familiar with coding, you can still get the PNW Spirits website running by following these simple steps:
+
+### 1. Install Prerequisites
+
+- **Install Node.js:**
+  - Go to [nodejs.org](https://nodejs.org/) and download the LTS version for your operating system.
+- **Install Docker (Required):**
+  - Download and install Docker Desktop from [docker.com](https://www.docker.com/products/docker-desktop/).
+  - Make sure Docker Desktop is running before continuing.
+
+### 2. Download the Project
+
+- Click the green "Code" button on the GitHub repository page and select "Download ZIP".
+- Unzip the folder to your computer.
+
+### 3. Open the Project Folder
+
+- Open the unzipped folder using [Visual Studio Code](https://code.visualstudio.com/) or your preferred editor.
+
+### 4. Install Dependencies
+
+- Open a terminal in the project folder (in VS Code, click "Terminal" > "New Terminal").
+- Type:
+  - `npm install`
+  - This will download everything the website needs to run.
+
+### 5. Start Docker Services (Required)
+
+- In the same terminal, type:
+  - `docker-compose up -d`
+- This will start all required backend services (such as the database and Redis) in the background.
+
+### 6. Start the Website
+
+- In the same terminal, type:
+  - `npm run dev`
+- Wait for the message that the site is running (usually at `http://localhost:3000`).
+- Open your web browser and go to that address.
+
+### 7. Using the Admin Panel
+
+- Go to `/admin` in your browser (e.g., `http://localhost:3000/admin`).
+- Log in with the credentials provided by your project maintainer.
+- You can now add blogs, videos, moderate comments, and manage subscribers.
+
+### 8. Uploading Media
+
+- Use the admin panel to upload images and videos. Files are stored securely using AWS S3.
+
+### 9. Need Help?
+
+- If you get stuck, contact the project maintainer or check the FAQ section (if available).
+- You do not need to write any code—just follow the steps above!
+
+---
+
+**Enjoy sharing the spirit of the Pacific Northwest!**
