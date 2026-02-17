@@ -21,7 +21,7 @@ export default function Home() {
           <Link
             href="/blogs"
             className={landingStyles.landingFourColCard}
-            style={{ backgroundImage: "url('/images/martini.jpg')" }}
+            style={{ backgroundImage: "url('/images/Martini.jpg')" }}
             aria-label="Blogs"
           >
             <span className={landingStyles.landingFourColCardLabel}>Blogs</span>
@@ -29,7 +29,7 @@ export default function Home() {
           <Link
             href="/videos"
             className={landingStyles.landingFourColCard}
-            style={{ backgroundImage: "url('/images/daq.jpg')" }}
+            style={{ backgroundImage: "url('/images/Daq.jpg')" }}
             aria-label="Videos"
           >
             <span className={landingStyles.landingFourColCardLabel}>
@@ -39,7 +39,7 @@ export default function Home() {
           <Link
             href="/about"
             className={landingStyles.landingFourColCard}
-            style={{ backgroundImage: "url('/images/highfive.jpg')" }}
+            style={{ backgroundImage: "url('/images/HighFive.jpg')" }}
             aria-label="About"
           >
             <span className={landingStyles.landingFourColCardLabel}>About</span>
@@ -47,7 +47,7 @@ export default function Home() {
           <Link
             href="/contact"
             className={landingStyles.landingFourColCard}
-            style={{ backgroundImage: "url('/images/vermouth.jpg')" }}
+            style={{ backgroundImage: "url('/images/Vermouth.jpg')" }}
             aria-label="Contact"
           >
             <span className={landingStyles.landingFourColCardLabel}>
@@ -62,7 +62,7 @@ export default function Home() {
         <div className={landingStyles.landingTwoColRow}>
           <div className={landingStyles.landingTwoColImg}>
             <img
-              src="/images/improved.jpg"
+              src="/images/Improved.jpg"
               alt="Sign up"
               style={{
                 width: "100%",
