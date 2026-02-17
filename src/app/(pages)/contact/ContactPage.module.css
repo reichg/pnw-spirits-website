@@ -3,6 +3,7 @@
   min-height: calc(var(--vh, 1vh) * 100);
   font-family: var(--font-geist-sans);
   padding: 64px 16px 64px 16px;
+  background: rgb(12, 11, 11);
 }
 
 .main {
@@ -14,7 +15,6 @@
   justify-content: flex-start;
   padding: 2em 0;
 }
-
 
 .heading {
   font-size: 2.2em;
@@ -35,8 +35,8 @@
   text-align: center;
   line-height: 1.7;
   text-shadow:
-  0 1px 0 var(--pnw-cream),
-  0 2px 8px rgba(35, 66, 54, 0.08);
+    0 1px 0 var(--pnw-cream),
+    0 2px 8px rgba(35, 66, 54, 0.08);
 }
 
 .email {

@@ -5,8 +5,8 @@
   bottom: 2rem;
   right: 2rem;
   z-index: 1000;
-  background: var(--color-bg-secondary, #2d2320);
-  color: var(--color-accent, #e0b97f);
+  background: rgba(3, 3, 3, 0.85);
+  color: var(--pnw-copper);
   border: none;
   border-radius: 50%;
   width: 3rem;

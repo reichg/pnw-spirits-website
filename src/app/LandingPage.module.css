@@ -46,7 +46,7 @@
 
 .landingFourColSection {
   width: 100vw;
-  background: var(--pnw-forest);
+  background: rgb(12, 11, 11);
   padding: 3em 0 2.5em 0;
   display: flex;
   justify-content: center;
@@ -76,6 +76,7 @@
   display: block;
   text-align: center;
   text-decoration: none;
+  box-shadow: 0 2px 8px 0 rgb(40, 39, 39);
   transition:
     transform 0.18s,
     box-shadow 0.18s;
@@ -99,7 +100,7 @@
 
 .landingTwoColSection {
   width: 100vw;
-  background: rgb(133, 104, 16);
+  background: rgba(6, 23, 18, 0.956);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -121,7 +122,6 @@
   height: 320px;
   background: var(--pnw-mist);
   border-radius: 18px;
-  box-shadow: 0 4px 24px rgba(35, 66, 54, 0.1);
   display: flex;
   align-items: center;
   justify-content: center;
