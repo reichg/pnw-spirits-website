@@ -1,71 +1,82 @@
-import MiniBlogList from "@/components/Blog/MiniBlogList";
 import SubscribeForm from "@/components/Subscriber/SubscribeForm";
-import VideoList from "@/components/Video/VideoList";
 import Link from "next/link";
-import styles from "./page.module.css";
+import landingStyles from "./LandingPage.module.css";
 
 export default function Home() {
   return (
-    <div className={styles.page}>
-      <div className={styles.landing} style={{ flex: 1 }}>
-        <div className={styles.hero}>
-          <h1>Welcome to PNW Spirits</h1>
-          <p>
-            Discover the best cocktails, stories, and videos from the Pacific
-            Northwest.
-          </p>
-          <div className={styles.cta}>
-            <a className="button" href="#subscribe">
-              Subscribe
-            </a>
-            <a className="button" href="#blogs">
-              Read Blogs
-            </a>
-          </div>
+    <div>
+      {/* Hero Section */}
+      <section className={landingStyles.landingHero}>
+        <div className={landingStyles.landingHeroOverlay}>
+          <div className={landingStyles.landingHeroBrand}>PNW Spirits</div>
+          <h1 className={landingStyles.landingHeroTitle}>
+            Welcome to the PNW Spirits
+          </h1>
         </div>
-        <div className={styles.section} id="blogs">
-          <div className={styles.sectionHeader}>
-            <h2>Latest Blogs</h2>
-          </div>
+      </section>
+
+      {/* Four Column Section */}
+      <section className={landingStyles.landingFourColSection}>
+        <div className={landingStyles.landingFourColRow}>
           <Link
             href="/blogs"
-            className={styles.blogsPageLink}
-            aria-label="Go to all blogs"
-            style={{
-              display: "block",
-              margin: "0.5em auto 1.2em auto",
-              textAlign: "center",
-              maxWidth: "220px",
-            }}
+            className={landingStyles.landingFourColCard}
+            style={{ backgroundImage: "url('/images/martini.jpg')" }}
+            aria-label="Blogs"
           >
-            View All Blogs
+            <span className={landingStyles.landingFourColCardLabel}>Blogs</span>
           </Link>
-          <div className={styles.miniBlogListWrapper}>
-            <MiniBlogList />
-          </div>
-        </div>
-        <div className={styles.section} id="videos">
-          <h2>Latest Videos</h2>
           <Link
             href="/videos"
-            className={styles.blogsPageLink}
-            aria-label="Go to all videos"
-            style={{
-              display: "block",
-              margin: "0.5em auto 1.2em auto",
-              textAlign: "center",
-              maxWidth: "220px",
-            }}
+            className={landingStyles.landingFourColCard}
+            style={{ backgroundImage: "url('/images/daq.jpg')" }}
+            aria-label="Videos"
           >
-            View All Videos
+            <span className={landingStyles.landingFourColCardLabel}>
+              Videos
+            </span>
           </Link>
-          <VideoList />
+          <Link
+            href="/about"
+            className={landingStyles.landingFourColCard}
+            style={{ backgroundImage: "url('/images/highfive.jpg')" }}
+            aria-label="About"
+          >
+            <span className={landingStyles.landingFourColCardLabel}>About</span>
+          </Link>
+          <Link
+            href="/contact"
+            className={landingStyles.landingFourColCard}
+            style={{ backgroundImage: "url('/images/vermouth.jpg')" }}
+            aria-label="Contact"
+          >
+            <span className={landingStyles.landingFourColCardLabel}>
+              Contact
+            </span>
+          </Link>
         </div>
-        <div className={styles.section} id="subscribe">
-          <h2>Subscribe for Updates</h2>
-          <SubscribeForm />
+      </section>
+
+      {/* Two Column Section: Photo left, Signup right */}
+      <section className={landingStyles.landingTwoColSection}>
+        <div className={landingStyles.landingTwoColRow}>
+          <div className={landingStyles.landingTwoColImg}>
+            <img
+              src="/images/improved.jpg"
+              alt="Sign up"
+              style={{
+                width: "100%",
+                height: "100%",
+                objectFit: "cover",
+                borderRadius: 18,
+              }}
+            />
+          </div>
+          <div className={landingStyles.landingTwoColForm}>
+            <SubscribeForm />
+          </div>
         </div>
-      </div>
+      </section>
     </div>
   );
 }

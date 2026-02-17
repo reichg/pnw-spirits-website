@@ -8,8 +8,8 @@ export default function ContactPage() {
         <p className={styles.text}>
           Have a question, collaboration idea, or just want to say hello? Reach
           out to us at{" "}
-          <a className={styles.email} href="mailto:info@pnwspirits.com">
-            info@pnwspirits.com
+          <a className={styles.email} href="mailto:info@thepnwspirits.com">
+            info@thepnwspirits.com
           </a>
           .
         </p>

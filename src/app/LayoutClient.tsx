@@ -35,9 +35,7 @@ export default function LayoutClient({
   return (
     <body className={`${geistSans.variable} ${geistMono.variable}`}>
       <Header />
-      <div id="main-content-wrapper" className="main">
-        {children}
-      </div>
+      {children}
       <ScrollUpButton />
       <Footer />
     </body>
