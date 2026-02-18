@@ -38,6 +38,45 @@
   text-shadow:
     0 1px 0 var(--pnw-cream),
     0 2px 8px rgba(35, 66, 54, 0.08);
+  margin-bottom: 1.5em;
+}
+
+.section {
+  width: 100%;
+  max-width: 700px;
+  margin-bottom: 2.2em;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.subheading {
+  font-size: 1.25em;
+  font-weight: 600;
+  color: var(--pnw-gold);
+  margin-bottom: 0.5em;
+  letter-spacing: 0.01em;
+  text-align: center;
+  font-family: var(--font-geist-sans);
+}
+
+.signatureBox {
+  margin-top: 2.5em;
+  padding: 1em 2em;
+  background: linear-gradient(90deg, var(--pnw-gold) 0%, var(--pnw-cream) 100%);
+  border-radius: 16px;
+  box-shadow: 0 2px 16px 0 rgba(35, 66, 54, 0.10);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.signature {
+  font-family: var(--font-geist-sans);
+  font-size: 1.15em;
+  font-weight: 700;
+  color: var(--pnw-forest);
+  letter-spacing: 0.03em;
 }
 
 @media (max-width: 600px) {

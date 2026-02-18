@@ -1,10 +1,59 @@
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1.5em;
+  margin: 2em 0 1em 0;
+}
+
+.pageBtn {
+  background: linear-gradient(
+    90deg,
+    var(--pnw-copper) 70%,
+    var(--accent-gold) 100%
+  );
+  color: var(--pnw-cream);
+  font-weight: 600;
+  border-radius: 6px;
+  border: none;
+  padding: 0.5em 1.5em;
+  font-size: 1em;
+  cursor: pointer;
+  transition:
+    background 0.2s,
+    color 0.2s,
+    opacity 0.2s;
+  box-shadow: 0 1px 4px rgba(35, 66, 54, 0.08);
+  opacity: 1;
+}
+.pageBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.pageBtn:hover:not(:disabled) {
+  background: linear-gradient(
+    90deg,
+    var(--pnw-forest) 70%,
+    var(--accent-rose) 100%
+  );
+  color: var(--accent-gold);
+}
+
+.pageInfo {
+  color: var(--pnw-forest);
+  font-size: 1.1em;
+  font-weight: 500;
+  background: var(--pnw-cream);
+  padding: 0.4em 1em;
+  border-radius: 8px;
+  box-shadow: 0 1px 4px rgba(35, 66, 54, 0.04);
+}
 .videoList {
   display: flex;
   flex-wrap: wrap;
   gap: 2em;
   justify-content: center;
   padding: 2em 1em 2em;
-
 }
 
 .videoCard {

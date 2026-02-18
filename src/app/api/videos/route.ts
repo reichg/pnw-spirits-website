@@ -33,71 +33,86 @@ export async function GET(req: NextRequest) {
         { status: 400 },
       );
     }
-    const maxResults = searchParams.get("maxResults") || "10";
-    const cacheKey = `yt-videos:${channelId}:${maxResults}`;
+    // Pagination support
+    const page = parseInt(searchParams.get("page") || "1", 10);
+    const pageSize = parseInt(searchParams.get("pageSize") || "9", 10);
+    const maxResults = 50; // YouTube API max per request
+    const cacheKey = `yt-videos:${channelId}:maxResults${maxResults}`;
     const cached = await redis.get(cacheKey);
+    let allVideos;
     if (cached) {
       logger.info("YouTube videos cache hit (redis)", {
         context: "/api/videos",
         data: { channelId, maxResults },
       });
-      return NextResponse.json({ videos: JSON.parse(cached) });
-    }
-    logger.info("YouTube videos cache miss, fetching (redis)", {
-      context: "/api/videos",
-      data: { channelId, maxResults },
-    });
-    const url = `https://www.googleapis.com/youtube/v3/search?key=${apiKey}&channelId=${channelId}&part=snippet,id&order=date&maxResults=${maxResults}`;
-    const res = await fetch(url);
-    if (!res.ok) {
-      const errorText = await res.text();
-      logger.error("YouTube API fetch failed", {
+      allVideos = JSON.parse(cached);
+    } else {
+      logger.info("YouTube videos cache miss, fetching (redis)", {
         context: "/api/videos",
-        data: { status: res.status, statusText: res.statusText, errorText },
+        data: { channelId, maxResults },
       });
-      return NextResponse.json(
-        {
-          error: "Failed to fetch videos",
-          status: res.status,
-          statusText: res.statusText,
-          errorText,
-        },
-        { status: 500 },
-      );
+      const url = `https://www.googleapis.com/youtube/v3/search?key=${apiKey}&channelId=${channelId}&part=snippet,id&order=date&maxResults=${maxResults}`;
+      const res = await fetch(url);
+      if (!res.ok) {
+        const errorText = await res.text();
+        logger.error("YouTube API fetch failed", {
+          context: "/api/videos",
+          data: { status: res.status, statusText: res.statusText, errorText },
+        });
+        return NextResponse.json(
+          {
+            error: "Failed to fetch videos",
+            status: res.status,
+            statusText: res.statusText,
+            errorText,
+          },
+          { status: 500 },
+        );
+      }
+      const data = await res.json();
+      allVideos = (data.items || [])
+        .filter(
+          (item: YouTubeAPIItem) =>
+            item.id &&
+            (typeof item.id === "string" ||
+              item.id.videoId ||
+              item.id.playlistId),
+        )
+        .map((item: YouTubeAPIItem) => {
+          const id =
+            typeof item.id === "string"
+              ? item.id
+              : item.id.videoId || item.id.playlistId || "";
+          return {
+            id,
+            title: item.snippet.title,
+            url: `https://www.youtube.com/watch?v=${id}`,
+            thumbnail:
+              item.snippet.thumbnails?.high?.url ||
+              item.snippet.thumbnails?.medium?.url ||
+              item.snippet.thumbnails?.default?.url ||
+              "",
+            publishedAt: item.snippet.publishedAt,
+          };
+        });
+      // Cache for 10 minutes
+      await redis.set(cacheKey, JSON.stringify(allVideos), "EX", 10 * 60);
+      logger.info("Fetched and cached YouTube videos (redis)", {
+        context: "/api/videos",
+        data: { count: allVideos.length },
+      });
     }
-    const data = await res.json();
-    const videos = (data.items || [])
-      .filter(
-        (item: YouTubeAPIItem) =>
-          item.id &&
-          (typeof item.id === "string" ||
-            item.id.videoId ||
-            item.id.playlistId),
-      )
-      .map((item: YouTubeAPIItem) => {
-        const id =
-          typeof item.id === "string"
-            ? item.id
-            : item.id.videoId || item.id.playlistId || "";
-        return {
-          id,
-          title: item.snippet.title,
-          url: `https://www.youtube.com/watch?v=${id}`,
-          thumbnail:
-            item.snippet.thumbnails?.high?.url ||
-            item.snippet.thumbnails?.medium?.url ||
-            item.snippet.thumbnails?.default?.url ||
-            "",
-          publishedAt: item.snippet.publishedAt,
-        };
-      });
-    // Cache for 6 minutes
-    await redis.set(cacheKey, JSON.stringify(videos), "EX", 10 * 60);
-    logger.info("Fetched and cached YouTube videos (redis)", {
-      context: "/api/videos",
-      data: { count: videos.length },
+    // Paginate
+    const start = (page - 1) * pageSize;
+    const end = start + pageSize;
+    const paginatedVideos = allVideos.slice(start, end);
+    return NextResponse.json({
+      videos: paginatedVideos,
+      total: allVideos.length,
+      page,
+      pageSize,
+      totalPages: Math.ceil(allVideos.length / pageSize),
     });
-    return NextResponse.json({ videos });
   } catch (err) {
     logger.error("Unexpected error in /api/videos", {
       context: "/api/videos",
