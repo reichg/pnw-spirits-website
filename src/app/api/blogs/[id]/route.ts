@@ -37,6 +37,9 @@ export async function PUT(
       data: { title, content, author },
     });
     console.log("[PUT /api/blogs/:id] After prisma.blog.update", updated);
+    // Invalidate all blog list cache entries in Redis
+    const keys = await redis.keys("blogs:*");
+    if (keys.length > 0) await redis.del(...keys);
     return NextResponse.json(updated);
   } catch (error) {
     console.error("[PUT /api/blogs/:id] Error:", error);
