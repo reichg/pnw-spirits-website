@@ -1,0 +1,13 @@
+.tokenExpiry {
+  background: var(--pnw-cream, #f8f5f2);
+  color: var(--pnw-brown, #5a3a1b);
+  font-family: "Geist", "Inter", sans-serif;
+  font-size: 1rem;
+  font-weight: 500;
+  padding: 0.5em 1em;
+  border-radius: 8px;
+  margin-bottom: 1em;
+  text-align: center;
+  letter-spacing: 0.02em;
+  box-shadow: 0 2px 8px rgba(35, 66, 54, 0.07);
+}

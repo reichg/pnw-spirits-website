@@ -1,66 +1,71 @@
 "use client";
+import jwt from "jsonwebtoken";
 import { useEffect, useState } from "react";
 import AdminBlogList from "./AdminBlogList";
-import AdminLogin from "./AdminLogin";
 import styles from "./AdminPage.module.css";
+import stylesExpiry from "./TokenExpiry.module.css";
 
 export default function AdminPage() {
   const [token, setToken] = useState<string | null>(null);
-  const [showRegister, setShowRegister] = useState(false);
+
+  // Helper to decode JWT expiry
+  function getTokenExpiry(token: string | null): string | null {
+    if (!token) return null;
+    try {
+      const decoded = jwt.decode(token) as jwt.JwtPayload;
+      if (decoded && decoded.exp) {
+        const date = new Date(decoded.exp * 1000);
+        return date.toLocaleString();
+      }
+    } catch {}
+    return null;
+  }
+
+  const expiryDisplay = getTokenExpiry(token);
 
   // Load token from localStorage on mount (client only)
   useEffect(() => {
     if (typeof window !== "undefined") {
-      queueMicrotask(() => setToken(localStorage.getItem("adminToken")));
+      const checkToken = () => {
+        const t = localStorage.getItem("adminToken");
+        if (!t) {
+          window.location.href = "/admin/login";
+          return;
+        }
+        // Check expiry
+        try {
+          const decoded = jwt.decode(t) as jwt.JwtPayload;
+          if (decoded && decoded.exp && Date.now() >= decoded.exp * 1000) {
+            localStorage.removeItem("adminToken");
+            window.location.href = "/admin/login";
+            return;
+          }
+        } catch {}
+        setToken(t);
+      };
+      queueMicrotask(checkToken);
       // Listen for token changes in other tabs
-      const syncToken = () => setToken(localStorage.getItem("adminToken"));
+      const syncToken = () => checkToken();
       window.addEventListener("storage", syncToken);
       return () => window.removeEventListener("storage", syncToken);
     }
   }, []);
 
-  const handleLogin = (newToken: string) => {
-    if (typeof window !== "undefined") {
-      localStorage.setItem("adminToken", newToken);
-      setToken(newToken);
-    }
-  };
-
-  if (!token) {
-    return (
-      <div className={styles.adminPage}>
-        <div className={styles.adminCard}>
-          <div className={styles.adminCardContent}>
-            {showRegister ? (
-              <>
-                <div className={styles.actionRow}>
-                  <button
-                    type="button"
-                    className={styles.actionButton}
-                    onClick={() => setShowRegister(false)}
-                  >
-                    Back to Login
-                  </button>
-                </div>
-              </>
-            ) : (
-              <>
-                <AdminLogin onLogin={handleLogin} />
-                <div className={styles.actionRow}>
-                </div>
-              </>
-            )}
-          </div>
-        </div>
-      </div>
-    );
-  }
   return (
     <div className={styles.adminPage}>
+      <div className={stylesExpiry.tokenExpiry}>
+        {expiryDisplay ? (
+          <>
+            Token expires: <b>{expiryDisplay}</b>
+          </>
+        ) : (
+          <>Token expiry unknown</>
+        )}
+      </div>
       <div className={styles.adminCard}>
         <div className={styles.adminCardContent}>
           <div className={styles.adminTitle}>Admin: Manage Blogs</div>
-          <AdminBlogList adminToken={token} />
+          <AdminBlogList adminToken={token ?? ""} />
           <div className={styles.actionRow}>
             <button
               type="button"

@@ -1,8 +1,8 @@
 "use client";
+import { logger } from "@/utils/logger";
 import { useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import styles from "./AdminBlogEditor.module.css";
-import { logger } from "@/utils/logger";
 
 interface Blog {
   id?: number;
@@ -11,24 +11,44 @@ interface Blog {
   author: string;
 }
 
+interface AdminBlogEditorProps {
+  blog: Blog | null;
+  onClose: (refresh?: boolean) => void;
+  adminToken: string;
+  forceEmpty?: boolean;
+}
+
 export default function AdminBlogEditor({
   blog,
   onClose,
   adminToken,
-}: {
-  blog: Blog | null;
-  onClose: (refresh?: boolean) => void;
-  adminToken: string;
-}) {
-  const [title, setTitle] = useState(blog?.title || "");
-  const [content, setContent] = useState(blog?.content || "");
-  const [author, setAuthor] = useState(blog?.author || "");
+  forceEmpty = false,
+}: AdminBlogEditorProps) {
+  // Initialize state from blog, or localStorage draft (for new blogs), or empty if forceEmpty
+  const getInitialField = (field: "title" | "content" | "author") => {
+    if (blog) return blog[field] || "";
+    if (forceEmpty) return "";
+    if (typeof window !== "undefined") {
+      const draft = localStorage.getItem("blogDraft");
+      if (draft) {
+        try {
+          const parsed = JSON.parse(draft);
+          return parsed[field] || "";
+        } catch {}
+      }
+    }
+    return "";
+  };
+
+  const [title, setTitle] = useState(() => getInitialField("title"));
+  const [content, setContent] = useState(() => getInitialField("content"));
+  const [author, setAuthor] = useState(() => getInitialField("author"));
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [mediaLoading, setMediaLoading] = useState(false);
-  // Handles file selection from the "Add Media" button (mobile-friendly)
+
   const handleMediaChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
@@ -95,7 +115,20 @@ export default function AdminBlogEditor({
       body: JSON.stringify({ title, content, author }),
     });
     setLoading(false);
+    if (res.status === 401) {
+      // Save draft if token expired
+      localStorage.setItem(
+        "blogDraft",
+        JSON.stringify({ title, content, author }),
+      );
+      setError("Session expired. Your draft is saved. Please log in again.");
+      setTimeout(() => {
+        window.location.href = "/admin/login";
+      }, 1500);
+      return;
+    }
     if (res.ok) {
+      localStorage.removeItem("blogDraft");
       onClose(true);
     } else {
       const data = await res.json();

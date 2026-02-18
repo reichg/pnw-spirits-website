@@ -31,7 +31,7 @@ model Blog {
 
 model Comment {
   id        Int      @id @default(autoincrement())
-  blog      Blog     @relation(fields: [blogId], references: [id])
+  blog      Blog     @relation(fields: [blogId], references: [id], onDelete: Cascade)
   blogId    Int
   name      String
   comment   String
@@ -40,7 +40,7 @@ model Comment {
 
 model Reaction {
   id        Int      @id @default(autoincrement())
-  blog      Blog     @relation(fields: [blogId], references: [id])
+  blog      Blog     @relation(fields: [blogId], references: [id], onDelete: Cascade)
   blogId    Int
   type      String
   count     Int      @default(1)

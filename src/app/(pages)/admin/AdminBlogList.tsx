@@ -50,11 +50,23 @@ export default function AdminBlogList({ adminToken }: { adminToken: string }) {
   const [error, setError] = useState("");
   const [editing, setEditing] = useState<Blog | null>(null);
   const [showEditor, setShowEditor] = useState(false);
+  const [forceEmpty, setForceEmpty] = useState(false);
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
+  const [hasDraft, setHasDraft] = useState(false);
   const pageSize = 10;
   const totalPages = Math.ceil(total / pageSize);
-  // removed scroll-to-top ref
+
+  // Check for blog draft in localStorage
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      setHasDraft(!!localStorage.getItem("blogDraft"));
+      // Listen for changes to localStorage (e.g., draft removed after save)
+      const syncDraft = () => setHasDraft(!!localStorage.getItem("blogDraft"));
+      window.addEventListener("storage", syncDraft);
+      return () => window.removeEventListener("storage", syncDraft);
+    }
+  }, []);
 
   const fetchBlogs = async () => {
     setLoading(true);
@@ -76,8 +88,6 @@ export default function AdminBlogList({ adminToken }: { adminToken: string }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page]);
 
-  // removed scroll-to-top effect
-
   const handleEdit = (blog: Blog) => {
     setEditing(blog);
     setShowEditor(true);
@@ -94,22 +104,56 @@ export default function AdminBlogList({ adminToken }: { adminToken: string }) {
 
   const handleCreate = () => {
     setEditing(null);
+    setForceEmpty(true);
+    setShowEditor(true);
+  };
+
+  const handleContinueDraft = () => {
+    setEditing(null); // new blog, but draft will be loaded by editor
+    setForceEmpty(false);
     setShowEditor(true);
   };
 
   const handleEditorClose = (refresh = false) => {
     setShowEditor(false);
     setEditing(null);
+    setForceEmpty(false);
+    // Update hasDraft immediately in case the draft was removed on save
+    if (typeof window !== "undefined") {
+      setHasDraft(!!localStorage.getItem("blogDraft"));
+    }
     if (refresh) fetchBlogs();
   };
 
   return (
     <>
-      {/* removed scroll-to-top ref div */}
       <div className={styles.container}>
-        <button className={styles.newBtn} onClick={handleCreate}>
-          + New Blog
-        </button>
+        <div className={styles.actionRow}>
+          <button className={styles.newBtn} onClick={handleCreate}>
+            New Blog
+          </button>
+          {hasDraft && (
+            <button
+              className={styles.continueDraftBtn}
+              onClick={handleContinueDraft}
+              style={{
+                background: "var(--accent-gold)",
+                color: "var(--pnw-forest)",
+                fontWeight: 600,
+                borderRadius: 8,
+                padding: "0.5em 1.2em",
+                fontFamily: "Geist, Inter, sans-serif",
+                fontSize: "1em",
+                boxShadow: "0 1px 4px rgba(35, 66, 54, 0.08)",
+                border: "none",
+                cursor: "pointer",
+                transition: "background 0.2s, color 0.2s, box-shadow 0.2s",
+              }}
+            >
+              Continue Draft
+            </button>
+          )}
+        </div>
         {loading && <div>Loading...</div>}
         {error && <div className={styles.error}>{error}</div>}
         <ul className={styles.list}>
@@ -148,6 +192,7 @@ export default function AdminBlogList({ adminToken }: { adminToken: string }) {
           blog={editing}
           onClose={handleEditorClose}
           adminToken={adminToken}
+          forceEmpty={forceEmpty}
         />
       )}
     </>

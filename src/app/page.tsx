@@ -1,4 +1,5 @@
 import SubscribeForm from "@/components/Subscriber/SubscribeForm";
+import Image from "next/image";
 import Link from "next/link";
 import landingStyles from "./LandingPage.module.css";
 
@@ -61,16 +62,51 @@ export default function Home() {
       <section className={landingStyles.landingTwoColSection}>
         <div className={landingStyles.landingTwoColRow}>
           <div className={landingStyles.landingTwoColImg}>
-            <img
+            {/* Preload background images for four-column section */}
+            <Image
               src="/images/Improved.jpg"
               alt="Sign up"
+              width={600}
+              height={400}
               style={{
                 width: "100%",
                 height: "100%",
                 objectFit: "cover",
                 borderRadius: 18,
               }}
+              priority
             />
+            {/* Hidden preloads for background images */}
+            <div style={{ display: "none" }}>
+              <Image
+                src="/images/Martini.jpg"
+                alt="Preload Martini"
+                width={10}
+                height={10}
+                priority
+              />
+              <Image
+                src="/images/Daq.jpg"
+                alt="Preload Daq"
+                width={10}
+                height={10}
+                priority
+              />
+              <Image
+                src="/images/HighFive.jpg"
+                alt="Preload HighFive"
+                width={10}
+                height={10}
+                priority
+              />
+              <Image
+                src="/images/Vermouth.jpg"
+                alt="Preload Vermouth"
+                width={10}
+                height={10}
+                priority
+              />
+            </div>
           </div>
           <div className={landingStyles.landingTwoColForm}>
             <SubscribeForm />

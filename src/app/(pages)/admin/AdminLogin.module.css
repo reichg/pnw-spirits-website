@@ -73,7 +73,7 @@
 @media (max-width: 600px) {
   .form {
     max-width: 96vw;
-    padding: 18px 8px;
+    padding: 18px 18px;
     border-radius: 10px;
   }
   .heading {

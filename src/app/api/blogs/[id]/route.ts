@@ -1,5 +1,6 @@
 import { requireAdmin } from "@/utils/auth";
 import prisma from "@/utils/prisma";
+import redis from "@/utils/redisClient";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(
@@ -59,6 +60,13 @@ export async function DELETE(
   const parsedId = parseInt(id, 10);
   if (isNaN(parsedId))
     return NextResponse.json({ error: "Invalid blog id" }, { status: 400 });
+  const blog = await prisma.blog.findUnique({ where: { id: parsedId } });
+  if (!blog) {
+    return NextResponse.json({ error: "Blog not found" }, { status: 404 });
+  }
   await prisma.blog.delete({ where: { id: parsedId } });
+  // Invalidate all blog list cache entries in Redis
+  const keys = await redis.keys("blogs:*");
+  if (keys.length > 0) await redis.del(...keys);
   return NextResponse.json({ message: "Blog deleted" });
 }

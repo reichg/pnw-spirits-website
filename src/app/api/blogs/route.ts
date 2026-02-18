@@ -1,5 +1,6 @@
 // API route for /api/blogs
 
+import { requireAdmin } from "@/utils/auth";
 import { logger } from "@/utils/logger";
 import prisma from "@/utils/prisma";
 import redis from "@/utils/redisClient";
@@ -49,6 +50,8 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
+  const authResult = requireAdmin(req);
+  if (authResult) return authResult;
   try {
     const data = await req.json();
     // Check if data is an array (batch create) or single object

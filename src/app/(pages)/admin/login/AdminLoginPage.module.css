@@ -1,0 +1,19 @@
+.loginPageContainer {
+  min-height: calc(100vh - 56px - 105px);
+  display: flex;
+  flex-direction: column;
+  background: var(--background);
+}
+
+.loginPageContent {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@media (max-width: 900px) {
+  .loginPageContainer {
+    min-height: calc(100vh - 98px - 110px);
+  }   
+}

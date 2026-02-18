@@ -1,4 +1,5 @@
 "use client";
+import Image from "next/image";
 import { useEffect, useState } from "react";
 import styles from "./VideoList.module.css";
 
@@ -39,10 +40,14 @@ const VideoList = () => {
       {videos.length === 0 && <div>No videos yet.</div>}
       {videos.map((video) => (
         <div className={styles.videoCard} key={video.id}>
-          <img
+          <Image
             className={styles.videoThumb}
             src={video.thumbnail}
             alt={video.title}
+            width={320}
+            height={180}
+            style={{ objectFit: "cover", borderRadius: 12 }}
+            loading="lazy"
           />
           <div className={styles.videoTitle}>{video.title}</div>
           <div className={styles.videoMeta}>

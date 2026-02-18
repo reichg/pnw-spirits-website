@@ -1,3 +1,24 @@
+.continueDraftBtn {
+  background: var(--accent-gold);
+  color: var(--pnw-forest);
+  font-weight: 600;
+  border-radius: 8px;
+  padding: 0.5em 1.2em;
+  font-family: "Geist", "Inter", sans-serif;
+  font-size: 1em;
+  box-shadow: 0 1px 4px rgba(35, 66, 54, 0.08);
+  border: none;
+  cursor: pointer;
+  transition:
+    background 0.2s,
+    color 0.2s,
+    box-shadow 0.2s;
+  margin-left: 0.2em;
+}
+.continueDraftBtn:hover {
+  background: var(--pnw-copper);
+  color: var(--pnw-cream);
+}
 .pagination {
   display: flex;
   flex-wrap: nowrap;
