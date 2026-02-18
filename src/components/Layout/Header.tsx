@@ -7,7 +7,7 @@ import styles from "./Header.module.css";
 
 const navLinks = [
   { href: "/", label: "Home" },
-  { href: "/blogs", label: "Blogs" },
+  { href: "/blogs-landing", label: "Blogs" },
   { href: "/videos", label: "Videos" },
   { href: "/about", label: "About" },
   { href: "/contact", label: "Contact" },

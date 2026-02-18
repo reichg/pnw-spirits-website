@@ -1,0 +1,23 @@
+.blogsLandingRoot {
+  min-height: 100vh;
+  width: 100vw;
+  background: linear-gradient(
+    120deg,
+    var(--color-bg-primary) 60%,
+    #1a1310 100%
+  );
+  background-color: #1a1310;
+  /* Deep, warm brown-black for speakeasy vibe */
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: flex-start;
+  padding: 2.5rem 2.5rem;
+}
+
+@media (max-width: 900px) {
+  .blogsLandingRoot {
+    padding: 1.5rem 1.5rem;
+    min-height: 100svh;
+  }
+}
