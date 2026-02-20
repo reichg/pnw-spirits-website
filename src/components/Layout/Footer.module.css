@@ -9,17 +9,17 @@
 }
 .adminFooterLink:hover {
   opacity: 1;
-  color: var(--pnw-gold);
+  color: var(--color-accent-primary);
 }
 .footer {
   width: 100%;
   background: rgba(11, 11, 11, 0.95);
-  color: var(--pnw-cream);
+  color: var(--color-bg-primary);
   padding: 2em 0 1em 0;
   text-align: center;
   font-size: 1.05em;
   font-family: "Geist", Arial, Helvetica, sans-serif;
-  box-shadow: 0 -2px 12px rgba(35, 66, 54, 0.08);
+  box-shadow: 0 -2px 12px rgba(45, 35, 32, 0.08);
 }
 
 .footerLinks {
@@ -30,17 +30,17 @@
 }
 
 .footerLink {
-  color: var(--pnw-cream);
+  color: var(--color-bg-primary);
   text-decoration: underline;
   font-weight: 500;
   transition: color 0.2s;
 }
 .footerLink:hover {
-  color: var(--pnw-gold);
+  color: var(--color-accent-primary);
 }
 
 .copyright {
-  color: var(--accent-sand);
+  color: var(--color-accent-light);
   font-size: 0.95em;
   margin-top: 0.5em;
 }

@@ -136,19 +136,6 @@ export default function AdminBlogList({ adminToken }: { adminToken: string }) {
             <button
               className={styles.continueDraftBtn}
               onClick={handleContinueDraft}
-              style={{
-                background: "var(--accent-gold)",
-                color: "var(--pnw-forest)",
-                fontWeight: 600,
-                borderRadius: 8,
-                padding: "0.5em 1.2em",
-                fontFamily: "Geist, Inter, sans-serif",
-                fontSize: "1em",
-                boxShadow: "0 1px 4px rgba(35, 66, 54, 0.08)",
-                border: "none",
-                cursor: "pointer",
-                transition: "background 0.2s, color 0.2s, box-shadow 0.2s",
-              }}
             >
               Continue Draft
             </button>

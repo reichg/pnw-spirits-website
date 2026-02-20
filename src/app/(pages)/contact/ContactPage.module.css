@@ -3,7 +3,7 @@
   min-height: calc(var(--vh, 1vh) * 100);
   font-family: var(--font-geist-sans);
   padding: 64px 16px 64px 16px;
-  background: rgb(12, 11, 11);
+  background: var(--color-bg-deep);
 }
 
 .main {
@@ -19,28 +19,28 @@
 .heading {
   font-size: 2.2em;
   font-weight: 700;
-  color: var(--pnw-forest);
+  color: var(--color-accent-primary);
   margin-bottom: 1em;
   text-align: center;
 }
 
 .text {
   font-size: 1.18em;
-  color: var(--pnw-forest);
-  background: rgba(245, 243, 231, 0.92);
+  color: var(--color-text-primary);
+  background: rgba(245, 233, 218, 0.92); /* --color-bg-warm with opacity */
   border-radius: 12px;
-  box-shadow: 0 2px 16px 0 rgba(35, 66, 54, 0.07);
+  box-shadow: 0 2px 16px 0 rgba(45, 35, 32, 0.07); /* --color-bg-deep with opacity */
   max-width: 650px;
   padding: 1.5em 1.2em;
   text-align: center;
   line-height: 1.7;
   text-shadow:
-    0 1px 0 var(--pnw-cream),
-    0 2px 8px rgba(35, 66, 54, 0.08);
+    0 1px 0 var(--color-bg-soft),
+    0 2px 8px rgba(45, 35, 32, 0.08); /* --color-bg-deep with opacity */
 }
 
 .email {
-  color: var(--pnw-copper);
+  color: var(--color-accent-primary);
   text-decoration: underline;
 }
 

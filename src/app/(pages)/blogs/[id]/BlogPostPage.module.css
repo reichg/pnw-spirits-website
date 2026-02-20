@@ -8,10 +8,10 @@
 
 .main {
   min-height: 100%;
-  background: var(--pnw-cream);
+  background: var(--color-bg-soft);
   border-radius: 16px;
-  box-shadow: 0 2px 12px rgba(35, 66, 54, 0.09);
-  border: 1.5px solid var(--pnw-copper);
+  box-shadow: 0 2px 12px rgba(45, 35, 32, 0.09);
+  border: 1.5px solid var(--color-accent-primary);
   max-width: 700px;
   width: 90vw;
   padding: 2.5em 2em 2em 2em;
@@ -22,7 +22,7 @@
 }
 
 .title {
-  color: var(--pnw-copper);
+  color: var(--color-accent-primary);
   font-family: "Geist", "Inter", sans-serif;
   font-size: 2.2rem;
   font-weight: 700;
@@ -31,10 +31,10 @@
 }
 
 .meta {
-  color: var(--pnw-forest);
+  color: var(--color-accent-secondary);
   font-size: 1.05em;
   margin-bottom: 1.5em;
-  font-family: var(--font-sans, "Geist", "Inter", sans-serif);
+  font-family: "Geist", "Inter", sans-serif;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -50,7 +50,7 @@
 }
 
 .content {
-  color: var(--pnw-charcoal);
+  color: var(--color-text-primary);
   font-size: 1.18em;
   line-height: 1.7;
   font-family: "Geist", "Inter", sans-serif;
@@ -60,8 +60,8 @@
   display: block;
   border-radius: 8px;
   margin: 1.2em 0;
-  box-shadow: 0 2px 8px rgba(35, 66, 54, 0.1);
-  background: var(--pnw-cream, #f8f5f2);
+  box-shadow: 0 2px 8px rgba(45, 35, 32, 0.1);
+  background: var(--color-bg-soft);
 }
 
 .content img {
@@ -70,8 +70,8 @@
   border-radius: 8px;
   margin: 1.2em 0;
   display: block;
-  box-shadow: 0 2px 8px rgba(35, 66, 54, 0.1);
-  background: var(--pnw-cream, #f8f5f2);
+  box-shadow: 0 2px 8px rgba(45, 35, 32, 0.1);
+  background: var(--color-bg-soft);
 }
 
 @media (max-width: 600px) {

@@ -2319,6 +2319,7 @@ export namespace Prisma {
     title: string | null
     content: string | null
     author: string | null
+    coverPhoto: string | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -2328,6 +2329,7 @@ export namespace Prisma {
     title: string | null
     content: string | null
     author: string | null
+    coverPhoto: string | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -2337,6 +2339,7 @@ export namespace Prisma {
     title: number
     content: number
     author: number
+    coverPhoto: number
     createdAt: number
     updatedAt: number
     _all: number
@@ -2356,6 +2359,7 @@ export namespace Prisma {
     title?: true
     content?: true
     author?: true
+    coverPhoto?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -2365,6 +2369,7 @@ export namespace Prisma {
     title?: true
     content?: true
     author?: true
+    coverPhoto?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -2374,6 +2379,7 @@ export namespace Prisma {
     title?: true
     content?: true
     author?: true
+    coverPhoto?: true
     createdAt?: true
     updatedAt?: true
     _all?: true
@@ -2470,6 +2476,7 @@ export namespace Prisma {
     title: string
     content: string
     author: string
+    coverPhoto: string | null
     createdAt: Date
     updatedAt: Date
     _count: BlogCountAggregateOutputType | null
@@ -2498,6 +2505,7 @@ export namespace Prisma {
     title?: boolean
     content?: boolean
     author?: boolean
+    coverPhoto?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     comments?: boolean | Blog$commentsArgs<ExtArgs>
@@ -2510,6 +2518,7 @@ export namespace Prisma {
     title?: boolean
     content?: boolean
     author?: boolean
+    coverPhoto?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }, ExtArgs["result"]["blog"]>
@@ -2519,6 +2528,7 @@ export namespace Prisma {
     title?: boolean
     content?: boolean
     author?: boolean
+    coverPhoto?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }, ExtArgs["result"]["blog"]>
@@ -2528,11 +2538,12 @@ export namespace Prisma {
     title?: boolean
     content?: boolean
     author?: boolean
+    coverPhoto?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
 
-  export type BlogOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "title" | "content" | "author" | "createdAt" | "updatedAt", ExtArgs["result"]["blog"]>
+  export type BlogOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "title" | "content" | "author" | "coverPhoto" | "createdAt" | "updatedAt", ExtArgs["result"]["blog"]>
   export type BlogInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     comments?: boolean | Blog$commentsArgs<ExtArgs>
     reactions?: boolean | Blog$reactionsArgs<ExtArgs>
@@ -2552,6 +2563,7 @@ export namespace Prisma {
       title: string
       content: string
       author: string
+      coverPhoto: string | null
       createdAt: Date
       updatedAt: Date
     }, ExtArgs["result"]["blog"]>
@@ -2983,6 +2995,7 @@ export namespace Prisma {
     readonly title: FieldRef<"Blog", 'String'>
     readonly content: FieldRef<"Blog", 'String'>
     readonly author: FieldRef<"Blog", 'String'>
+    readonly coverPhoto: FieldRef<"Blog", 'String'>
     readonly createdAt: FieldRef<"Blog", 'DateTime'>
     readonly updatedAt: FieldRef<"Blog", 'DateTime'>
   }
@@ -6681,6 +6694,7 @@ export namespace Prisma {
     title: 'title',
     content: 'content',
     author: 'author',
+    coverPhoto: 'coverPhoto',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
   };
@@ -6734,6 +6748,14 @@ export namespace Prisma {
   };
 
   export type QueryMode = (typeof QueryMode)[keyof typeof QueryMode]
+
+
+  export const NullsOrder: {
+    first: 'first',
+    last: 'last'
+  };
+
+  export type NullsOrder = (typeof NullsOrder)[keyof typeof NullsOrder]
 
 
   /**
@@ -6862,6 +6884,7 @@ export namespace Prisma {
     title?: StringFilter<"Blog"> | string
     content?: StringFilter<"Blog"> | string
     author?: StringFilter<"Blog"> | string
+    coverPhoto?: StringNullableFilter<"Blog"> | string | null
     createdAt?: DateTimeFilter<"Blog"> | Date | string
     updatedAt?: DateTimeFilter<"Blog"> | Date | string
     comments?: CommentListRelationFilter
@@ -6873,6 +6896,7 @@ export namespace Prisma {
     title?: SortOrder
     content?: SortOrder
     author?: SortOrder
+    coverPhoto?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     comments?: CommentOrderByRelationAggregateInput
@@ -6887,6 +6911,7 @@ export namespace Prisma {
     title?: StringFilter<"Blog"> | string
     content?: StringFilter<"Blog"> | string
     author?: StringFilter<"Blog"> | string
+    coverPhoto?: StringNullableFilter<"Blog"> | string | null
     createdAt?: DateTimeFilter<"Blog"> | Date | string
     updatedAt?: DateTimeFilter<"Blog"> | Date | string
     comments?: CommentListRelationFilter
@@ -6898,6 +6923,7 @@ export namespace Prisma {
     title?: SortOrder
     content?: SortOrder
     author?: SortOrder
+    coverPhoto?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     _count?: BlogCountOrderByAggregateInput
@@ -6915,6 +6941,7 @@ export namespace Prisma {
     title?: StringWithAggregatesFilter<"Blog"> | string
     content?: StringWithAggregatesFilter<"Blog"> | string
     author?: StringWithAggregatesFilter<"Blog"> | string
+    coverPhoto?: StringNullableWithAggregatesFilter<"Blog"> | string | null
     createdAt?: DateTimeWithAggregatesFilter<"Blog"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Blog"> | Date | string
   }
@@ -7139,6 +7166,7 @@ export namespace Prisma {
     title: string
     content: string
     author: string
+    coverPhoto?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     comments?: CommentCreateNestedManyWithoutBlogInput
@@ -7150,6 +7178,7 @@ export namespace Prisma {
     title: string
     content: string
     author: string
+    coverPhoto?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     comments?: CommentUncheckedCreateNestedManyWithoutBlogInput
@@ -7160,6 +7189,7 @@ export namespace Prisma {
     title?: StringFieldUpdateOperationsInput | string
     content?: StringFieldUpdateOperationsInput | string
     author?: StringFieldUpdateOperationsInput | string
+    coverPhoto?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     comments?: CommentUpdateManyWithoutBlogNestedInput
@@ -7171,6 +7201,7 @@ export namespace Prisma {
     title?: StringFieldUpdateOperationsInput | string
     content?: StringFieldUpdateOperationsInput | string
     author?: StringFieldUpdateOperationsInput | string
+    coverPhoto?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     comments?: CommentUncheckedUpdateManyWithoutBlogNestedInput
@@ -7182,6 +7213,7 @@ export namespace Prisma {
     title: string
     content: string
     author: string
+    coverPhoto?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -7190,6 +7222,7 @@ export namespace Prisma {
     title?: StringFieldUpdateOperationsInput | string
     content?: StringFieldUpdateOperationsInput | string
     author?: StringFieldUpdateOperationsInput | string
+    coverPhoto?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -7199,6 +7232,7 @@ export namespace Prisma {
     title?: StringFieldUpdateOperationsInput | string
     content?: StringFieldUpdateOperationsInput | string
     author?: StringFieldUpdateOperationsInput | string
+    coverPhoto?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -7470,6 +7504,21 @@ export namespace Prisma {
     _max?: NestedDateTimeFilter<$PrismaModel>
   }
 
+  export type StringNullableFilter<$PrismaModel = never> = {
+    equals?: string | StringFieldRefInput<$PrismaModel> | null
+    in?: string[] | ListStringFieldRefInput<$PrismaModel> | null
+    notIn?: string[] | ListStringFieldRefInput<$PrismaModel> | null
+    lt?: string | StringFieldRefInput<$PrismaModel>
+    lte?: string | StringFieldRefInput<$PrismaModel>
+    gt?: string | StringFieldRefInput<$PrismaModel>
+    gte?: string | StringFieldRefInput<$PrismaModel>
+    contains?: string | StringFieldRefInput<$PrismaModel>
+    startsWith?: string | StringFieldRefInput<$PrismaModel>
+    endsWith?: string | StringFieldRefInput<$PrismaModel>
+    mode?: QueryMode
+    not?: NestedStringNullableFilter<$PrismaModel> | string | null
+  }
+
   export type CommentListRelationFilter = {
     every?: CommentWhereInput
     some?: CommentWhereInput
@@ -7480,6 +7529,11 @@ export namespace Prisma {
     every?: ReactionWhereInput
     some?: ReactionWhereInput
     none?: ReactionWhereInput
+  }
+
+  export type SortOrderInput = {
+    sort: SortOrder
+    nulls?: NullsOrder
   }
 
   export type CommentOrderByRelationAggregateInput = {
@@ -7495,6 +7549,7 @@ export namespace Prisma {
     title?: SortOrder
     content?: SortOrder
     author?: SortOrder
+    coverPhoto?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -7508,6 +7563,7 @@ export namespace Prisma {
     title?: SortOrder
     content?: SortOrder
     author?: SortOrder
+    coverPhoto?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -7517,12 +7573,31 @@ export namespace Prisma {
     title?: SortOrder
     content?: SortOrder
     author?: SortOrder
+    coverPhoto?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
 
   export type BlogSumOrderByAggregateInput = {
     id?: SortOrder
+  }
+
+  export type StringNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: string | StringFieldRefInput<$PrismaModel> | null
+    in?: string[] | ListStringFieldRefInput<$PrismaModel> | null
+    notIn?: string[] | ListStringFieldRefInput<$PrismaModel> | null
+    lt?: string | StringFieldRefInput<$PrismaModel>
+    lte?: string | StringFieldRefInput<$PrismaModel>
+    gt?: string | StringFieldRefInput<$PrismaModel>
+    gte?: string | StringFieldRefInput<$PrismaModel>
+    contains?: string | StringFieldRefInput<$PrismaModel>
+    startsWith?: string | StringFieldRefInput<$PrismaModel>
+    endsWith?: string | StringFieldRefInput<$PrismaModel>
+    mode?: QueryMode
+    not?: NestedStringNullableWithAggregatesFilter<$PrismaModel> | string | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedStringNullableFilter<$PrismaModel>
+    _max?: NestedStringNullableFilter<$PrismaModel>
   }
 
   export type BlogScalarRelationFilter = {
@@ -7671,6 +7746,10 @@ export namespace Prisma {
     connectOrCreate?: ReactionCreateOrConnectWithoutBlogInput | ReactionCreateOrConnectWithoutBlogInput[]
     createMany?: ReactionCreateManyBlogInputEnvelope
     connect?: ReactionWhereUniqueInput | ReactionWhereUniqueInput[]
+  }
+
+  export type NullableStringFieldUpdateOperationsInput = {
+    set?: string | null
   }
 
   export type CommentUpdateManyWithoutBlogNestedInput = {
@@ -7851,6 +7930,48 @@ export namespace Prisma {
     _max?: NestedDateTimeFilter<$PrismaModel>
   }
 
+  export type NestedStringNullableFilter<$PrismaModel = never> = {
+    equals?: string | StringFieldRefInput<$PrismaModel> | null
+    in?: string[] | ListStringFieldRefInput<$PrismaModel> | null
+    notIn?: string[] | ListStringFieldRefInput<$PrismaModel> | null
+    lt?: string | StringFieldRefInput<$PrismaModel>
+    lte?: string | StringFieldRefInput<$PrismaModel>
+    gt?: string | StringFieldRefInput<$PrismaModel>
+    gte?: string | StringFieldRefInput<$PrismaModel>
+    contains?: string | StringFieldRefInput<$PrismaModel>
+    startsWith?: string | StringFieldRefInput<$PrismaModel>
+    endsWith?: string | StringFieldRefInput<$PrismaModel>
+    not?: NestedStringNullableFilter<$PrismaModel> | string | null
+  }
+
+  export type NestedStringNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: string | StringFieldRefInput<$PrismaModel> | null
+    in?: string[] | ListStringFieldRefInput<$PrismaModel> | null
+    notIn?: string[] | ListStringFieldRefInput<$PrismaModel> | null
+    lt?: string | StringFieldRefInput<$PrismaModel>
+    lte?: string | StringFieldRefInput<$PrismaModel>
+    gt?: string | StringFieldRefInput<$PrismaModel>
+    gte?: string | StringFieldRefInput<$PrismaModel>
+    contains?: string | StringFieldRefInput<$PrismaModel>
+    startsWith?: string | StringFieldRefInput<$PrismaModel>
+    endsWith?: string | StringFieldRefInput<$PrismaModel>
+    not?: NestedStringNullableWithAggregatesFilter<$PrismaModel> | string | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedStringNullableFilter<$PrismaModel>
+    _max?: NestedStringNullableFilter<$PrismaModel>
+  }
+
+  export type NestedIntNullableFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel> | null
+    in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    notIn?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntNullableFilter<$PrismaModel> | number | null
+  }
+
   export type CommentCreateWithoutBlogInput = {
     name: string
     comment: string
@@ -7952,6 +8073,7 @@ export namespace Prisma {
     title: string
     content: string
     author: string
+    coverPhoto?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     reactions?: ReactionCreateNestedManyWithoutBlogInput
@@ -7962,6 +8084,7 @@ export namespace Prisma {
     title: string
     content: string
     author: string
+    coverPhoto?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     reactions?: ReactionUncheckedCreateNestedManyWithoutBlogInput
@@ -7987,6 +8110,7 @@ export namespace Prisma {
     title?: StringFieldUpdateOperationsInput | string
     content?: StringFieldUpdateOperationsInput | string
     author?: StringFieldUpdateOperationsInput | string
+    coverPhoto?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     reactions?: ReactionUpdateManyWithoutBlogNestedInput
@@ -7997,6 +8121,7 @@ export namespace Prisma {
     title?: StringFieldUpdateOperationsInput | string
     content?: StringFieldUpdateOperationsInput | string
     author?: StringFieldUpdateOperationsInput | string
+    coverPhoto?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     reactions?: ReactionUncheckedUpdateManyWithoutBlogNestedInput
@@ -8006,6 +8131,7 @@ export namespace Prisma {
     title: string
     content: string
     author: string
+    coverPhoto?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     comments?: CommentCreateNestedManyWithoutBlogInput
@@ -8016,6 +8142,7 @@ export namespace Prisma {
     title: string
     content: string
     author: string
+    coverPhoto?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     comments?: CommentUncheckedCreateNestedManyWithoutBlogInput
@@ -8041,6 +8168,7 @@ export namespace Prisma {
     title?: StringFieldUpdateOperationsInput | string
     content?: StringFieldUpdateOperationsInput | string
     author?: StringFieldUpdateOperationsInput | string
+    coverPhoto?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     comments?: CommentUpdateManyWithoutBlogNestedInput
@@ -8051,6 +8179,7 @@ export namespace Prisma {
     title?: StringFieldUpdateOperationsInput | string
     content?: StringFieldUpdateOperationsInput | string
     author?: StringFieldUpdateOperationsInput | string
+    coverPhoto?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     comments?: CommentUncheckedUpdateManyWithoutBlogNestedInput

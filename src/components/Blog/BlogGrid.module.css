@@ -9,10 +9,10 @@
 }
 
 .articlesTitle {
-  font-family: var(--font-geist-sans), Inter, sans-serif;
+  font-family: "Geist", Inter, sans-serif;
   font-size: 1.5rem;
   font-weight: 700;
-  color: var(--accent);
+  color: var(--color-accent-primary);
   margin-bottom: 2rem;
   letter-spacing: 0.04em;
 }
@@ -30,7 +30,7 @@
 }
 
 .articleCard {
-  background: var(--background);
+  background: var(--color-bg-soft);
   border-radius: 1rem;
   box-shadow: 0 2px 16px rgba(0, 0, 0, 0.1);
   width: 100%;
@@ -51,7 +51,7 @@
   width: 100%;
   height: 180px;
   object-fit: cover;
-  border-bottom: 1px solid var(--pnw-charcoal);
+  border-bottom: 1px solid var(--color-accent-secondary);
 }
 
 .articleContent {
@@ -60,29 +60,29 @@
 }
 
 .articleTitle {
-  font-family: var(--font-geist-sans), Inter, sans-serif;
+  font-family: "Geist", Inter, sans-serif;
   font-size: 1.15rem;
   font-weight: 600;
-  color: var(--accent);
+  color: var(--color-accent-primary);
   margin-bottom: 0.4rem;
 }
 
 .articleMeta {
   font-size: 0.92rem;
-  color: var(--text-secondary);
+  color: var(--color-accent-secondary);
   margin-bottom: 0.6rem;
 }
 
 .articleExcerpt {
   font-size: 1rem;
-  color: var(--text-primary);
+  color: var(--color-text-primary);
   margin-bottom: 1rem;
 }
 
 .readMoreBtn {
-  background: var(--button-bg);
-  color: var(--button-text);
-  font-family: var(--font-geist-sans), Inter, sans-serif;
+  background: var(--color-accent-primary);
+  color: var(--color-bg-primary);
+  font-family: "Geist", Inter, sans-serif;
   font-weight: 600;
   border: none;
   border-radius: 0.7rem;
@@ -92,9 +92,6 @@
   transition: background 0.18s;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
-.readMoreBtn:hover {
-  background: var(--button-hover);
-}
 
 @media (max-width: 900px) {
   .articlesGrid {
@@ -103,7 +100,7 @@
     gap: 1.5rem;
     align-items: center;
     width: 100%;
-    box-sizing: border-box;
+    color: var(--color-accent-secondary);
     overflow-x: hidden;
   }
   .articleCard {

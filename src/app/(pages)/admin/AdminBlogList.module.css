@@ -1,10 +1,10 @@
+/* Cozy, speakeasy-inspired, responsive button for continuing draft */
 .continueDraftBtn {
-  background: var(--accent-gold);
-  color: var(--pnw-forest);
-  font-weight: 600;
-  border-radius: 8px;
+  background: var(--color-accent-primary);
+  color: var(--color-bg-warm);
+  font-weight: 500;
+  border-radius: 4px;
   padding: 0.5em 1.2em;
-  font-family: "Geist", "Inter", sans-serif;
   font-size: 1em;
   box-shadow: 0 1px 4px rgba(35, 66, 54, 0.08);
   border: none;
@@ -16,8 +16,14 @@
   margin-left: 0.2em;
 }
 .continueDraftBtn:hover {
-  background: var(--pnw-copper);
-  color: var(--pnw-cream);
+  background: var(--color-accent-dark);
+  color: var(--color-bg-warm);
+}
+@media (max-width: 600px) {
+  .continueDraftBtn {
+    font-size: 0.95em;
+    padding: 0.4em 0.8em;
+  }
 }
 .pagination {
   display: flex;
@@ -32,8 +38,8 @@
   margin-top: 20px;
 }
 .pageButton {
-  background: var(--pnw-copper);
-  color: var(--pnw-cream);
+  background: var(--color-accent-primary);
+  color: var(--color-bg-warm);
   border: none;
   border-radius: 8px;
   display: flex;
@@ -55,18 +61,18 @@
   white-space: nowrap;
 }
 .pageButton:disabled {
-  background: var(--pnw-cream);
-  color: var(--pnw-copper);
+  background: var(--color-accent-primary);
+  color: var(--color-accent-primary);
   opacity: 0.6;
   cursor: not-allowed;
-  border: 1.5px solid var(--pnw-copper);
+  border: 1.5px solid var(--color-accent-primary);
 }
 .pageButton:not(:disabled):hover {
-  background: var(--accent-gold);
-  color: var(--pnw-forest);
+  background: var(--color-accent-light);
+  color: var(--color-accent-secondary);
 }
 .pageInfo {
-  color: var(--pnw-forest);
+  color: var(--color-accent-secondary);
   font-family: "Geist", "Inter", sans-serif;
   font-size: 1.08em;
   font-weight: 500;
@@ -79,7 +85,7 @@
 .cardHeader {
   margin-bottom: 0.5em;
   padding-bottom: 0.2em;
-  border-bottom: 1px solid var(--accent-sand, #e7d7c1);
+  border-bottom: 1px solid var(--color-bg-soft);
 }
 .cardMeta {
   display: flex;
@@ -88,18 +94,18 @@
   margin-bottom: 0.7em;
 }
 .metaAuthor {
-  font-size: 0.95em;
-  color: var(--pnw-forest, #3d4a3a);
+  color: var(--color-accent-secondary);
+  color: var(--color-accent-secondary, #3d4a3a);
   margin-bottom: 0.1em;
   opacity: 0.8;
-  font-family: var(--font-sans, "Geist", "Inter", sans-serif);
+  font-family: "Geist", "Inter", sans-serif;
 }
 .metaDate {
   font-size: 0.92em;
-  color: var(--accent-gold, #bfa76a);
+  color: var(--color-accent-light);
   margin-bottom: 0.3em;
   opacity: 0.85;
-  font-family: var(--font-sans, "Geist", "Inter", sans-serif);
+  font-family: "Geist", "Inter", sans-serif;
 }
 .container {
   overflow-x: visible;
@@ -133,12 +139,12 @@
 .item {
   background: linear-gradient(
     100deg,
-    var(--pnw-cream) 80%,
-    var(--accent-sand) 100%
+    var(--color-bg-warm) 80%,
+    var(--color-bg-soft) 100%
   );
   border-radius: 18px;
   box-shadow: 0 4px 18px rgba(35, 66, 54, 0.13);
-  border: 1.5px solid var(--pnw-copper);
+  border: 1.5px solid var(--color-accent-primary);
   padding: 1.5em 1.3em 1.3em 1.3em;
   display: flex;
   flex-direction: column;
@@ -151,19 +157,19 @@
 }
 .item:hover {
   box-shadow: 0 10px 32px rgba(35, 66, 54, 0.19);
-  border-color: var(--accent-gold);
+  border-color: var(--color-accent-light);
   transform: translateY(-4px) scale(1.018);
 }
 .title {
   font-weight: 600;
   font-size: 1.04em;
-  color: var(--pnw-copper, #b85c5c);
+  color: var(--color-accent-primary);
   margin-bottom: 0.1em;
-  font-family: var(--font-sans, "Geist", "Inter", sans-serif);
+  font-family: "Geist", "Inter", sans-serif;
 }
 .meta {
   font-size: 0.89em;
-  color: var(--pnw-forest, #3d4a3a);
+  color: var(--color-accent-secondary);
   margin-bottom: 0.3em;
   opacity: 0.7;
 }
@@ -176,7 +182,7 @@
 .editBtn {
   background: none;
   border: none;
-  color: var(--pnw-forest, #3d4a3a);
+  color: var(--color-accent-secondary);
   font-weight: 500;
   font-size: 1em;
   cursor: pointer;
@@ -189,7 +195,7 @@
     color 0.15s;
 }
 .editBtn:hover {
-  background: var(--pnw-copper, #b85c5c);
+  background: var(--color-accent-primary);
   color: #fff;
 }
 .deleteBtn {

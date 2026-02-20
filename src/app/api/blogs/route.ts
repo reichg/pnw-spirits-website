@@ -4,6 +4,7 @@ import { requireAdmin } from "@/utils/auth";
 import { logger } from "@/utils/logger";
 import prisma from "@/utils/prisma";
 import redis from "@/utils/redisClient";
+import { getS3ImageUrl } from "@/utils/s3";
 import { NextRequest, NextResponse } from "next/server";
 import { Prisma } from "../../../../generated/prisma";
 
@@ -33,12 +34,19 @@ export async function GET(req: NextRequest) {
       }
     : {};
 
-  const blogs = await prisma.blog.findMany({
+  const blogsRaw = await prisma.blog.findMany({
     where,
     orderBy: { createdAt: "desc" },
     skip: (page - 1) * pageSize,
     take: pageSize,
   });
+  // Resolve S3 signed URLs for coverPhoto (server-side)
+  const blogs = await Promise.all(
+    blogsRaw.map(async (blog) => ({
+      ...blog,
+      coverPhoto: blog.coverPhoto ? await getS3ImageUrl(blog.coverPhoto) : null,
+    })),
+  );
   const total = await prisma.blog.count({ where });
   const response = { blogs, total, page, pageSize };
   await redis.set(cacheKey, JSON.stringify(response), "EX", 60 * 60); // cache for 60 minutes
@@ -72,12 +80,13 @@ export async function POST(req: NextRequest) {
           { status: 400 },
         );
       }
-      // Use createMany for batch insert
+      // Use createMany for batch insert (coverPhoto is optional)
       const result = await prisma.blog.createMany({
-        data: data.map(({ title, content, author }) => ({
+        data: data.map(({ title, content, author, coverPhoto }) => ({
           title,
           content,
           author,
+          coverPhoto: coverPhoto || null,
         })),
       });
       // Invalidate all blog list cache entries in Redis
@@ -85,15 +94,17 @@ export async function POST(req: NextRequest) {
       if (keys.length > 0) await redis.del(...keys);
       return NextResponse.json({ count: result.count }, { status: 201 });
     } else {
-      const { title, content, author } = data;
+      // Accept coverPhoto (URL or file reference) in single create
+      const { title, content, author, coverPhoto } = data;
       if (!title || !content || !author) {
         return NextResponse.json(
           { error: "Missing required fields" },
           { status: 400 },
         );
       }
+      // Store coverPhoto if provided, else null
       const blog = await prisma.blog.create({
-        data: { title, content, author },
+        data: { title, content, author, coverPhoto: coverPhoto || null },
       });
       // Invalidate all blog list cache entries in Redis
       const keys = await redis.keys("blogs:*");

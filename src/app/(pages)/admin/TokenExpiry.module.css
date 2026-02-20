@@ -1,6 +1,6 @@
 .tokenExpiry {
-  background: var(--pnw-cream, #f8f5f2);
-  color: var(--pnw-brown, #5a3a1b);
+  background: var(--color-bg-warm, #f8f5f2);
+  color: var(--color-accent-dark, #5a3a1b);
   font-family: "Geist", "Inter", sans-serif;
   font-size: 1rem;
   font-weight: 500;

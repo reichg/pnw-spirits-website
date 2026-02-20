@@ -29,16 +29,16 @@
 .landingHeroTitle {
   font-size: 3.2em;
   font-weight: 700;
-  color: var(--pnw-cream);
+  color: var(--color-bg-primary);
   margin-bottom: 0.5em;
-  font-family: var(--font-geist-sans), Inter, sans-serif;
+  font-family: "Geist", Inter, sans-serif;
   letter-spacing: 1.5px;
   text-shadow: 0 4px 24px rgba(0, 0, 0, 0.18);
 }
 .landingHeroBrand {
   font-size: 1.5em;
-  color: var(--pnw-gold);
-  font-family: var(--font-geist-sans), Inter, sans-serif;
+  color: var(--color-accent-primary);
+  font-family: "Geist", Inter, sans-serif;
   margin-bottom: 1.5em;
   letter-spacing: 2px;
   text-shadow: 0 2px 8px rgba(0, 0, 0, 0.13);
@@ -46,7 +46,7 @@
 
 .landingFourColSection {
   width: 100vw;
-  background: rgb(12, 11, 11);
+  background: var(--color-bg-deep);
   padding: 3em 0 2.5em 0;
   display: flex;
   justify-content: center;
@@ -80,7 +80,7 @@
   transition:
     transform 0.18s,
     box-shadow 0.18s;
-  font-family: var(--font-geist-sans), Inter, sans-serif;
+  font-family: "Geist", Inter, sans-serif;
   overflow: hidden;
 }
 .landingFourColCard:hover {
@@ -93,14 +93,14 @@
   text-align: center;
   font-size: 1.15em;
   font-weight: 700;
-  color: var(--pnw-copper);
+  color: var(--color-accent-primary);
   margin: 0.7em 0 1.2em 0;
-  font-family: var(--font-geist-sans), Inter, sans-serif;
+  font-family: "Geist", Inter, sans-serif;
 }
 
 .landingTwoColSection {
   width: 100vw;
-  background: rgba(6, 23, 18, 0.956);
+  background: var(--color-bg-deep);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -120,13 +120,13 @@
   min-width: 260px;
   max-width: 420px;
   height: 320px;
-  background: var(--pnw-mist);
+  background: var(--color-bg-soft);
   border-radius: 18px;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 2em;
-  color: var(--pnw-forest);
+  color: var(--color-accent-secondary);
   font-weight: 600;
 }
 .landingTwoColForm {
@@ -141,10 +141,10 @@
 @media (max-width: 900px) {
   .landingFourColRow,
   .landingTwoColRow {
-     flex-direction: column;
-      flex-wrap: wrap;
-      gap: 1.5em;
-      align-items: center;
+    flex-direction: column;
+    flex-wrap: wrap;
+    gap: 1.5em;
+    align-items: center;
   }
   .landingFourColCard,
   .landingTwoColImg,

@@ -3,7 +3,7 @@
   min-height: calc(var(--vh, 1vh) * 100);
   flex-direction: column;
   padding: 64px;
-  background: rgb(12, 11, 11);
+  background: var(--color-bg-deep);
 }
 
 .main {
@@ -19,7 +19,7 @@
 .heading {
   font-size: 2.2em;
   font-weight: 700;
-  color: var(--pnw-forest);
+  color: var(--color-accent-primary);
   margin-bottom: 1em;
   text-align: center;
 }

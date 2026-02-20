@@ -1,6 +1,7 @@
 import { requireAdmin } from "@/utils/auth";
 import prisma from "@/utils/prisma";
 import redis from "@/utils/redisClient";
+import { getS3ImageUrl } from "@/utils/s3";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(
@@ -14,7 +15,11 @@ export async function GET(
   const blog = await prisma.blog.findUnique({ where: { id: parsedId } });
   if (!blog)
     return NextResponse.json({ error: "Blog not found" }, { status: 404 });
-  return NextResponse.json(blog);
+  // Resolve coverPhoto to signed S3 URL if present
+  const coverPhotoUrl = blog.coverPhoto
+    ? await getS3ImageUrl(blog.coverPhoto)
+    : null;
+  return NextResponse.json({ ...blog, coverPhoto: coverPhotoUrl });
 }
 
 export async function PUT(
@@ -30,17 +35,21 @@ export async function PUT(
       return NextResponse.json({ error: "Invalid blog id" }, { status: 400 });
     const data = await req.json();
     console.log("[PUT /api/blogs/:id] Incoming data:", data);
-    const { title, content, author } = data;
+    const { title, content, author, coverPhoto } = data;
     console.log("[PUT /api/blogs/:id] Before prisma.blog.update");
     const updated = await prisma.blog.update({
       where: { id: parsedId },
-      data: { title, content, author },
+      data: { title, content, author, coverPhoto },
     });
     console.log("[PUT /api/blogs/:id] After prisma.blog.update", updated);
     // Invalidate all blog list cache entries in Redis
     const keys = await redis.keys("blogs:*");
     if (keys.length > 0) await redis.del(...keys);
-    return NextResponse.json(updated);
+    // Resolve coverPhoto to signed S3 URL if present
+    const coverPhotoUrl = updated.coverPhoto
+      ? await getS3ImageUrl(updated.coverPhoto)
+      : null;
+    return NextResponse.json({ ...updated, coverPhoto: coverPhotoUrl });
   } catch (error) {
     console.error("[PUT /api/blogs/:id] Error:", error);
     return NextResponse.json(

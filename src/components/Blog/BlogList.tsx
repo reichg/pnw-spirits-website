@@ -44,6 +44,7 @@ type Blog = {
   content: string;
   author: string;
   createdAt: string;
+  coverPhoto?: string | null;
 };
 
 const BlogList = () => {
@@ -81,24 +82,38 @@ const BlogList = () => {
     <>
       <div className={styles.blogList}>
         {blogs.length === 0 && <div>No blog posts yet.</div>}
-        {blogs.map((blog) => (
-          <a
-            href={`/blogs/${blog.id}`}
-            className={styles.blogCard}
-            key={blog.id}
-            tabIndex={0}
-            aria-label={`Read blog post: ${blog.title}`}
-          >
-            <div className={styles.blogTitle}>{blog.title}</div>
-            <div className={styles.blogMetaContainer}>
-              <div className={styles.blogAuthor}>By {blog.author}</div>
-              <div className={styles.blogDate}>
-                {new Date(blog.createdAt).toLocaleDateString()}
+        {blogs.map((blog) => {
+          const cardStyle = blog.coverPhoto
+            ? {
+                backgroundImage: `linear-gradient(rgba(38,28,24,0.22), rgba(38,28,24,0.22)), url(${blog.coverPhoto})`,
+                backgroundSize: "cover",
+                backgroundPosition: "center",
+                backgroundRepeat: "no-repeat",
+              }
+            : {
+                background:
+                  "linear-gradient(120deg, var(--color-bg-soft) 80%, var(--color-bg-warm) 100%)",
+              };
+          return (
+            <a
+              href={`/blogs/${blog.id}`}
+              className={styles.blogCard}
+              key={blog.id}
+              tabIndex={0}
+              aria-label={`Read blog post: ${blog.title}`}
+              style={cardStyle}
+            >
+              <div className={styles.blogTitle}>{blog.title}</div>
+              <div className={styles.blogMetaContainer}>
+                <div className={styles.blogAuthor}>By {blog.author}</div>
+                <div className={styles.blogDate}>
+                  {new Date(blog.createdAt).toLocaleDateString()}
+                </div>
               </div>
-            </div>
-            <span className={styles.readMore}>Read More</span>
-          </a>
-        ))}
+              <span className={styles.readMore}>Read More</span>
+            </a>
+          );
+        })}
       </div>
       <Pagination page={page} totalPages={totalPages} setPage={setPage} />
     </>

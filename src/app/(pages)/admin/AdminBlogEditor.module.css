@@ -1,23 +1,67 @@
-/* Media row for Add Media button (mobile-friendly) */
-.mediaRow {
+/* Cover photo row and preview */
+/* Container for all form fields */
+.fieldsContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  padding: 15px;
+  background: var(--color-bg-secondary);
+  border-radius: var(--radius-lg);
+  max-width: 1000px;
+  margin: 0 auto;
+  font-family: var(--font-sans);
+}
+
+@media (max-width: 600px) {
+  .fieldsContainer {
+    padding: var(--space-md);
+    max-width: 100%;
+    gap: var(--space-md);
+  }
+}
+.coverRow {
   display: flex;
   align-items: center;
+  gap: 0.7em;
   margin: 0.5em 0 0.2em 0;
 }
+.coverPreview {
+  width: auto;
+  max-width: 90px;
+  max-height: 60px;
+  border-radius: 8px;
+  object-fit: cover;
+  box-shadow: 0 2px 8px rgba(35, 66, 54, 0.13);
+  /* border: 1.5px solid var(--color-accent-primary, #b85c5c); */
+  background: var(--color-bg-warm);
+}
+@media (max-width: 700px) {
+  .coverRow {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.3em;
+  }
+  .coverPreview {
+    max-width: 100%;
+    max-height: 40vw;
+    margin-top: 0.3em;
+  }
+}
+
 .mediaBtn {
-  background: var(--pnw-copper, #b85c5c);
+  background: var(--color-accent-primary, #b85c5c);
   color: #fff;
   border: none;
   border-radius: 7px;
   padding: 8px 18px;
   font-size: 1em;
-  font-family: var(--font-sans, "Geist", "Inter", sans-serif);
+  font-family: "Geist", "Inter", sans-serif;
   font-weight: 500;
   cursor: pointer;
   transition:
     background 0.15s,
     color 0.15s;
-  margin-right: 0.5em;
+  margin-top: 14px;
 }
 .mediaBtn:disabled {
   background: #e0b3a7;
@@ -35,6 +79,7 @@
     margin-right: 0;
   }
 }
+/* Modal overlay fills viewport, centers form, and allows scroll if needed */
 .modal {
   background: rgba(0, 0, 0, 0.4);
   position: fixed;
@@ -46,48 +91,54 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-direction: column;
+  overflow: auto;
 }
+/* Form is scrollable if content exceeds viewport */
 .form {
-  background: var(--pnw-cream, #fff);
+  background: var(--color-bg-warm, #fff);
   padding: 48px 44px 36px 44px;
   border-radius: 18px;
   max-width: 80vw;
   width: 100%;
   box-shadow: 0 6px 32px rgba(35, 66, 54, 0.16);
-  border: 1.5px solid var(--pnw-copper, #b85c5c);
-  font-family: var(--font-sans, "Geist", "Inter", sans-serif);
+  font-family: "Geist", "Inter", sans-serif;
+  max-height: 90vh;
+  overflow-y: auto;
 }
 .heading {
   font-size: 1.7em;
   font-weight: 700;
-  margin-bottom: 1.2em;
-  color: var(--pnw-copper, #b85c5c);
+  color: var(--color-accent-primary, #b85c5c);
   text-align: center;
   letter-spacing: 0.5px;
 }
 .field {
-  margin-bottom: 18px;
+  color: var(--color-accent-secondary);
 }
 .label {
+  /* border: 1.5px solid #b85c5c; */
   font-size: 1.08em;
   font-weight: 500;
-  color: var(--pnw-forest, #3d4a3a);
+  color: #3d4a3a;
 }
 .input,
 .textarea {
-  width: 100%;
+  color: #b85c5c;
   padding: 10px 14px;
-  border-radius: 8px;
-  border: 1.5px solid #ccc;
+  border-radius: 2px;
+  /* border: 1.5px solid #ccc; */
   font-size: 1.08em;
-  background: var(--pnw-cream, #fff);
-  color: var(--pnw-charcoal, #2e2e2e);
+  background: #fff;
+  color: #2e2e2e;
   font-family: inherit;
   transition: border 0.18s;
+  max-width: 1000px;
+  width: 100%;
 }
 .input:focus,
 .textarea:focus {
-  border: 1.5px solid var(--pnw-copper, #b85c5c);
+  border: 1.5px solid #b85c5c;
   outline: none;
 }
 .textarea {
@@ -96,7 +147,7 @@
 }
 .error {
   color: #b85c5c;
-  margin-bottom: 10px;
+  color: var(--color-text-primary, #2e2e2e);
   text-align: center;
   font-size: 1em;
 }
@@ -112,7 +163,7 @@
     justify-content: center;
     min-height: 100vh;
     min-width: 100vw;
-    overflow-y: auto;
+    overflow: auto;
   }
   .form {
     max-width: 98vw;
@@ -122,6 +173,8 @@
     padding: 16px 2vw 16px 2vw;
     margin: 0 auto;
     box-sizing: border-box;
+    max-height: 92vh;
+    overflow-y: auto;
   }
   .heading {
     font-size: 1.08em;

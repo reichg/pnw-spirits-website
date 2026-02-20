@@ -2,7 +2,7 @@
   display: flex;
   min-height: calc(var(--vh, 1vh) * 100);
   font-family: var(--font-geist-sans);
-  background: rgb(12, 11, 11);
+  background: var(--color-bg-deep);
   padding: 64px;
   justify-content: center;
 }
@@ -20,8 +20,8 @@
 .heading {
   font-size: 2.2em;
   font-weight: 700;
-  color: var(--pnw-forest);
-  margin-bottom: 1em;
+  color: var(--color-accent-primary);
+  color: var(--color-accent-secondary);
   text-align: center;
 }
 

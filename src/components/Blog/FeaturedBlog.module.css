@@ -2,14 +2,44 @@
   width: 100%;
   max-width: 900px;
   margin: 0 auto 3rem auto;
-  background: var(--background);
+  background: var(--color-bg-soft);
   border-radius: 1.5rem;
-  box-shadow: 0 4px 32px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 4px 32px rgba(45, 35, 32, 0.12);
   display: flex;
   flex-direction: column;
   align-items: center;
   padding: 2.5rem 1.5rem 2rem 1.5rem;
   position: relative;
+}
+
+.backgroundOverlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  border-radius: 1.5rem;
+  overflow: hidden;
+}
+
+.warmOverlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    120deg,
+    rgba(44, 32, 24, 0.18) 60%,
+    rgba(180, 120, 80, 0.22) 100%
+  );
+  border-radius: 1.5rem;
+  pointer-events: none;
+  z-index: 1;
 }
 
 .featuredImage {
@@ -22,35 +52,37 @@
 }
 
 .featuredContent {
-  color: var(--text-primary);
+  color: var(--color-text-primary);
   text-align: left;
   width: 100%;
+  position: relative;
+  z-index: 2;
 }
 
 .featuredTitle {
-  font-family: var(--font-geist-sans), Inter, sans-serif;
+  font-family: "Geist", Inter, sans-serif;
   font-size: 2.2rem;
   font-weight: 700;
   margin-bottom: 0.5rem;
-  color: var(--accent);
+  color: var(--color-accent-primary);
 }
 
 .featuredMeta {
   font-size: 0.95rem;
-  color: var(--text-secondary);
+  color: var(--color-accent-secondary);
   margin-bottom: 0.7rem;
 }
 
 .featuredExcerpt {
   font-size: 1.08rem;
   margin-bottom: 1.2rem;
-  color: var(--text-primary);
+  color: var(--color-text-primary);
 }
 
 .readMoreBtn {
-  background: var(--button-bg);
-  color: var(--button-text);
-  font-family: var(--font-geist-sans), Inter, sans-serif;
+  background: var(--color-accent-primary);
+  color: var(--color-bg-primary);
+  font-family: "Geist", Inter, sans-serif;
   font-weight: 600;
   border: none;
   border-radius: 0.7rem;
@@ -59,9 +91,6 @@
   cursor: pointer;
   transition: background 0.18s;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-}
-.readMoreBtn:hover {
-  background: var(--button-hover);
 }
 
 @media (max-width: 900px) {

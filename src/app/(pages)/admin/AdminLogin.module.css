@@ -1,19 +1,19 @@
 .form {
   max-width: 340px;
   margin: 2em auto;
-  background: var(--pnw-cream, #fff);
+  background: var(--color-bg-warm);
   padding: 32px;
   border-radius: 14px;
   box-shadow: 0 2px 18px rgba(35, 66, 54, 0.13);
-  font-family: var(--font-sans, "Geist", "Inter", sans-serif);
-  border: 1.5px solid var(--pnw-copper, #b85c5c);
+  font-family: "Geist", "Inter", sans-serif;
+  border: 1.5px solid var(--color-accent-primary);
 }
 
 .heading {
   margin-bottom: 18px;
   font-size: 1.5rem;
   font-weight: 700;
-  color: var(--pnw-copper, #b85c5c);
+  color: var(--color-accent-primary);
   text-align: center;
   letter-spacing: 0.5px;
 }
@@ -25,7 +25,7 @@
 .label {
   font-size: 1rem;
   font-weight: 500;
-  color: var(--pnw-forest, #3d4a3a);
+  color: var(--color-accent-secondary, #3d4a3a);
 }
 
 .input {
@@ -36,19 +36,19 @@
   font-size: 1rem;
   margin-top: 4px;
   font-family: inherit;
-  background: var(--pnw-cream, #fff);
-  color: var(--pnw-charcoal, #2e2e2e);
+  background: var(--color-bg-warm, #fff);
+  color: var(--color-text-primary, #2e2e2e);
   transition: border 0.18s;
 }
 .input:focus {
-  border: 1.5px solid var(--pnw-copper, #b85c5c);
+  border: 1.5px solid var(--color-accent-primary, #b85c5c);
   outline: none;
 }
 
 .button {
   width: 100%;
   padding: 11px 0;
-  background: var(--pnw-copper, #b85c5c);
+  background: var(--color-accent-primary, #b85c5c);
   color: #fff;
   border: none;
   border-radius: 7px;

@@ -9,6 +9,12 @@ const imageRenderer = renderer.image.bind(renderer);
 function proxiedUrl(url: string) {
   if (!url) return url;
   // Only proxy S3 URLs (https://bucket.s3.region.amazonaws.com/key)
+  if (!url) return url;
+  // If the url looks like an S3 key (no protocol, no slashes at start), proxy it
+  if (/^blog-media\//.test(url)) {
+    return `/api/media?key=${encodeURIComponent(url)}`;
+  }
+  // Also support legacy full S3 URLs
   const match = url.match(/https:\/\/[^/]+\.s3\.[^/]+\.amazonaws\.com\/(.+)/);
   if (match) {
     const key = encodeURIComponent(match[1]);
@@ -25,16 +31,6 @@ renderer.image = function (image: {
   tokens?: unknown;
 }) {
   const { href, text, raw, title, tokens } = image;
-  if (text && text.toLowerCase().startsWith("video")) {
-    // Support poster: ![video|poster=https://...](video.mp4)
-    let poster = "";
-    const match = text.match(/poster=(\S+)/i);
-    if (match) poster = match[1];
-    const proxiedPoster = proxiedUrl(poster);
-    return `<video controls playsinline src="${proxiedUrl(href)}" preload="metadata"${poster ? ` poster=\"${proxiedPoster}\"` : ""} style="max-width:100%;border-radius:8px;margin:1.2em 0;box-shadow:0 2px 8px rgba(35,66,54,0.1);background:var(--pnw-cream,#f8f5f2);">
-      Sorry, your browser doesn't support embedded videos.
-    </video>`;
-  }
   return imageRenderer({
     type: "image",
     raw,

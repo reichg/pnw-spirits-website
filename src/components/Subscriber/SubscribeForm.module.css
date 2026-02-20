@@ -3,21 +3,17 @@
   flex-direction: column;
   align-items: center;
   gap: 1.2em;
-  background: linear-gradient(
-    120deg,
-    var(--pnw-cream) 80%,
-    var(--accent-sand) 100%
-  );
+  background: var(--color-accent-dark);
   border-radius: 14px;
   box-shadow: 0 2px 8px rgba(35, 66, 54, 0.07);
-  border: 1.5px solid var(--pnw-copper);
+  border: 1.5px solid var(--color-accent-primary);
   padding: 2em 1.5em 1.5em 1.5em;
   max-width: 400px;
   margin: 0 auto;
 }
 
 .subscribeLabel {
-  color: var(--pnw-forest);
+  color: var(--color-accent-primary);
   font-size: 1.1em;
   font-weight: 600;
   margin-bottom: 0.2em;
@@ -27,24 +23,24 @@
   width: 100%;
   padding: 0.7em 1em;
   border-radius: 6px;
-  border: 1.5px solid var(--accent-sage);
+  border: 1.5px solid var(--color-accent-muted);
   font-size: 1em;
   background: #fff;
-  color: var(--pnw-charcoal);
+  color: var(--color-text-primary);
   transition: border 0.2s;
 }
 .subscribeInput:focus {
-  border-color: var(--pnw-copper);
+  border-color: var(--color-accent-primary);
   outline: none;
 }
 
 .subscribeBtn {
   background: linear-gradient(
     90deg,
-    var(--pnw-copper) 70%,
-    var(--accent-gold) 100%
+    var(--color-accent-primary) 70%,
+    var(--color-accent-light) 100%
   );
-  color: var(--pnw-cream);
+  color: var(--color-bg-warm);
   font-weight: 600;
   border-radius: 6px;
   border: none;
@@ -58,15 +54,15 @@
 .subscribeBtn:hover {
   background: linear-gradient(
     90deg,
-    var(--pnw-forest) 70%,
-    var(--accent-rose) 100%
+    var(--color-accent-secondary) 70%,
+    var(--color-accent-secondary) 100%
   );
-  color: var(--accent-gold);
+  color: var(--color-accent-light);
 }
 
 .subscribeMsg {
   font-size: 1em;
-  color: var(--pnw-plum);
+  color: var(--color-accent-dark);
   margin-top: 0.5em;
   text-align: center;
 }

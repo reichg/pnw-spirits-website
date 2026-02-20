@@ -1,9 +1,9 @@
 .header {
   width: 100%;
   background: rgba(11, 11, 11, 0.95);
-  color: var(--pnw-cream);
+  color: var(--color-bg-primary);
   padding: 0.5em 0;
-  box-shadow: 0 2px 12px rgba(35, 66, 54, 0.08);
+  box-shadow: 0 2px 12px rgba(45, 35, 32, 0.08);
   top: 0;
   left: 0;
   z-index: 200;
@@ -23,8 +23,8 @@
   font-size: 1.5em;
   font-weight: 700;
   letter-spacing: 1px;
-  color: var(--pnw-gold);
-  text-shadow: 0 2px 8px rgba(184, 115, 51, 0.1);
+  color: var(--color-accent-primary);
+  text-shadow: 0 2px 8px rgba(191, 161, 129, 0.1); /* --color-accent-primary with opacity */
   white-space: nowrap;
 }
 
@@ -34,7 +34,7 @@
 }
 
 .link {
-  color: var(--pnw-cream);
+  color: var(--color-bg-primary);
   font-size: 1.08em;
   font-weight: 500;
   text-decoration: none;
@@ -46,8 +46,8 @@
 }
 .link:hover,
 .active {
-  background: var(--pnw-copper);
-  color: var(--pnw-forest);
+  background: var(--color-accent-primary);
+  color: var(--color-bg-deep);
 }
 
 @media (max-width: 900px) {

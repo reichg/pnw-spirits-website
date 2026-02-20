@@ -7,7 +7,7 @@
 .actionButton {
   background: none;
   border: none;
-  color: var(--pnw-copper, #b85c5c);
+  color: var(--color-accent-primary);
   cursor: pointer;
   text-decoration: underline;
   text-underline-offset: 3px;
@@ -24,7 +24,7 @@
 }
 .actionButton:hover {
   color: #fff;
-  background: var(--pnw-copper, #b85c5c);
+  background: var(--color-accent-primary);
   text-decoration-thickness: 3px;
   outline: none;
   box-shadow: 0 2px 8px rgba(35, 66, 54, 0.08);
@@ -39,10 +39,10 @@
 }
 
 .adminCard {
-  background: rgba(255, 248, 240, 0.95); /* var(--pnw-cream) with opacity */
+  background: rgba(255, 248, 240, 0.95);
   border-radius: 18px;
   box-shadow: 0 4px 32px rgba(35, 66, 54, 0.13);
-  border: 1.5px solid var(--pnw-copper, #b85c5c);
+  border: 1.5px solid var(--color-accent-primary, #b85c5c);
   max-width: 1000px;
   min-width: 340px;
   width: 100%;
@@ -68,7 +68,7 @@
 }
 
 .adminTitle {
-  color: var(--pnw-copper, #b85c5c);
+  color: var(--color-accent-primary, #b85c5c);
   font-family: "Geist", "Inter", sans-serif;
   font-size: 2rem;
   font-weight: 700;
@@ -92,7 +92,7 @@
   }
   .actionButton:hover,
   .actionButton:focus {
-    color: var(--pnw-copper, #b85c5c) !important;
+    color: var(--color-accent-primary, #b85c5c) !important;
     background: none !important;
     text-decoration-thickness: 2px !important;
     box-shadow: none !important;

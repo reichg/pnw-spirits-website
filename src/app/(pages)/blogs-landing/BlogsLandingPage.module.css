@@ -1,13 +1,7 @@
 .blogsLandingRoot {
   min-height: 100vh;
   width: 100vw;
-  background: linear-gradient(
-    120deg,
-    var(--color-bg-primary) 60%,
-    #1a1310 100%
-  );
-  background-color: #1a1310;
-  /* Deep, warm brown-black for speakeasy vibe */
+  background: var(--color-bg-deep);
   display: flex;
   flex-direction: column;
   align-items: stretch;
