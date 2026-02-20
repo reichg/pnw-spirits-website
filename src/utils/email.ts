@@ -24,8 +24,7 @@ export async function sendSubscribeEmail(to: string, firstName: string) {
   if (process.env.EMAIL_SUBSCRIBER) {
     await transporter.sendMail({
       from: process.env.EMAIL_FROM || process.env.EMAIL_SMTP_USER,
-      to: "gabe.reichenberger@gmail.com",
-      // to: process.env.EMAIL_SUBSCRIBER,
+      to: process.env.EMAIL_SUBSCRIBER,
       subject: "New Newsletter Subscriber",
       text: `A new user has subscribed to the newsletter.\n\nEmail: ${to}\nFirst Name: ${firstName}`,
       html: `<p>A new user has subscribed to the newsletter.</p><ul><li><b>Email:</b> ${to}</li><li><b>First Name:</b> ${firstName}</li></ul>`,
