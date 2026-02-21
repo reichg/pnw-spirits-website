@@ -30,10 +30,22 @@ async function fetchLandingBlogs(): Promise<{
 const BlogsLandingPage = async () => {
   const { featured, articles } = await fetchLandingBlogs();
 
+  const noBlogs = !featured && (!articles || articles.length === 0);
   return (
     <main className={styles.blogsLandingRoot}>
-      {featured && <FeaturedBlog blog={featured} />}
-      <BlogGrid blogs={articles} />
+      {noBlogs ? (
+        <div className={styles.noBlogsMsg}>
+          <span>
+            There aren&apos;t any blogs yet. Check back soon for cozy stories
+            and updates!
+          </span>
+        </div>
+      ) : (
+        <>
+          {featured && <FeaturedBlog blog={featured} />}
+          <BlogGrid blogs={articles} />
+        </>
+      )}
       <div
         style={{
           display: "flex",

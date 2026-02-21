@@ -1,5 +1,24 @@
-/* Message for when there are no blogs */
-.noBlogsMsg {
+/* VideoLandingPage.module.css - styled to match BlogsLandingPage.module.css for a cozy, speakeasy-inspired look */
+
+.videoLandingRoot {
+  min-height: 100vh;
+  width: 100vw;
+  background: var(--color-bg-deep);
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: flex-start;
+  padding: 2.5rem 0;
+}
+
+@media (max-width: 900px) {
+  .videoLandingRoot {
+    padding: 1.5rem 0;
+    min-height: 100svh;
+  }
+}
+
+.noVideosMsg {
   width: 100%;
   max-width: 600px;
   margin: 4rem auto 2rem auto;
@@ -19,26 +38,9 @@
 }
 
 @media (max-width: 600px) {
-  .noBlogsMsg {
+  .noVideosMsg {
     font-size: 1.05rem;
     padding: 1.5rem 0.7rem;
     margin: 2.5rem auto 1.2rem auto;
-  }
-}
-.blogsLandingRoot {
-  min-height: 100vh;
-  width: 100vw;
-  background: var(--color-bg-deep);
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;
-  justify-content: flex-start;
-  padding: 2.5rem 0;
-}
-
-@media (max-width: 900px) {
-  .blogsLandingRoot {
-    padding: 1.5rem 0;
-    min-height: 100svh;
   }
 }

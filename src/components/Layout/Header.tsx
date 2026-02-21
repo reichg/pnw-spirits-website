@@ -8,7 +8,7 @@ import styles from "./Header.module.css";
 const navLinks = [
   { href: "/", label: "Home" },
   { href: "/blogs-landing", label: "Blogs" },
-  { href: "/videos", label: "Videos" },
+  { href: "/videos-landing", label: "Videos" },
   { href: "/about", label: "About" },
   { href: "/contact", label: "Contact" },
 ];

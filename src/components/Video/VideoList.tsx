@@ -1,6 +1,6 @@
 "use client";
-import Image from "next/image";
 import { useEffect, useState } from "react";
+import VideoGrid from "./VideoGrid";
 import styles from "./VideoList.module.css";
 
 type Video = {
@@ -29,22 +29,25 @@ const VideoList = () => {
   const [totalPages, setTotalPages] = useState(1);
 
   useEffect(() => {
-    setLoading(true);
-    setError("");
-    fetch(`/api/videos?page=${page}&pageSize=${PAGE_SIZE}`)
-      .then((res) => {
+    // Use an async function to avoid calling setState synchronously in the effect body
+    const fetchVideos = async () => {
+      setLoading(true);
+      setError("");
+      try {
+        const res = await fetch(
+          `/api/videos?page=${page}&pageSize=${PAGE_SIZE}`,
+        );
         if (!res.ok) throw new Error("Failed to fetch videos");
-        return res.json();
-      })
-      .then((data: PaginatedVideos) => {
+        const data: PaginatedVideos = await res.json();
         setVideos(data.videos || []);
         setTotalPages(data.totalPages || 1);
-        setLoading(false);
-      })
-      .catch(() => {
+      } catch {
         setError("Could not load videos.");
+      } finally {
         setLoading(false);
-      });
+      }
+    };
+    fetchVideos();
   }, [page]);
 
   const handlePrev = () => setPage((p) => Math.max(1, p - 1));
@@ -55,34 +58,10 @@ const VideoList = () => {
 
   return (
     <>
-      <div className={styles.videoList}>
-        {videos.length === 0 && <div>No videos yet.</div>}
-        {videos.map((video) => (
-          <div className={styles.videoCard} key={video.id}>
-            <Image
-              className={styles.videoThumb}
-              src={video.thumbnail}
-              alt={video.title}
-              width={320}
-              height={180}
-              style={{ objectFit: "cover", borderRadius: 12 }}
-              loading="lazy"
-            />
-            <div className={styles.videoTitle}>{video.title}</div>
-            <div className={styles.videoMeta}>
-              {new Date(video.publishedAt).toLocaleDateString()}
-            </div>
-            <a
-              className={styles.watchBtn}
-              href={video.url}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Watch Video
-            </a>
-          </div>
-        ))}
-      </div>
+      <VideoGrid videos={videos} />
+      {videos.length === 0 && (
+        <div className={styles.videoList}>No videos yet.</div>
+      )}
       {totalPages > 1 && (
         <div className={styles.pagination}>
           <button
