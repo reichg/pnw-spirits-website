@@ -141,15 +141,18 @@
 
 @media (max-width: 900px) {
   .videosGrid {
+    border-radius: 0px;
     display: flex;
     flex-direction: column;
     gap: 1.5rem;
     align-items: center;
-    width: 100%;
+    width: 100vw;
     overflow-x: hidden;
   }
   .videoCard {
-    max-width: 470px;
+    border-radius: 0px;
+    max-width: 10000px;
+    width: 100%;
     min-width: 0;
     box-sizing: border-box;
     overflow-x: hidden;
@@ -158,22 +161,31 @@
 
 @media (max-width: 600px) {
   .videosGrid {
-    grid-template-columns: 1fr;
-    gap: 1.2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 4rem;
+    align-items: center;
+    width: 100vw;
+    overflow-x: hidden;
   }
   .videoCard {
-    max-width: 100%;
-    border-radius: 0.8rem;
-    padding: 0.5rem;
+    width: 100vw;
+    box-sizing: border-box;
+    overflow-x: hidden;
+    border-radius: 0px;
   }
-  .glassOverlay {
-    border-radius: 0.8rem;
+  .glassOverlay{
+    border-radius: 0px;
   }
+
   .videoContent {
     padding: 1rem 0.7rem 0.7rem 0.7rem;
   }
   .videoTitle {
     font-size: 1.05rem;
     max-width: 100%;
+  }
+  .videoThumb {
+    border-radius: 0px;
   }
 }
