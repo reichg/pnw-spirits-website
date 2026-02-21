@@ -20,11 +20,13 @@ export default function Home() {
       <section className={landingStyles.landingFourColSection}>
         <div className={landingStyles.landingFourColRow}>
           <Link
-            href="/blogs"
+            href="/blogs-landing"
             className={landingStyles.landingFourColCard}
             style={{ backgroundImage: "url('/images/Martini.jpg')" }}
             aria-label="Blogs"
           >
+            {/* Glassy overlay for cozy speakeasy effect, matches FeaturedBlog */}
+            <div className={landingStyles.landingFourColGlassOverlay} />
             <span className={landingStyles.landingFourColCardLabel}>Blogs</span>
           </Link>
           <Link
@@ -33,6 +35,7 @@ export default function Home() {
             style={{ backgroundImage: "url('/images/Daq.jpg')" }}
             aria-label="Videos"
           >
+            <div className={landingStyles.landingFourColGlassOverlay} />
             <span className={landingStyles.landingFourColCardLabel}>
               Videos
             </span>
@@ -43,6 +46,7 @@ export default function Home() {
             style={{ backgroundImage: "url('/images/HighFive.jpg')" }}
             aria-label="About"
           >
+            <div className={landingStyles.landingFourColGlassOverlay} />
             <span className={landingStyles.landingFourColCardLabel}>About</span>
           </Link>
           <Link
@@ -51,6 +55,7 @@ export default function Home() {
             style={{ backgroundImage: "url('/images/Vermouth.jpg')" }}
             aria-label="Contact"
           >
+            <div className={landingStyles.landingFourColGlassOverlay} />
             <span className={landingStyles.landingFourColCardLabel}>
               Contact
             </span>

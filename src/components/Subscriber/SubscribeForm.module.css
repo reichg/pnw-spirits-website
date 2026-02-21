@@ -1,9 +1,10 @@
+
 .subscribeForm {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 1.2em;
-  background: var(--color-accent-dark);
+  background: var(--color-bg-overlay);
   border-radius: 14px;
   box-shadow: 0 2px 8px rgba(35, 66, 54, 0.07);
   border: 1.5px solid var(--color-accent-primary);
@@ -13,7 +14,7 @@
 }
 
 .subscribeLabel {
-  color: var(--color-accent-primary);
+  color: var(--color-accent-gold);
   font-size: 1.1em;
   font-weight: 600;
   margin-bottom: 0.2em;
@@ -35,12 +36,6 @@
 }
 
 .subscribeBtn {
-  background: linear-gradient(
-    90deg,
-    var(--color-accent-primary) 70%,
-    var(--color-accent-light) 100%
-  );
-  color: var(--color-bg-warm);
   font-weight: 600;
   border-radius: 6px;
   border: none;

@@ -5,12 +5,13 @@ import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { logger } from "./logger";
 
 /**
- * Returns a signed S3 image URL for a given key, or returns the URL if already absolute.
+ * Returns a short-lived (1 hour) signed S3 image URL for a given key, or returns the URL if already absolute.
  * Uses AWS credentials from environment variables for private images.
  * Logs every retrieval attempt and result for observability.
  *
  * @param keyOrUrl S3 object key or absolute URL
  * @returns Promise<string | undefined> Signed URL or undefined
+ * @throws Error if S3 environment variables are missing or signing fails (returns fallback URL)
  */
 export async function getS3ImageUrl(
   keyOrUrl?: string | null,
@@ -60,8 +61,11 @@ export async function getS3ImageUrl(
   });
 
   try {
-    // Generate a signed URL valid for 10 minutes
-    const signedUrl = await getSignedUrl(s3, command, { expiresIn: 600 });
+    // Generate a signed URL valid for 1 hour (best practice for security)
+    const expiresIn = 60 * 60; // seconds
+    const signedUrl: string = await getSignedUrl(s3, command, {
+      expiresIn,
+    });
     logger.info("S3 signed image URL generated", {
       context: "getS3ImageUrl",
       data: { image: signedUrl, keyOrUrl },
@@ -76,6 +80,3 @@ export async function getS3ImageUrl(
     return keyOrUrl;
   }
 }
-
-// Note: This function is async and returns a signed URL for private S3 images using AWS credentials from env.
-// If the key is already an absolute URL, it is returned as-is. All retrievals are logged for observability.

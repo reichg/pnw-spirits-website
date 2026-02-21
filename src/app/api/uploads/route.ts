@@ -22,11 +22,11 @@ export async function POST(req: NextRequest) {
         { status: 400 },
       );
     }
-    // Validate file size (max 5MB)
-    const maxSize = 5 * 1024 * 1024;
+    // Validate file size (max 15MB)
+    const maxSize = 15 * 1024 * 1024;
     if (file.size > maxSize) {
       return NextResponse.json(
-        { error: "Image size must be under 5MB." },
+        { error: "Image size must be under 15MB." },
         { status: 400 },
       );
     }

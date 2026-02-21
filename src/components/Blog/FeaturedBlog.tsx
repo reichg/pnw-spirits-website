@@ -1,4 +1,5 @@
 "use client";
+import { useS3ImageUrl } from "@/utils/useS3ImageUrl";
 import Link from "next/link";
 import React from "react";
 import styles from "./FeaturedBlog.module.css";
@@ -14,31 +15,40 @@ export type FeaturedBlogProps = {
 };
 
 const FeaturedBlog: React.FC<{ blog: FeaturedBlogProps }> = ({ blog }) => {
+  const { url: coverUrl } = useS3ImageUrl(blog.coverPhoto);
   if (!blog) return null;
-  // Remove S3 URLs from content for preview
+
+  // Card background style
+  const cardStyle = coverUrl
+    ? {
+        backgroundImage: `url(${coverUrl})`,
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        backgroundRepeat: "no-repeat",
+      }
+    : {};
+
   return (
-    <section className={styles.featuredSection}>
-      {blog.coverPhoto && (
-        <div
-          className={styles.backgroundOverlay}
-          style={{
-            backgroundImage: `url(${blog.coverPhoto})`,
-          }}
-        >
-          <div className={styles.warmOverlay} />
-        </div>
-      )}
+    <Link
+      href={`/blogs/${blog.id}`}
+      className={styles.featuredCard}
+      style={cardStyle}
+      tabIndex={0}
+      aria-label={`Read blog: ${blog.title}`}
+      prefetch={false}
+    >
+      {/* Glassy overlay for text readability and cozy effect */}
+      <div className={styles.glassOverlay} />
       <div className={styles.featuredContent}>
-        <div className={styles.featuredMeta}>Article</div>
-        <h2 className={styles.featuredTitle}>{blog.title}</h2>
+        <div className={styles.featuredTitle}>{blog.title}</div>
         <div className={styles.featuredMeta}>
           by {blog.author} | {new Date(blog.createdAt).toLocaleDateString()}
         </div>
-        <Link href={`/blogs/${blog.id}`}>
-          <button className={styles.readMoreBtn}>Read More</button>
-        </Link>
+        {blog.excerpt && (
+          <div className={styles.featuredExcerpt}>{blog.excerpt}</div>
+        )}
       </div>
-    </section>
+    </Link>
   );
 };
 

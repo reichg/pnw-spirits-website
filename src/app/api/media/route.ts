@@ -1,31 +1,31 @@
-import { GetObjectCommand, S3Client } from "@aws-sdk/client-s3";
-import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+import { getS3ImageUrl } from "@/utils/s3";
 import { NextRequest, NextResponse } from "next/server";
 
 export const runtime = "nodejs";
 
 export async function GET(req: NextRequest) {
-  const url = new URL(req.url);
-  const key = url.searchParams.get("key");
+  const { searchParams } = new URL(req.url);
+  const key = searchParams.get("key");
   if (!key) {
-    return NextResponse.json({ error: "Missing key param" }, { status: 400 });
+    return NextResponse.json(
+      { error: "Missing key parameter" },
+      { status: 400 },
+    );
   }
-
-  // TODO: Add authentication/authorization here if needed
-
-  const s3 = new S3Client({
-    region: process.env.AWS_REGION,
-    credentials: {
-      accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
-      secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
-    },
-  });
-  const bucket = process.env.AWS_S3_BUCKET!;
-
-  // Generate a signed URL for the requested object
-  const command = new GetObjectCommand({ Bucket: bucket, Key: key });
-  const signedUrl = await getSignedUrl(s3, command, { expiresIn: 60 }); // 1 min expiry
-
-  // Redirect the client to the signed S3 URL
-  return NextResponse.redirect(signedUrl, 302);
+  try {
+    const url = await getS3ImageUrl(key);
+    if (!url) {
+      return NextResponse.json(
+        { error: "Could not generate signed URL" },
+        { status: 500 },
+      );
+    }
+    return NextResponse.redirect(url, 302);
+  } catch (error) {
+    return NextResponse.json(
+      { error: "Failed to generate signed URL" },
+      { status: 500 },
+    );
+  }
+  // Note: Add authentication/authorization if needed for sensitive media
 }
