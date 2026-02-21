@@ -13,7 +13,6 @@
   font-family: var(--font-sans);
 }
 
-
 .coverRow {
   display: flex;
   align-items: center;
@@ -68,7 +67,6 @@
   cursor: not-allowed;
 }
 
-
 /* Modal overlay fills viewport, centers form, and allows scroll if needed */
 .modal {
   background: rgba(0, 0, 0, 0.4);
@@ -76,14 +74,16 @@
   top: 0;
   left: 0;
   width: 100vw;
-  height: 100vh;
+  height: 100dvh;
   z-index: 1000;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-direction: column;
   overflow: auto;
-  padding: 0 5rem;
+  padding: max(env(safe-area-inset-top, 0px), 0.5rem) 5vw
+    max(env(safe-area-inset-bottom, 0px), 0.5rem) 5vw;
+  box-sizing: border-box;
 }
 /* Form is scrollable if content exceeds viewport */
 .form {
@@ -164,14 +164,16 @@
   margin-top: 2rem;
 }
 
-
 @media (max-width: 700px) {
   .modal {
     align-items: center;
     justify-content: center;
-    min-height: 100vh;
+    min-height: 100dvh;
     min-width: 100vw;
     overflow: auto;
+    padding: max(env(safe-area-inset-top, 0px), 0.5rem) 2vw
+      max(env(safe-area-inset-bottom, 0px), 0.5rem) 2vw;
+    box-sizing: border-box;
   }
   .form {
     max-width: 98vw;
@@ -180,7 +182,7 @@
     border-radius: 10px;
     padding: 16px 2vw 16px 2vw;
     box-sizing: border-box;
-    max-height: 92vh;
+    max-height: 92dvh;
     overflow-y: auto;
   }
   .heading {
@@ -252,6 +254,6 @@
 @media (max-width: 600px) {
   .fieldsContainer {
     max-width: 100%;
-    gap: var(--space-md);
+    gap: 20px;
   }
 }
