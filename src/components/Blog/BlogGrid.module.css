@@ -136,7 +136,8 @@
     width: 100%;
   }
   .articleCard {
-    max-width: 470px;
+    max-width: 10000px;
+    width: 100%;
     min-width: 0;
     box-sizing: border-box;
   }

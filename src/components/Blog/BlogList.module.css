@@ -28,7 +28,7 @@
 
 @media (max-width: 900px) {
   .blogList {
-    gap: 1.2rem;
+    gap: 5rem;
   }
 }
 
@@ -60,6 +60,6 @@
 
 @media (max-width: 900px) {
   .blogList {
-    gap: 1.2rem;
+    gap: 6rem;
   }
 }
