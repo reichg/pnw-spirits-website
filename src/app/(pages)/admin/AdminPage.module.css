@@ -63,7 +63,7 @@
 }
 
 .adminCard {
-  background: rgba(255, 248, 240, 0.95);
+  background: rgba(0, 10, 2, 1);
   border-radius: 18px;
   box-shadow: 0 4px 32px rgba(35, 66, 54, 0.13);
   border: 1.5px solid var(--color-accent-primary, #b85c5c);

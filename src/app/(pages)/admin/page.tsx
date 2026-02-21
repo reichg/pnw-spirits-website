@@ -3,6 +3,7 @@ import jwt from "jsonwebtoken";
 import { useEffect, useState } from "react";
 import AdminBlogList from "./AdminBlogList";
 import styles from "./AdminPage.module.css";
+import { AdminTokenProvider } from "./AdminTokenContext";
 import stylesExpiry from "./TokenExpiry.module.css";
 
 export default function AdminPage() {
@@ -52,37 +53,39 @@ export default function AdminPage() {
   }, []);
 
   return (
-    <div className={styles.adminPage}>
-      <div className={stylesExpiry.tokenExpiry}>
-        {expiryDisplay ? (
-          <>
-            Token expires: <b>{expiryDisplay}</b>
-          </>
-        ) : (
-          <>Token expiry unknown</>
-        )}
-      </div>
-      <div className={styles.adminCard}>
-        <div className={styles.adminCardContent}>
-          <div className={styles.adminTitle}>Admin: Manage Blogs</div>
-          <AdminBlogList adminToken={token ?? ""} />
-          <div className={styles.actionRow}>
-            <button
-              type="button"
-              className={styles.actionButton}
-              onClick={() => {
-                if (typeof window !== "undefined") {
-                  localStorage.removeItem("adminToken");
-                  setToken(null);
-                  window.location.href = "/admin/login";
-                }
-              }}
-            >
-              Log Out
-            </button>
+    <AdminTokenProvider>
+      <div className={styles.adminPage}>
+        <div className={stylesExpiry.tokenExpiry}>
+          {expiryDisplay ? (
+            <>
+              Token expires: <b>{expiryDisplay}</b>
+            </>
+          ) : (
+            <>Token expiry unknown</>
+          )}
+        </div>
+        <div className={styles.adminCard}>
+          <div className={styles.adminCardContent}>
+            <div className={styles.adminTitle}>Admin: Manage Blogs</div>
+            <AdminBlogList />
+            <div className={styles.actionRow}>
+              <button
+                type="button"
+                className={styles.actionButton}
+                onClick={() => {
+                  if (typeof window !== "undefined") {
+                    localStorage.removeItem("adminToken");
+                    setToken(null);
+                    window.location.href = "/admin/login";
+                  }
+                }}
+              >
+                Log Out
+              </button>
+            </div>
           </div>
         </div>
       </div>
-    </div>
+    </AdminTokenProvider>
   );
 }

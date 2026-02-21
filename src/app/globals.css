@@ -144,8 +144,8 @@ a:hover {
 
 button,
 .button {
-  background: var(--color-bg-deep1);
-  color: var(--color-bg-warm);
+  background: var(--color-bg-overlay);
+  color: var(--color-accent-gold);
   border: none;
   border-radius: 4px;
   padding: 0.5em 1.2em;

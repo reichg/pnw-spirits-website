@@ -4,6 +4,7 @@ import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import styles from "./AdminBlogEditor.module.css";
+import { useAdminToken } from "./AdminTokenContext";
 
 interface Blog {
   id?: number;
@@ -16,16 +17,29 @@ interface Blog {
 interface AdminBlogEditorProps {
   blog: Blog | null;
   onClose: (refresh?: boolean) => void;
-  adminToken: string;
   forceEmpty?: boolean;
 }
 
 export default function AdminBlogEditor({
   blog,
   onClose,
-  adminToken,
   forceEmpty = false,
 }: AdminBlogEditorProps) {
+  const { token: adminToken, setToken } = useAdminToken();
+  // Always check localStorage for adminToken and update context
+  useEffect(() => {
+    const checkToken = () => {
+      const t =
+        typeof window !== "undefined"
+          ? localStorage.getItem("adminToken")
+          : null;
+      if (t !== adminToken) setToken(t);
+    };
+    checkToken();
+    const interval = setInterval(checkToken, 500);
+    return () => clearInterval(interval);
+  }, [adminToken, setToken]);
+
   const getInitialField = (field: "title" | "content" | "author") => {
     if (blog) return blog[field] || "";
     if (forceEmpty) return "";
@@ -57,6 +71,28 @@ export default function AdminBlogEditor({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const coverInputRef = useRef<HTMLInputElement>(null);
   const [mediaLoading, setMediaLoading] = useState(false);
+
+  // Redirect or logout if adminToken is missing
+  useEffect(() => {
+    if (!adminToken) {
+      // Save draft before redirect
+      if (typeof window !== "undefined") {
+        localStorage.setItem(
+          "blogDraft",
+          JSON.stringify({
+            title,
+            content,
+            author,
+            coverPhoto: coverImageKey,
+          }),
+        );
+      }
+      window.location.href = "/admin/login";
+    }
+  }, [adminToken, title, content, author, coverImageKey]);
+
+  // Disable form if token is missing
+  const isDisabled = !adminToken;
 
   // Handle cover image upload
   const handleCoverChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -161,6 +197,11 @@ export default function AdminBlogEditor({
   // Submit blog post, including cover image key
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!adminToken) {
+      setError("You are not authenticated. Please log in again.");
+      window.location.href = "/admin/login";
+      return;
+    }
     setLoading(true);
     setError("");
     const method = blog ? "PUT" : "POST";
@@ -215,7 +256,7 @@ export default function AdminBlogEditor({
                   type="button"
                   className={styles.mediaBtn}
                   onClick={() => coverInputRef.current?.click()}
-                  disabled={coverImageLoading || loading}
+                  disabled={coverImageLoading || loading || isDisabled}
                 >
                   {coverImageLoading
                     ? "Uploading..."
@@ -230,6 +271,7 @@ export default function AdminBlogEditor({
                   style={{ display: "none" }}
                   onChange={handleCoverChange}
                   tabIndex={-1}
+                  disabled={isDisabled}
                 />
                 {coverImagePreviewUrl &&
                   /^https?:\/\//.test(coverImagePreviewUrl) && (
@@ -257,6 +299,7 @@ export default function AdminBlogEditor({
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 required
+                disabled={isDisabled}
               />
             </label>
           </div>
@@ -272,8 +315,10 @@ export default function AdminBlogEditor({
                 onChange={(e) => setContent(e.target.value)}
                 required
                 rows={6}
+                disabled={isDisabled}
                 onDrop={async (e) => {
                   e.preventDefault();
+                  if (isDisabled) return;
                   const files = Array.from(e.dataTransfer.files);
                   if (files.length === 0) return;
                   const file = files[0];
@@ -329,7 +374,7 @@ export default function AdminBlogEditor({
                   type="button"
                   className={styles.mediaBtn}
                   onClick={() => fileInputRef.current?.click()}
-                  disabled={mediaLoading || loading}
+                  disabled={mediaLoading || loading || isDisabled}
                 >
                   {mediaLoading ? "Uploading..." : "Add Media"}
                 </button>
@@ -340,6 +385,7 @@ export default function AdminBlogEditor({
                   style={{ display: "none" }}
                   onChange={handleMediaChange}
                   tabIndex={-1}
+                  disabled={isDisabled}
                 />
               </div>
               <small>Drag and drop media, or Add Media.</small>
@@ -354,6 +400,7 @@ export default function AdminBlogEditor({
                 value={author}
                 onChange={(e) => setAuthor(e.target.value)}
                 required
+                disabled={isDisabled}
               />
             </label>
           </div>
@@ -363,11 +410,11 @@ export default function AdminBlogEditor({
           <button
             type="button"
             onClick={() => onClose(false)}
-            disabled={loading}
+            disabled={loading || isDisabled}
           >
             Cancel
           </button>
-          <button type="submit" disabled={loading}>
+          <button type="submit" disabled={loading || isDisabled}>
             {loading ? "Saving..." : "Save"}
           </button>
         </div>

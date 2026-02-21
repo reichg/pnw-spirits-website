@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import AdminBlogEditor from "./AdminBlogEditor";
 import styles from "./AdminBlogList.module.css";
+import { useAdminToken } from "./AdminTokenContext";
 
 function Pagination({
   page,
@@ -44,7 +45,8 @@ interface Blog {
   createdAt: string;
 }
 
-export default function AdminBlogList({ adminToken }: { adminToken: string }) {
+export default function AdminBlogList() {
+  const { token: adminToken, setToken } = useAdminToken();
   const [blogs, setBlogs] = useState<Blog[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -57,16 +59,29 @@ export default function AdminBlogList({ adminToken }: { adminToken: string }) {
   const pageSize = 10;
   const totalPages = Math.ceil(total / pageSize);
 
-  // Check for blog draft in localStorage
+  // Check for blog draft in localStorage and listen for token removal
   useEffect(() => {
     if (typeof window !== "undefined") {
       setHasDraft(!!localStorage.getItem("blogDraft"));
-      // Listen for changes to localStorage (e.g., draft removed after save)
+      // Listen for changes to localStorage (e.g., draft removed after save or token removed)
       const syncDraft = () => setHasDraft(!!localStorage.getItem("blogDraft"));
-      window.addEventListener("storage", syncDraft);
-      return () => window.removeEventListener("storage", syncDraft);
+      const handleStorage = (event: StorageEvent) => {
+        if (event.key === "blogDraft") syncDraft();
+        if (event.key === "adminToken" && event.newValue === null) {
+          setToken(null);
+        }
+      };
+      window.addEventListener("storage", handleStorage);
+      return () => window.removeEventListener("storage", handleStorage);
     }
-  }, []);
+  }, [setToken]);
+  // Redirect or logout if adminToken is missing
+  useEffect(() => {
+    if (!adminToken) {
+      // Optionally redirect to login or show error
+      window.location.href = "/admin/login";
+    }
+  }, [adminToken]);
 
   const fetchBlogs = async () => {
     setLoading(true);
@@ -129,12 +144,12 @@ export default function AdminBlogList({ adminToken }: { adminToken: string }) {
     <>
       <div className={styles.container}>
         <div className={styles.actionRow}>
-          <button className={styles.newBtn} onClick={handleCreate}>
+          <button className={styles.adminActionBtn} onClick={handleCreate}>
             New Blog
           </button>
           {hasDraft && (
             <button
-              className={styles.continueDraftBtn}
+              className={styles.adminActionBtn}
               onClick={handleContinueDraft}
             >
               Continue Draft
@@ -178,7 +193,6 @@ export default function AdminBlogList({ adminToken }: { adminToken: string }) {
         <AdminBlogEditor
           blog={editing}
           onClose={handleEditorClose}
-          adminToken={adminToken}
           forceEmpty={forceEmpty}
         />
       )}
