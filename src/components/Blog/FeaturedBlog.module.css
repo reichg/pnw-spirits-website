@@ -128,11 +128,7 @@
   .featuredCard {
     max-width: 100%;
     height: 18rem;
-    border-radius: 0.8rem;
     padding: 0.5rem;
-  }
-  .glassOverlay {
-    border-radius: 0.8rem;
   }
   .featuredContent {
     padding: 1.2rem 0.7rem 0.7rem 0.7rem;
