@@ -50,25 +50,31 @@ export default async function BlogPostPage({
 
   return (
     <div className={styles.page}>
-      <main className={styles.main}>
-        <h1 className={styles.title}>{blog.title}</h1>
-        <div className={styles.meta}>
-          <span className={styles.author}>By {blog.author}</span>
-          <span className={styles.date}>
-            {new Date(blog.createdAt).toLocaleDateString(undefined, {
-              year: "numeric",
-              month: "long",
-              day: "numeric",
-            })}
-          </span>
-        </div>
-        <article
-          className={styles.content}
-          dangerouslySetInnerHTML={{
-            __html: marked.parse(blog.content, { renderer }),
-          }}
-        />
-      </main>
+      <div className={styles.blogMainCard}>
+        <div className={styles.glassOverlay} />
+        <main
+          className={styles.main}
+          style={{ position: "relative", zIndex: 3 }}
+        >
+          <h1 className={styles.title}>{blog.title}</h1>
+          <div className={styles.meta}>
+            <span className={styles.author}>By {blog.author}</span>
+            <span className={styles.date}>
+              {new Date(blog.createdAt).toLocaleDateString(undefined, {
+                year: "numeric",
+                month: "long",
+                day: "numeric",
+              })}
+            </span>
+          </div>
+          <article
+            className={styles.content}
+            dangerouslySetInnerHTML={{
+              __html: marked.parse(blog.content, { renderer }),
+            }}
+          />
+        </main>
+      </div>
     </div>
   );
 }

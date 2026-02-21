@@ -36,7 +36,6 @@
 
 .videoCard {
   border-radius: 1.2rem;
-  box-shadow: var(--shadow-lg);
   width: 100%;
   max-width: 300px;
   min-width: 0;

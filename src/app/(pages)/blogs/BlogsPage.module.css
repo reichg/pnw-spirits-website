@@ -2,9 +2,29 @@
   display: flex;
   min-height: calc(var(--vh, 1vh) * 100);
   font-family: var(--font-geist-sans);
-  background: var(--color-bg-deep);
+  background: url("/images/Vermouth.jpg") center center/cover no-repeat;
   padding: 64px;
   justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.page::before {
+  content: "";
+  position: absolute;
+  top: -10;
+  left: -10;
+  width: 103%;
+  height: 103%;
+  background: inherit;
+  filter: blur(4px) brightness(0.2) saturate(1);
+  z-index: 0;
+  pointer-events: none;
+}
+
+.page > * {
+  position: relative;
+  z-index: 1;
 }
 
 .main {

@@ -18,34 +18,6 @@
   margin: 2em 0 0.5em 0;
 }
 
-.pageButton {
-  background: var(--color-accent-primary);
-  color: var(--color-bg-warm);
-  border: none;
-  border-radius: 8px;
-  padding: 0.5em 1.2em;
-  font-family: var(--font-primary);
-  font-size: 1em;
-  font-weight: 600;
-  cursor: pointer;
-  transition:
-    background 0.2s,
-    color 0.2s,
-    box-shadow 0.2s;
-  box-shadow: 0 1px 4px rgba(35, 66, 54, 0.08);
-}
-.pageButton:disabled {
-  background: var(--color-bg-warm);
-  color: var(--color-accent-primary);
-  opacity: 0.6;
-  cursor: not-allowed;
-  border: 1.5px solid var(--color-accent-primary);
-}
-.pageButton:not(:disabled):hover {
-  background: var(--color-accent-light);
-  color: var(--color-accent-secondary);
-}
-
 .pageInfo {
   color: var(--color-accent-secondary);
   font-family: var(--font-primary);
@@ -78,37 +50,8 @@
   gap: 1.2em;
   margin: 2em 0 0.5em 0;
 }
-
-.pageButton {
-  background: var(--color-accent-primary);
-  color: var(--color-bg-warm);
-  border: none;
-  border-radius: 8px;
-  padding: 0.5em 1.2em;
-  font-family: var(--font-primary);
-  font-size: 1em;
-  font-weight: 600;
-  cursor: pointer;
-  transition:
-    background 0.2s,
-    color 0.2s,
-    box-shadow 0.2s;
-  box-shadow: 0 1px 4px rgba(35, 66, 54, 0.08);
-}
-.pageButton:disabled {
-  background: var(--color-bg-warm);
-  color: var(--color-accent-primary);
-  opacity: 0.6;
-  cursor: not-allowed;
-  border: 1.5px solid var(--color-accent-primary);
-}
-.pageButton:not(:disabled):hover {
-  background: var(--color-accent-light);
-  color: var(--color-accent-secondary);
-}
-
 .pageInfo {
-  color: var(--color-accent-secondary);
+  color: var(--color-accent-gold);
   font-family: var(--font-primary);
   font-size: 1.05em;
   font-weight: 500;
