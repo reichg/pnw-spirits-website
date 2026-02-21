@@ -2,8 +2,8 @@
 
 .landingHero {
   width: 100vw;
-  min-height: 100dvh;
-  height: 100dvh;
+  min-height: 100vh;
+  height: 100vh;
   background: url("/images/Vermouth.jpg") center center/cover no-repeat;
   position: relative;
   display: flex;
@@ -16,7 +16,7 @@
   top: 0;
   left: 0;
   width: 100vw;
-  height: 100dvh;
+  height: 100vh;
   background: rgba(35, 34, 38, 0.2);
   display: flex;
   flex-direction: column;
