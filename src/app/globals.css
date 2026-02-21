@@ -59,7 +59,7 @@ body {
   --color-bg-soft: #f7e6c4;
   --color-bg-deep: #020f05;
   --color-bg-deep1: #1a120d;
-  --color-bg-overlay: rgba(44, 34, 32, 0.92);
+  --color-bg-overlay: rgba(44, 34, 32, 1);
   --color-bg-highlight: #ffe2b0;
   --color-bg-muted: #cbb89d;
 

@@ -33,19 +33,9 @@
   gap: 1em;
   margin-bottom: 1.2em;
 }
-.pageButton:disabled {
-  background: var(--color-accent-primary);
-  color: var(--color-accent-primary);
-  opacity: 0.6;
-  cursor: not-allowed;
-  border: 1.5px solid var(--color-accent-primary);
-}
-.pageButton:not(:disabled):hover {
-  background: var(--color-accent-light);
-  color: var(--color-accent-secondary);
-}
+
 .pageInfo {
-  color: var(--color-accent-secondary);
+  color: var(--color-accent-gold);
   font-family: "Geist", "Inter", sans-serif;
   font-size: 1.08em;
   font-weight: 500;
@@ -159,6 +149,17 @@
 .actionRow {
   display: flex;
   gap: 0.5em;
+}
+
+.pagination {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto;
+  width: 100%;
+  max-width: 550px;
+  margin-top: 2rem;
 }
 
 .editBtn {
