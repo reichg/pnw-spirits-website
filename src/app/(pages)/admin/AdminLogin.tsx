@@ -35,37 +35,39 @@ export default function AdminLogin({
   };
 
   return (
-    <form onSubmit={handleSubmit} className={styles.form}>
-      <h2 className={styles.heading}>Admin Login</h2>
-      <div className={styles.field}>
-        <label className={styles.label}>
-          Username
-          <br />
-          <input
-            className={styles.input}
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            required
-          />
-        </label>
-      </div>
-      <div className={styles.field}>
-        <label className={styles.label}>
-          Password
-          <br />
-          <input
-            className={styles.input}
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-          />
-        </label>
-      </div>
-      {error && <div className={styles.error}>{error}</div>}
-      <button type="submit" disabled={loading} className={styles.button}>
-        {loading ? "Logging in..." : "Login"}
-      </button>
-    </form>
+    <div className={styles.adminLoginRoot}>
+      <form onSubmit={handleSubmit} className={styles.form}>
+        <h2 className={styles.heading}>Admin Login</h2>
+        <div className={styles.field}>
+          <label className={styles.label}>
+            Username
+            <br />
+            <input
+              className={styles.input}
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              required
+            />
+          </label>
+        </div>
+        <div className={styles.field}>
+          <label className={styles.label}>
+            Password
+            <br />
+            <input
+              className={styles.input}
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+          </label>
+        </div>
+        {error && <div className={styles.error}>{error}</div>}
+        <button type="submit" disabled={loading} className={styles.button}>
+          {loading ? "Logging in..." : "Login"}
+        </button>
+      </form>
+    </div>
   );
 }

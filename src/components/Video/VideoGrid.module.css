@@ -50,7 +50,6 @@
     filter var(--transition-medium);
   box-sizing: border-box;
   position: relative;
-  background: none;
   cursor: pointer;
 }
 
@@ -66,9 +65,9 @@
     var(--color-bg-overlay) 70%,
     var(--color-accent-copper) 100%
   );
-  opacity: 0.65;
-  backdrop-filter: blur(14px) saturate(1.1);
-  -webkit-backdrop-filter: blur(14px) saturate(1.1);
+  opacity: 0.9;
+  backdrop-filter: blur(1px) saturate(1.1);
+  -webkit-backdrop-filter: blur(1px) saturate(1.1);
   border-radius: 1.2rem;
   pointer-events: none;
   transition: opacity var(--transition-medium);
@@ -102,6 +101,7 @@
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
+  z-index: 2;
 }
 
 .videoContent {

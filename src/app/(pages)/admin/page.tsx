@@ -74,6 +74,7 @@ export default function AdminPage() {
                 if (typeof window !== "undefined") {
                   localStorage.removeItem("adminToken");
                   setToken(null);
+                  window.location.href = "/admin/login";
                 }
               }}
             >
