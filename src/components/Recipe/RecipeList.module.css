@@ -1,3 +1,61 @@
+.searchContainer {
+  margin-bottom: 1.5rem;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.searchLabel {
+  color: var(--color-text-primary);
+  font-weight: 600;
+  font-size: 1.1rem;
+  margin-bottom: 0.5rem;
+  font-family: var(--font-primary);
+}
+
+.searchInput {
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: 0.5rem 1rem;
+  width: 100%;
+  max-width: 400px;
+  outline-color: var(--color-input-focus);
+  background: var(--color-bg-deep1);
+  color: var(--color-accent-gold);
+  font-family: var(--font-primary);
+  font-size: 1rem;
+  box-shadow: var(--shadow-xs);
+  transition: border-color 0.2s;
+}
+
+.searchInput:focus {
+  border: 1px solid var(--color-accent-gold);
+  outline: none;
+}
+
+.loadingText {
+  color: var(--color-accent-primary);
+  font-family: var(--font-primary);
+  font-size: 1.1rem;
+}
+
+.noResultsText {
+  color: var(--color-text-muted);
+  font-family: var(--font-primary);
+  font-size: 1.1rem;
+}
+
+.pageButton {
+  background: var(--color-button-bg);
+  color: var(--color-button-text);
+  border: 1px solid var(--color-button-border);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-primary);
+  font-weight: 500;
+  padding: 0.4em 1em;
+  transition: var(--transition-fast);
+}
 /* RecipeList layout and pagination styles only. Recipe cards now use FeaturedRecipe.module.css for card visuals. */
 
 .recipeList {

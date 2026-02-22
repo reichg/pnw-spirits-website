@@ -1,8 +1,9 @@
 "use client";
 import { useS3ImageUrl } from "@/utils/useS3ImageUrl";
-import styles from "./RecipeList.module.css";
-import featuredStyles from "./FeaturedRecipe.module.css";
 import Link from "next/link";
+import React, { useEffect, useRef, useState } from "react";
+import featuredStyles from "./FeaturedRecipe.module.css";
+import styles from "./RecipeList.module.css";
 
 type Recipe = {
   id: string | number;
@@ -20,7 +21,6 @@ type RecipeListProps = {
   totalPages: number;
   setPage: (p: number) => void;
 };
-
 
 const RecipeCard: React.FC<{ recipe: Recipe }> = ({ recipe }) => {
   const { url: coverUrl } = useS3ImageUrl(recipe.coverPhoto);
@@ -62,13 +62,73 @@ const RecipeList: React.FC<RecipeListProps> = ({
   totalPages,
   setPage,
 }) => {
+  // Search state
+  const [search, setSearch] = useState("");
+  const [filteredRecipes, setFilteredRecipes] = useState<Recipe[]>(recipes);
+  const [loading, setLoading] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  // Debounce hook
+  function useDebounce(value: string, delay: number) {
+    const [debouncedValue, setDebouncedValue] = useState(value);
+    useEffect(() => {
+      const handler = setTimeout(() => {
+        setDebouncedValue(value);
+      }, delay);
+      return () => {
+        clearTimeout(handler);
+      };
+    }, [value, delay]);
+    return debouncedValue;
+  }
+  const debouncedSearch = useDebounce(search, 400);
+
+  useEffect(() => {
+    if (!debouncedSearch) {
+      setFilteredRecipes(recipes);
+      setLoading(false);
+      return;
+    }
+    setLoading(true);
+    const fetchRecipes = async () => {
+      try {
+        const url = `/api/recipes?search=${encodeURIComponent(debouncedSearch)}`;
+        const res = await fetch(url);
+        const data = await res.json();
+        setFilteredRecipes(data.recipes || []);
+      } catch (err) {
+        setFilteredRecipes([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchRecipes();
+  }, [debouncedSearch, recipes]);
+
   return (
     <>
+      <div className={styles.searchContainer}>
+        <input
+          ref={inputRef}
+          id="recipe-search"
+          type="text"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Type to search..."
+          className={styles.searchInput}
+          aria-label="Search Recipes"
+        />
+      </div>
       <div className={styles.recipeList}>
-        {recipes.length === 0 && <div>No recipes yet.</div>}
-        {recipes.map((recipe) => (
-          <RecipeCard recipe={recipe} key={recipe.id} />
-        ))}
+        {loading ? (
+          <div className={styles.loadingText}>Loading...</div>
+        ) : filteredRecipes.length === 0 ? (
+          <div className={styles.noResultsText}>No recipes found.</div>
+        ) : (
+          filteredRecipes.map((recipe) => (
+            <RecipeCard recipe={recipe} key={recipe.id} />
+          ))
+        )}
       </div>
       {totalPages > 1 && (
         <div className={styles.pagination}>
@@ -76,6 +136,7 @@ const RecipeList: React.FC<RecipeListProps> = ({
             className={styles.pageButton}
             onClick={() => setPage(Math.max(1, page - 1))}
             disabled={page === 1}
+            aria-label="Previous page"
           >
             Previous
           </button>
@@ -86,6 +147,7 @@ const RecipeList: React.FC<RecipeListProps> = ({
             className={styles.pageButton}
             onClick={() => setPage(Math.min(totalPages, page + 1))}
             disabled={page === totalPages}
+            aria-label="Next page"
           >
             Next
           </button>
@@ -96,4 +158,3 @@ const RecipeList: React.FC<RecipeListProps> = ({
 };
 
 export default RecipeList;
-  

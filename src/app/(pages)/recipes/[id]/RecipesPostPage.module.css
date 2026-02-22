@@ -13,22 +13,12 @@
 }
 /* Background container for page background */
 .page {
-  height: 100vh;
-  width: 100%;
   display: flex;
-  flex-direction: column;
-  background: url("/images/Bottles.jpg");
-  background-size: cover;
-  background-repeat: no-repeat;
-  font-family: var(
-    --font-sans,
-    "Geist",
-    "Inter",
-    "Segoe UI",
-    Arial,
-    sans-serif
-  );
-  padding: 2rem 2rem;
+  min-height: calc(var(--vh, 1vh) * 100);
+  font-family: var(--font-geist-sans);
+  background: url("/images/Bottles.jpg") center center/cover no-repeat;
+  padding: 64px;
+  justify-content: center;
   position: relative;
   overflow: hidden;
 }
