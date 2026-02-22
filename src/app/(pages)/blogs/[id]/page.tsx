@@ -3,10 +3,6 @@ import { marked } from "marked";
 import { notFound } from "next/navigation";
 import styles from "./BlogPostPage.module.css";
 
-// Custom renderer for marked to support ![video](url) as <video>
-// and to proxy S3 images through the /api/media endpoint
-
-// --- Markdown image proxy logic ---
 const renderer = new marked.Renderer();
 const imageRenderer = renderer.image.bind(renderer);
 function proxiedUrl(url: string) {
@@ -50,30 +46,30 @@ export default async function BlogPostPage({
 
   return (
     <div className={styles.page}>
-      <div className={styles.blogMainCard}>
+      <div className={styles.featuredCard}>
         <div className={styles.glassOverlay} />
-        <main
-          className={styles.main}
-          style={{ position: "relative", zIndex: 3 }}
-        >
-          <h1 className={styles.title}>{blog.title}</h1>
-          <div className={styles.meta}>
-            <span className={styles.author}>By {blog.author}</span>
-            <span className={styles.date}>
+        <div className={styles.featuredContent}>
+          <div className={styles.cardHeader}>
+            <h1 className={styles.featuredTitle}>{blog.title}</h1>
+            <div className={styles.featuredMeta}>
+              By {blog.author} &mdash;{" "}
               {new Date(blog.createdAt).toLocaleDateString(undefined, {
                 year: "numeric",
                 month: "long",
                 day: "numeric",
               })}
-            </span>
+            </div>
           </div>
-          <article
-            className={styles.content}
-            dangerouslySetInnerHTML={{
-              __html: marked.parse(blog.content, { renderer }),
-            }}
-          />
-        </main>
+          <div className={styles.section}>
+            <h2>Blog Content</h2>
+            <article
+              className={styles.content}
+              dangerouslySetInnerHTML={{
+                __html: marked.parse(blog.content, { renderer }),
+              }}
+            />
+          </div>
+        </div>
       </div>
     </div>
   );

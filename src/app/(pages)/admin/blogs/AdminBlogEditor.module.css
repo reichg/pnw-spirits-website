@@ -87,7 +87,11 @@
 }
 /* Form is scrollable if content exceeds viewport */
 .form {
-  background: rgb(36, 19, 0);
+  background: linear-gradient(
+    120deg,
+    var(--color-bg-overlay) 70%,
+    var(--color-accent-copper) 100%
+  );
   border-radius: 18px;
   box-shadow: 0 8px 32px rgba(35, 66, 54, 0.18);
   font-family: var(--font-sans, "Geist", "Inter", sans-serif);

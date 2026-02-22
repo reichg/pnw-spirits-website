@@ -1,0 +1,123 @@
+/* Container for all recipe editor fields */
+.fieldsContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  padding: 15px;
+  background: var(--color-bg-secondary);
+  border-radius: var(--radius-lg);
+  width: 100%;
+  max-width: 1000px;
+  margin: 0 auto;
+  font-family: var(--font-sans);
+}
+/* Modal overlay fills viewport, centers form, and allows scroll if needed */
+.modal {
+  background: rgba(0, 0, 0, 0.4);
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100dvh;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  overflow: auto;
+  padding: max(env(safe-area-inset-top, 0px), 0.5rem) 5vw
+    max(env(safe-area-inset-bottom, 0px), 0.5rem) 5vw;
+  box-sizing: border-box;
+}
+
+.form {
+  background: linear-gradient(
+    120deg,
+    var(--color-bg-overlay) 70%,
+    var(--color-accent-copper) 100%
+  );
+  border-radius: 18px;
+  box-shadow: 0 8px 32px rgba(35, 66, 54, 0.18);
+  font-family: var(--font-sans, "Geist", "Inter", sans-serif);
+  border: 1.5px solid var(--color-accent-primary);
+  backdrop-filter: blur(8px) saturate(1.15);
+  -webkit-backdrop-filter: blur(8px) saturate(1.15);
+  padding: 40px 28px 32px 28px;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  max-width: 1400px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+@media (max-width: 900px) {
+  .form {
+    max-width: 98vw;
+    padding: 18px 8px 18px 8px;
+  }
+}
+.editorContainer {
+  background: var(--color-bg);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  padding: 2rem;
+  margin: 2rem auto;
+  max-width: 600px;
+}
+.heading {
+  font-size: 2rem;
+  color: var(--color-accent-gold);
+  margin-bottom: 1.5rem;
+}
+.inputGroup {
+  margin-bottom: 1.2rem;
+}
+.label {
+  font-weight: 600;
+  color: #3d4a3a;
+  margin-bottom: 0.5rem;
+  display: block;
+}
+.input,
+.textarea {
+  width: 100%;
+  padding: 0.6rem 1rem;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  font-size: 1rem;
+  margin-bottom: 0.5rem;
+  background: var(--color-input-bg);
+  color: var(--color-bg-deep);
+}
+.textarea {
+  min-height: 120px;
+  resize: vertical;
+}
+.buttonRow {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1.5rem;
+  justify-content: flex-end;
+}
+
+.error {
+  color: var(--color-error);
+  font-weight: 500;
+  margin-top: 1rem;
+}
+
+.actions {
+  display: flex;
+  gap: 16px;
+  justify-content: flex-end;
+  margin-top: 2rem;
+}
+
+@media (max-width: 600px) {
+  .fieldsContainer {
+    max-width: 100%;
+    gap: 20px;
+  }
+}

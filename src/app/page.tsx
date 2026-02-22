@@ -30,7 +30,7 @@ export default function Home() {
             <span className={landingStyles.landingFourColCardLabel}>Blogs</span>
           </Link>
           <Link
-            href="/videos"
+            href="/videos-landing"
             className={landingStyles.landingFourColCard}
             style={{ backgroundImage: "url('/images/Daq.jpg')" }}
             aria-label="Videos"

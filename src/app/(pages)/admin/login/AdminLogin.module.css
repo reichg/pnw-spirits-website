@@ -37,9 +37,6 @@
 .adminLoginRoot {
   min-height: 100vh;
   width: 100vw;
-  background: url("/images/Bottles.jpg");
-  background-size: cover;
-  background-repeat: no-repeat;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -52,11 +49,11 @@
 .adminLoginRoot::before {
   content: "";
   position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: inherit;
+  top: -10;
+  left: -10;
+  width: 103%;
+  height: 103%;
+  background: url("/images/Bottles.jpg") center center/cover no-repeat;
   filter: blur(18px) brightness(0.85) saturate(1.1);
   z-index: 0;
   pointer-events: none;

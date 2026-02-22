@@ -1,5 +1,5 @@
 "use client";
-import AdminLogin from "../AdminLogin";
+import AdminLogin from "./AdminLogin";
 import styles from "./AdminLoginPage.module.css";
 
 export default function AdminLoginPage() {
