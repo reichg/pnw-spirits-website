@@ -116,7 +116,7 @@ export default function AdminRecipeEditor({
     setError("");
     try {
       // 1. Get a signed upload URL
-      const key = `recipe-covers/${Date.now()}-${file.name}`;
+      const key = `recipe-media/recipe-cover-photos/${Date.now()}-${file.name}`;
       const res = await fetch("/api/s3-signed-url", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -181,7 +181,7 @@ export default function AdminRecipeEditor({
     setError("");
     try {
       // 1. Get a signed upload URL
-      const key = `recipe-media/${Date.now()}-${file.name}`;
+      const key = `recipe-media/recipe-content-media/${Date.now()}-${file.name}`;
       const res = await fetch("/api/s3-signed-url", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
