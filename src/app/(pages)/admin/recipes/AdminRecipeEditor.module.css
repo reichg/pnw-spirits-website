@@ -52,6 +52,13 @@
   overflow-y: auto;
 }
 
+.coverRow {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
 @media (max-width: 900px) {
   .form {
     max-width: 98vw;

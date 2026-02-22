@@ -112,47 +112,36 @@ export default function AdminRecipeEditor({
     const files = e.target.files;
     if (!files || files.length === 0) return;
     const file = files[0];
-    const formData = new FormData();
-    formData.append("file", file);
-    formData.append("type", "recipe-cover");
     setCoverImageLoading(true);
     setError("");
     try {
-      const res = await fetch("/api/uploads", {
+      // 1. Get a signed upload URL
+      const key = `recipe-covers/${Date.now()}-${file.name}`;
+      const res = await fetch("/api/s3-signed-url", {
         method: "POST",
-        headers: {
-          Authorization: `Bearer ${adminToken}`,
-        },
-        body: formData,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ key, contentType: file.type }),
       });
-      if (res.status === 401) {
-        if (typeof window !== "undefined") {
-          localStorage.setItem(
-            "recipeDraft",
-            JSON.stringify({
-              title,
-              description,
-              author,
-              ingredients,
-              instructions,
-              coverPhoto: coverImageKey,
-            }),
-          );
-        }
-        setError("Session expired. Your draft is saved. Please log in again.");
-        setTimeout(() => {
-          window.location.href = "/admin/login";
-        }, 1500);
+      const data = await res.json();
+      if (!res.ok || !data.url) {
+        setError(data.error || "Cover upload failed");
         setCoverImageLoading(false);
         if (coverInputRef.current) coverInputRef.current.value = "";
         return;
       }
-      const data = await res.json();
-      if (res.ok && data.key) {
-        setCoverImageKey(data.key);
-      } else {
-        setError(data.error || "Cover upload failed");
+      // 2. Upload file directly to S3
+      const uploadRes = await fetch(data.url, {
+        method: "PUT",
+        headers: { "Content-Type": file.type },
+        body: file,
+      });
+      if (!uploadRes.ok) {
+        setError("Cover upload failed (S3 error)");
+        setCoverImageLoading(false);
+        if (coverInputRef.current) coverInputRef.current.value = "";
+        return;
       }
+      setCoverImageKey(key);
     } catch {
       setError("Cover upload failed");
     }
@@ -188,62 +177,52 @@ export default function AdminRecipeEditor({
     const files = e.target.files;
     if (!files || files.length === 0) return;
     const file = files[0];
-    const formData = new FormData();
-    formData.append("file", file);
-    formData.append("type", "recipe-content");
     setMediaLoading(true);
     setError("");
     try {
-      const res = await fetch("/api/uploads", {
+      // 1. Get a signed upload URL
+      const key = `recipe-media/${Date.now()}-${file.name}`;
+      const res = await fetch("/api/s3-signed-url", {
         method: "POST",
-        headers: {
-          Authorization: `Bearer ${adminToken}`,
-        },
-        body: formData,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ key, contentType: file.type }),
       });
-      if (res.status === 401) {
-        if (typeof window !== "undefined") {
-          localStorage.setItem(
-            "recipeDraft",
-            JSON.stringify({
-              title,
-              description,
-              author,
-              ingredients,
-              instructions,
-              coverPhoto: coverImageKey,
-            }),
-          );
-        }
-        setError("Session expired. Your draft is saved. Please log in again.");
-        setTimeout(() => {
-          window.location.href = "/admin/login";
-        }, 1500);
+      const data = await res.json();
+      if (!res.ok || !data.url) {
+        setError(data.error || "Media upload failed");
         setMediaLoading(false);
         if (fileInputRef.current) fileInputRef.current.value = "";
         return;
       }
-      const data = await res.json();
-      if (res.ok && data.key) {
-        const textarea = textareaRef.current;
-        if (textarea) {
-          const start = textarea.selectionStart;
-          const end = textarea.selectionEnd;
-          const s3Key = data.key;
-          const isImage = file.type.startsWith("image/");
-          let insert = s3Key;
-          if (isImage) insert = `![image](${s3Key})`;
-          setInstructions(
-            instructions.slice(0, start) + insert + instructions.slice(end),
-          );
-          setTimeout(() => {
-            textarea.selectionStart = textarea.selectionEnd =
-              start + insert.length;
-            textarea.focus();
-          }, 0);
-        }
-      } else {
-        setError(data.error || "Upload failed");
+      // 2. Upload file directly to S3
+      const uploadRes = await fetch(data.url, {
+        method: "PUT",
+        headers: { "Content-Type": file.type },
+        body: file,
+      });
+      if (!uploadRes.ok) {
+        setError("Media upload failed (S3 error)");
+        setMediaLoading(false);
+        if (fileInputRef.current) fileInputRef.current.value = "";
+        return;
+      }
+      // 3. Insert S3 key or markdown image into instructions
+      const textarea = textareaRef.current;
+      if (textarea) {
+        const start = textarea.selectionStart;
+        const end = textarea.selectionEnd;
+        const s3Key = key;
+        const isImage = file.type.startsWith("image/");
+        let insert = s3Key;
+        if (isImage) insert = `![image](${s3Key})`;
+        setInstructions(
+          instructions.slice(0, start) + insert + instructions.slice(end),
+        );
+        setTimeout(() => {
+          textarea.selectionStart = textarea.selectionEnd =
+            start + insert.length;
+          textarea.focus();
+        }, 0);
       }
     } catch {
       setError("Upload failed");
@@ -422,38 +401,52 @@ export default function AdminRecipeEditor({
                   const files = Array.from(e.dataTransfer.files);
                   if (files.length === 0) return;
                   const file = files[0];
-                  const formData = new FormData();
-                  formData.append("file", file);
                   setLoading(true);
                   setError("");
                   try {
-                    const res = await fetch("/api/uploads", {
+                    // 1. Get a signed upload URL
+                    const key = `recipe-media/${Date.now()}-${file.name}`;
+                    const res = await fetch("/api/s3-signed-url", {
                       method: "POST",
-                      body: formData,
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({ key, contentType: file.type }),
                     });
                     const data = await res.json();
-                    if (res.ok && data.url) {
-                      const textarea = textareaRef.current;
-                      if (textarea) {
-                        const start = textarea.selectionStart;
-                        const end = textarea.selectionEnd;
-                        const url = data.url;
-                        const isImage = file.type.startsWith("image/");
-                        let insert = url;
-                        if (isImage) insert = `![alt text](${url})`;
-                        setInstructions(
-                          instructions.slice(0, start) +
-                            insert +
-                            instructions.slice(end),
-                        );
-                        setTimeout(() => {
-                          textarea.selectionStart = textarea.selectionEnd =
-                            start + insert.length;
-                          textarea.focus();
-                        }, 0);
-                      }
-                    } else {
+                    if (!res.ok || !data.url) {
                       setError(data.error || "Upload failed");
+                      setLoading(false);
+                      return;
+                    }
+                    // 2. Upload file directly to S3
+                    const uploadRes = await fetch(data.url, {
+                      method: "PUT",
+                      headers: { "Content-Type": file.type },
+                      body: file,
+                    });
+                    if (!uploadRes.ok) {
+                      setError("Upload failed (S3 error)");
+                      setLoading(false);
+                      return;
+                    }
+                    // 3. Insert S3 key or markdown image into instructions
+                    const textarea = textareaRef.current;
+                    if (textarea) {
+                      const start = textarea.selectionStart;
+                      const end = textarea.selectionEnd;
+                      const s3Key = key;
+                      const isImage = file.type.startsWith("image/");
+                      let insert = s3Key;
+                      if (isImage) insert = `![image](${s3Key})`;
+                      setInstructions(
+                        instructions.slice(0, start) +
+                          insert +
+                          instructions.slice(end),
+                      );
+                      setTimeout(() => {
+                        textarea.selectionStart = textarea.selectionEnd =
+                          start + insert.length;
+                        textarea.focus();
+                      }, 0);
                     }
                   } catch {
                     setError("Upload failed");

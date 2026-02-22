@@ -1,3 +1,69 @@
+import { PutObjectCommand } from "@aws-sdk/client-s3";
+/**
+ * Returns a short-lived (15 min) signed S3 upload URL for a given key and content type.
+ * Uses AWS credentials from environment variables for private uploads.
+ *
+ * @param key S3 object key (where to upload)
+ * @param contentType MIME type of the file
+ * @returns Promise<string | undefined> Signed upload URL or undefined
+ */
+export async function getS3UploadUrl(
+  key: string,
+  contentType: string,
+): Promise<string | undefined> {
+  const region = process.env.AWS_REGION;
+  const bucket = process.env.AWS_S3_BUCKET;
+  const accessKeyId = process.env.AWS_ACCESS_KEY_ID;
+  const secretAccessKey = process.env.AWS_SECRET_ACCESS_KEY;
+
+  if (!region || !bucket || !accessKeyId || !secretAccessKey) {
+    logger.error(
+      "Missing S3 environment variables for upload signed URL generation",
+      {
+        context: "getS3UploadUrl",
+        data: {
+          region,
+          bucket,
+          accessKeyId: !!accessKeyId,
+          secretAccessKey: !!secretAccessKey,
+        },
+      },
+    );
+    return undefined;
+  }
+
+  const s3 = new S3Client({
+    region,
+    credentials: {
+      accessKeyId,
+      secretAccessKey,
+    },
+  });
+
+  const command = new PutObjectCommand({
+    Bucket: bucket,
+    Key: key,
+    ContentType: contentType,
+  });
+
+  try {
+    const expiresIn = 15 * 60; // 15 minutes
+    const signedUrl: string = await getSignedUrl(s3, command, {
+      expiresIn,
+    });
+    logger.info("S3 signed upload URL generated", {
+      context: "getS3UploadUrl",
+      data: { key, signedUrl },
+    });
+    return signedUrl;
+  } catch (error) {
+    logger.error("Failed to generate S3 signed upload URL", {
+      context: "getS3UploadUrl",
+      data: { key, error: (error as Error).message },
+    });
+    return undefined;
+  }
+}
 // Utility to get the full S3 image URL from a key or return the URL if already absolute
 // Always use NEXT_PUBLIC_S3_BASE_URL from env for the bucket base URL
 import { GetObjectCommand, S3Client } from "@aws-sdk/client-s3";
