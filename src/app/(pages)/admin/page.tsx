@@ -1,7 +1,12 @@
 "use client";
 
 import AdminLanding from "@/app/(pages)/admin/AdminLanding";
+import { AdminTokenProvider } from "./AdminTokenContext";
 
 export default function AdminPage() {
-  return <AdminLanding />;
+  return (
+    <AdminTokenProvider>
+      <AdminLanding />
+    </AdminTokenProvider>
+  );
 }
