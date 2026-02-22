@@ -103,7 +103,7 @@ export default function AdminBlogEditor({
     setError("");
     try {
       // 1. Get a signed upload URL
-      const key = `blog-covers/${Date.now()}-${file.name}`;
+      const key = `blog-media/blog-cover-photos/${Date.now()}-${file.name}`;
       const res = await fetch("/api/s3-signed-url", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -170,7 +170,7 @@ export default function AdminBlogEditor({
     setError("");
     try {
       // 1. Get a signed upload URL
-      const key = `blog-media/${Date.now()}-${file.name}`;
+      const key = `blog-media/blog-content-media/${Date.now()}-${file.name}`;
       const res = await fetch("/api/s3-signed-url", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
