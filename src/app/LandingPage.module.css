@@ -191,7 +191,13 @@
     width: 100%;
     min-height: 300px;
   }
+  .landingTwoColForm {
+    margin-top: 1.5em;
+    margin-bottom: 1.5em;
+  }
   .landingTwoColSection {
     padding: 2em 0;
+    min-height: 0;
+    height: auto;
   }
 }

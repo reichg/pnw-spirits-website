@@ -44,6 +44,7 @@ You’ve just subscribed to a corner of the Pacific Northwest where craft cockta
 </ul>
 <p>If you want more entertainment? Follow us on Facebook & Instagram</p>
 <p>I’m glad you’re here and cheers to great drinks ahead.<br>
+<br>
 Welcome to the community,<br>
 The PNW Spirits</p>`,
   });
