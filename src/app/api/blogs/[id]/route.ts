@@ -1,6 +1,6 @@
 import { requireAdmin } from "@/utils/auth";
 import prisma from "@/utils/prisma";
-import redis from "@/utils/redisClient";
+import { invalidateBlogCache } from "@/utils/redisClient";
 import { getS3ImageUrl } from "@/utils/s3";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -42,9 +42,7 @@ export async function PUT(
       data: { title, content, author, coverPhoto },
     });
     console.log("[PUT /api/blogs/:id] After prisma.blog.update", updated);
-    // Invalidate all blog list cache entries in Redis
-    const keys = await redis.keys("blogs:*");
-    if (keys.length > 0) await redis.del(...keys);
+    await invalidateBlogCache();
     // Resolve coverPhoto to signed S3 URL if present
     const coverPhotoUrl = updated.coverPhoto
       ? await getS3ImageUrl(updated.coverPhoto)
@@ -78,7 +76,6 @@ export async function DELETE(
   }
   await prisma.blog.delete({ where: { id: parsedId } });
   // Invalidate all blog list cache entries in Redis
-  const keys = await redis.keys("blogs:*");
-  if (keys.length > 0) await redis.del(...keys);
+  await invalidateBlogCache();
   return NextResponse.json({ message: "Blog deleted" });
 }

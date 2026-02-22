@@ -1,7 +1,7 @@
 import { requireAdmin } from "@/utils/auth";
 import { logger } from "@/utils/logger";
 import prisma from "@/utils/prisma";
-import redis from "@/utils/redisClient";
+import { invalidateRecipeCache } from "@/utils/redisClient";
 import { getS3ImageUrl } from "@/utils/s3";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
@@ -73,8 +73,7 @@ export async function PUT(
         coverPhoto: parsed.data.coverPhoto || null,
       },
     });
-    await redis.del("recipes:list");
-    await redis.del(`recipe:${id}`);
+    await invalidateRecipeCache();
     logger.info("Recipe updated", { data: recipe });
     return NextResponse.json(recipe);
   } catch (err) {
@@ -98,8 +97,8 @@ export async function DELETE(
     return NextResponse.json({ error: "Invalid recipe id" }, { status: 400 });
   try {
     await prisma.cocktailRecipe.delete({ where: { id } });
-    await redis.del("recipes:list");
-    await redis.del(`recipe:${id}`);
+    // Invalidate all recipe cache entries in Redis
+    await invalidateRecipeCache();
     logger.info("Recipe deleted", { data: { id } });
     return NextResponse.json({ success: true });
   } catch (err) {
