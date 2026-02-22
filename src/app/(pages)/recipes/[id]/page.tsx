@@ -109,21 +109,17 @@ export default function RecipeDetailPage() {
                   const trimmed = step.trim();
                   // Match markdown image ![alt](key) or just a raw S3 key
                   const mdImg = trimmed.match(/^!\[(.*?)\]\((.*?)\)$/);
-                  const s3Key = mdImg
-                    ? mdImg[2]
-                    : trimmed.match(/^[\w\-/\.]+$/)
-                      ? trimmed
-                      : null;
-                  if (s3Key) {
-                    // Render a placeholder, actual image will be rendered below
+                  if (mdImg) {
+                    // If markdown image, render only image container
                     return (
                       <S3InstructionImage
                         key={idx}
-                        s3Key={s3Key}
-                        alt={mdImg ? mdImg[1] : "Instruction image"}
+                        s3Key={mdImg[2]}
+                        alt={mdImg[1] || "Instruction image"}
                       />
                     );
                   }
+                  // Otherwise, render text container
                   return trimmed ? <div key={idx}>{trimmed}</div> : null;
                 })}
               </div>
