@@ -1,0 +1,138 @@
+/* FeaturedBlog card, matching BlogGrid card architecture and hover */
+.featuredCard {
+  width: 100%;
+  max-width: 10000px;
+  min-width: 0;
+  height: 22rem;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  overflow: hidden;
+  transition:
+    box-shadow var(--transition-medium),
+    filter var(--transition-medium);
+  box-sizing: border-box;
+  position: relative;
+  background: none;
+  margin: 0 auto 3rem auto;
+  text-decoration: none;
+  outline: none;
+}
+
+.featuredCard:focus-within,
+.featuredCard:hover {
+  box-shadow:
+    0 4px 32px var(--color-shadow),
+    0 0 0 3px var(--color-accent-copper);
+  filter: brightness(1.3) saturate(1.08);
+}
+
+.featuredImage {
+  width: 340px;
+  min-width: 220px;
+  max-width: 340px;
+  height: 100%;
+  aspect-ratio: 4/5;
+  border-radius: var(--radius-md);
+  object-fit: cover;
+  box-shadow: var(--shadow-md);
+  z-index: 2;
+  margin: 0;
+}
+
+.featuredContent {
+  padding: 2.2rem 2.2rem 1.7rem 2.2rem;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+  position: relative;
+  z-index: 2;
+  color: var(--color-text-primary);
+  text-align: left;
+  justify-content: flex-end;
+  font-family: var(--font-primary);
+}
+
+/* Glassy overlay for featured blog text background */
+
+.glassOverlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+  background: linear-gradient(
+    120deg,
+    var(--color-bg-overlay) 70%,
+    var(--color-accent-copper) 100%
+  );
+  opacity: 0.9;
+  backdrop-filter: blur(14px) saturate(1.1);
+  -webkit-backdrop-filter: blur(14px) saturate(1.1);
+  border-radius: 0;
+  pointer-events: none;
+  transition: opacity var(--transition-medium);
+}
+
+/* Remove overlay gradient on card hover */
+.featuredCard:hover .glassOverlay,
+.featuredCard:focus-within .glassOverlay {
+  background: linear-gradient(
+    120deg,
+    var(--color-bg-overlay) 70%,
+    var(--color-accent-copper) 100%
+  );
+  opacity: 0.2;
+  backdrop-filter: blur(0px) saturate(1.1);
+  -webkit-backdrop-filter: blur(0px) saturate(1.1);
+}
+
+.featuredTitle {
+  font-family: var(--font-primary);
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--color-accent-gold);
+  margin-bottom: 0.2rem;
+  letter-spacing: 0.02em;
+  text-shadow: 0 1px 2px var(--color-shadow);
+}
+
+.featuredMetaTitle {
+  text-align: center;
+  font-size: 3rem;
+  color: var(--color-accent-secondary);
+  margin-bottom: 0.5rem;
+  font-family: var(--font-secondary);
+  letter-spacing: 0.01em;
+}
+
+.featuredMeta {
+  font-size: 0.95rem;
+  color: var(--color-accent-gold);
+  margin-bottom: 0.7rem;
+  font-family: var(--font-primary);
+}
+
+.featuredExcerpt {
+  font-size: 1.13rem;
+  margin-bottom: 1.1rem;
+  color: var(--color-text-secondary);
+  font-family: var(--font-secondary);
+  line-height: 1.6;
+}
+
+@media (max-width: 900px) {
+  .featuredCard {
+    max-width: 100%;
+    height: 18rem;
+    padding: 0.5rem;
+  }
+  .featuredContent {
+    padding: 1.2rem 0.7rem 0.7rem 0.7rem;
+  }
+  .featuredTitle {
+    font-size: 1.1rem;
+  }
+}

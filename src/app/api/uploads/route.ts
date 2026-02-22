@@ -46,11 +46,24 @@ export async function POST(req: NextRequest) {
     });
     const bucket = process.env.AWS_S3_BUCKET!;
 
-    // Determine S3 directory based on type
-    const s3Dir =
-      type === "cover"
-        ? "blog-media/blog-cover-photos"
-        : "blog-media/blog-content-media";
+    // Determine S3 directory based on type (blog or recipe)
+    let s3Dir;
+    if (type === "cover") {
+      s3Dir = "blog-media/blog-cover-photos";
+    } else if (
+      type === "content" ||
+      type === "blog-image" ||
+      type === "blog-video" ||
+      type === "blog-media"
+    ) {
+      s3Dir = "blog-media/blog-content-media";
+    } else if (type === "recipe-cover") {
+      s3Dir = "recipe-media/recipe-cover-photos";
+    } else if (type === "recipe-content") {
+      s3Dir = "recipe-media/recipe-content-media";
+    } else {
+      s3Dir = "misc-media";
+    }
 
     const s3Key = `${s3Dir}/${filename}`;
     await s3.send(

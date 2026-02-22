@@ -38,6 +38,11 @@ export type Reaction = $Result.DefaultSelection<Prisma.$ReactionPayload>
  * 
  */
 export type Subscriber = $Result.DefaultSelection<Prisma.$SubscriberPayload>
+/**
+ * Model CocktailRecipe
+ * 
+ */
+export type CocktailRecipe = $Result.DefaultSelection<Prisma.$CocktailRecipePayload>
 
 /**
  * ##  Prisma Client ʲˢ
@@ -205,6 +210,16 @@ export class PrismaClient<
     * ```
     */
   get subscriber(): Prisma.SubscriberDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.cocktailRecipe`: Exposes CRUD operations for the **CocktailRecipe** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more CocktailRecipes
+    * const cocktailRecipes = await prisma.cocktailRecipe.findMany()
+    * ```
+    */
+  get cocktailRecipe(): Prisma.CocktailRecipeDelegate<ExtArgs, ClientOptions>;
 }
 
 export namespace Prisma {
@@ -643,7 +658,8 @@ export namespace Prisma {
     Blog: 'Blog',
     Comment: 'Comment',
     Reaction: 'Reaction',
-    Subscriber: 'Subscriber'
+    Subscriber: 'Subscriber',
+    CocktailRecipe: 'CocktailRecipe'
   };
 
   export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -659,7 +675,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "user" | "blog" | "comment" | "reaction" | "subscriber"
+      modelProps: "user" | "blog" | "comment" | "reaction" | "subscriber" | "cocktailRecipe"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -1033,6 +1049,80 @@ export namespace Prisma {
           }
         }
       }
+      CocktailRecipe: {
+        payload: Prisma.$CocktailRecipePayload<ExtArgs>
+        fields: Prisma.CocktailRecipeFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.CocktailRecipeFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CocktailRecipePayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.CocktailRecipeFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CocktailRecipePayload>
+          }
+          findFirst: {
+            args: Prisma.CocktailRecipeFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CocktailRecipePayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.CocktailRecipeFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CocktailRecipePayload>
+          }
+          findMany: {
+            args: Prisma.CocktailRecipeFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CocktailRecipePayload>[]
+          }
+          create: {
+            args: Prisma.CocktailRecipeCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CocktailRecipePayload>
+          }
+          createMany: {
+            args: Prisma.CocktailRecipeCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.CocktailRecipeCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CocktailRecipePayload>[]
+          }
+          delete: {
+            args: Prisma.CocktailRecipeDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CocktailRecipePayload>
+          }
+          update: {
+            args: Prisma.CocktailRecipeUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CocktailRecipePayload>
+          }
+          deleteMany: {
+            args: Prisma.CocktailRecipeDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.CocktailRecipeUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.CocktailRecipeUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CocktailRecipePayload>[]
+          }
+          upsert: {
+            args: Prisma.CocktailRecipeUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$CocktailRecipePayload>
+          }
+          aggregate: {
+            args: Prisma.CocktailRecipeAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateCocktailRecipe>
+          }
+          groupBy: {
+            args: Prisma.CocktailRecipeGroupByArgs<ExtArgs>
+            result: $Utils.Optional<CocktailRecipeGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.CocktailRecipeCountArgs<ExtArgs>
+            result: $Utils.Optional<CocktailRecipeCountAggregateOutputType> | number
+          }
+        }
+      }
     }
   } & {
     other: {
@@ -1146,6 +1236,7 @@ export namespace Prisma {
     comment?: CommentOmit
     reaction?: ReactionOmit
     subscriber?: SubscriberOmit
+    cocktailRecipe?: CocktailRecipeOmit
   }
 
   /* Types for Logging */
@@ -6665,6 +6756,1087 @@ export namespace Prisma {
 
 
   /**
+   * Model CocktailRecipe
+   */
+
+  export type AggregateCocktailRecipe = {
+    _count: CocktailRecipeCountAggregateOutputType | null
+    _avg: CocktailRecipeAvgAggregateOutputType | null
+    _sum: CocktailRecipeSumAggregateOutputType | null
+    _min: CocktailRecipeMinAggregateOutputType | null
+    _max: CocktailRecipeMaxAggregateOutputType | null
+  }
+
+  export type CocktailRecipeAvgAggregateOutputType = {
+    id: number | null
+  }
+
+  export type CocktailRecipeSumAggregateOutputType = {
+    id: number | null
+  }
+
+  export type CocktailRecipeMinAggregateOutputType = {
+    id: number | null
+    title: string | null
+    description: string | null
+    author: string | null
+    coverPhoto: string | null
+    ingredients: string | null
+    instructions: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type CocktailRecipeMaxAggregateOutputType = {
+    id: number | null
+    title: string | null
+    description: string | null
+    author: string | null
+    coverPhoto: string | null
+    ingredients: string | null
+    instructions: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type CocktailRecipeCountAggregateOutputType = {
+    id: number
+    title: number
+    description: number
+    author: number
+    coverPhoto: number
+    ingredients: number
+    instructions: number
+    createdAt: number
+    updatedAt: number
+    _all: number
+  }
+
+
+  export type CocktailRecipeAvgAggregateInputType = {
+    id?: true
+  }
+
+  export type CocktailRecipeSumAggregateInputType = {
+    id?: true
+  }
+
+  export type CocktailRecipeMinAggregateInputType = {
+    id?: true
+    title?: true
+    description?: true
+    author?: true
+    coverPhoto?: true
+    ingredients?: true
+    instructions?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type CocktailRecipeMaxAggregateInputType = {
+    id?: true
+    title?: true
+    description?: true
+    author?: true
+    coverPhoto?: true
+    ingredients?: true
+    instructions?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type CocktailRecipeCountAggregateInputType = {
+    id?: true
+    title?: true
+    description?: true
+    author?: true
+    coverPhoto?: true
+    ingredients?: true
+    instructions?: true
+    createdAt?: true
+    updatedAt?: true
+    _all?: true
+  }
+
+  export type CocktailRecipeAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which CocktailRecipe to aggregate.
+     */
+    where?: CocktailRecipeWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of CocktailRecipes to fetch.
+     */
+    orderBy?: CocktailRecipeOrderByWithRelationInput | CocktailRecipeOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: CocktailRecipeWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` CocktailRecipes from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` CocktailRecipes.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned CocktailRecipes
+    **/
+    _count?: true | CocktailRecipeCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: CocktailRecipeAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: CocktailRecipeSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: CocktailRecipeMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: CocktailRecipeMaxAggregateInputType
+  }
+
+  export type GetCocktailRecipeAggregateType<T extends CocktailRecipeAggregateArgs> = {
+        [P in keyof T & keyof AggregateCocktailRecipe]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateCocktailRecipe[P]>
+      : GetScalarType<T[P], AggregateCocktailRecipe[P]>
+  }
+
+
+
+
+  export type CocktailRecipeGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: CocktailRecipeWhereInput
+    orderBy?: CocktailRecipeOrderByWithAggregationInput | CocktailRecipeOrderByWithAggregationInput[]
+    by: CocktailRecipeScalarFieldEnum[] | CocktailRecipeScalarFieldEnum
+    having?: CocktailRecipeScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: CocktailRecipeCountAggregateInputType | true
+    _avg?: CocktailRecipeAvgAggregateInputType
+    _sum?: CocktailRecipeSumAggregateInputType
+    _min?: CocktailRecipeMinAggregateInputType
+    _max?: CocktailRecipeMaxAggregateInputType
+  }
+
+  export type CocktailRecipeGroupByOutputType = {
+    id: number
+    title: string
+    description: string
+    author: string
+    coverPhoto: string | null
+    ingredients: string
+    instructions: string
+    createdAt: Date
+    updatedAt: Date
+    _count: CocktailRecipeCountAggregateOutputType | null
+    _avg: CocktailRecipeAvgAggregateOutputType | null
+    _sum: CocktailRecipeSumAggregateOutputType | null
+    _min: CocktailRecipeMinAggregateOutputType | null
+    _max: CocktailRecipeMaxAggregateOutputType | null
+  }
+
+  type GetCocktailRecipeGroupByPayload<T extends CocktailRecipeGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<CocktailRecipeGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof CocktailRecipeGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], CocktailRecipeGroupByOutputType[P]>
+            : GetScalarType<T[P], CocktailRecipeGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type CocktailRecipeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    title?: boolean
+    description?: boolean
+    author?: boolean
+    coverPhoto?: boolean
+    ingredients?: boolean
+    instructions?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }, ExtArgs["result"]["cocktailRecipe"]>
+
+  export type CocktailRecipeSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    title?: boolean
+    description?: boolean
+    author?: boolean
+    coverPhoto?: boolean
+    ingredients?: boolean
+    instructions?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }, ExtArgs["result"]["cocktailRecipe"]>
+
+  export type CocktailRecipeSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    title?: boolean
+    description?: boolean
+    author?: boolean
+    coverPhoto?: boolean
+    ingredients?: boolean
+    instructions?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }, ExtArgs["result"]["cocktailRecipe"]>
+
+  export type CocktailRecipeSelectScalar = {
+    id?: boolean
+    title?: boolean
+    description?: boolean
+    author?: boolean
+    coverPhoto?: boolean
+    ingredients?: boolean
+    instructions?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }
+
+  export type CocktailRecipeOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "title" | "description" | "author" | "coverPhoto" | "ingredients" | "instructions" | "createdAt" | "updatedAt", ExtArgs["result"]["cocktailRecipe"]>
+
+  export type $CocktailRecipePayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "CocktailRecipe"
+    objects: {}
+    scalars: $Extensions.GetPayloadResult<{
+      id: number
+      title: string
+      description: string
+      author: string
+      coverPhoto: string | null
+      ingredients: string
+      instructions: string
+      createdAt: Date
+      updatedAt: Date
+    }, ExtArgs["result"]["cocktailRecipe"]>
+    composites: {}
+  }
+
+  type CocktailRecipeGetPayload<S extends boolean | null | undefined | CocktailRecipeDefaultArgs> = $Result.GetResult<Prisma.$CocktailRecipePayload, S>
+
+  type CocktailRecipeCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<CocktailRecipeFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: CocktailRecipeCountAggregateInputType | true
+    }
+
+  export interface CocktailRecipeDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['CocktailRecipe'], meta: { name: 'CocktailRecipe' } }
+    /**
+     * Find zero or one CocktailRecipe that matches the filter.
+     * @param {CocktailRecipeFindUniqueArgs} args - Arguments to find a CocktailRecipe
+     * @example
+     * // Get one CocktailRecipe
+     * const cocktailRecipe = await prisma.cocktailRecipe.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends CocktailRecipeFindUniqueArgs>(args: SelectSubset<T, CocktailRecipeFindUniqueArgs<ExtArgs>>): Prisma__CocktailRecipeClient<$Result.GetResult<Prisma.$CocktailRecipePayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one CocktailRecipe that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {CocktailRecipeFindUniqueOrThrowArgs} args - Arguments to find a CocktailRecipe
+     * @example
+     * // Get one CocktailRecipe
+     * const cocktailRecipe = await prisma.cocktailRecipe.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends CocktailRecipeFindUniqueOrThrowArgs>(args: SelectSubset<T, CocktailRecipeFindUniqueOrThrowArgs<ExtArgs>>): Prisma__CocktailRecipeClient<$Result.GetResult<Prisma.$CocktailRecipePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first CocktailRecipe that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {CocktailRecipeFindFirstArgs} args - Arguments to find a CocktailRecipe
+     * @example
+     * // Get one CocktailRecipe
+     * const cocktailRecipe = await prisma.cocktailRecipe.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends CocktailRecipeFindFirstArgs>(args?: SelectSubset<T, CocktailRecipeFindFirstArgs<ExtArgs>>): Prisma__CocktailRecipeClient<$Result.GetResult<Prisma.$CocktailRecipePayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first CocktailRecipe that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {CocktailRecipeFindFirstOrThrowArgs} args - Arguments to find a CocktailRecipe
+     * @example
+     * // Get one CocktailRecipe
+     * const cocktailRecipe = await prisma.cocktailRecipe.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends CocktailRecipeFindFirstOrThrowArgs>(args?: SelectSubset<T, CocktailRecipeFindFirstOrThrowArgs<ExtArgs>>): Prisma__CocktailRecipeClient<$Result.GetResult<Prisma.$CocktailRecipePayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more CocktailRecipes that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {CocktailRecipeFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all CocktailRecipes
+     * const cocktailRecipes = await prisma.cocktailRecipe.findMany()
+     * 
+     * // Get first 10 CocktailRecipes
+     * const cocktailRecipes = await prisma.cocktailRecipe.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const cocktailRecipeWithIdOnly = await prisma.cocktailRecipe.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends CocktailRecipeFindManyArgs>(args?: SelectSubset<T, CocktailRecipeFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CocktailRecipePayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a CocktailRecipe.
+     * @param {CocktailRecipeCreateArgs} args - Arguments to create a CocktailRecipe.
+     * @example
+     * // Create one CocktailRecipe
+     * const CocktailRecipe = await prisma.cocktailRecipe.create({
+     *   data: {
+     *     // ... data to create a CocktailRecipe
+     *   }
+     * })
+     * 
+     */
+    create<T extends CocktailRecipeCreateArgs>(args: SelectSubset<T, CocktailRecipeCreateArgs<ExtArgs>>): Prisma__CocktailRecipeClient<$Result.GetResult<Prisma.$CocktailRecipePayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many CocktailRecipes.
+     * @param {CocktailRecipeCreateManyArgs} args - Arguments to create many CocktailRecipes.
+     * @example
+     * // Create many CocktailRecipes
+     * const cocktailRecipe = await prisma.cocktailRecipe.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends CocktailRecipeCreateManyArgs>(args?: SelectSubset<T, CocktailRecipeCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many CocktailRecipes and returns the data saved in the database.
+     * @param {CocktailRecipeCreateManyAndReturnArgs} args - Arguments to create many CocktailRecipes.
+     * @example
+     * // Create many CocktailRecipes
+     * const cocktailRecipe = await prisma.cocktailRecipe.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many CocktailRecipes and only return the `id`
+     * const cocktailRecipeWithIdOnly = await prisma.cocktailRecipe.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends CocktailRecipeCreateManyAndReturnArgs>(args?: SelectSubset<T, CocktailRecipeCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CocktailRecipePayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a CocktailRecipe.
+     * @param {CocktailRecipeDeleteArgs} args - Arguments to delete one CocktailRecipe.
+     * @example
+     * // Delete one CocktailRecipe
+     * const CocktailRecipe = await prisma.cocktailRecipe.delete({
+     *   where: {
+     *     // ... filter to delete one CocktailRecipe
+     *   }
+     * })
+     * 
+     */
+    delete<T extends CocktailRecipeDeleteArgs>(args: SelectSubset<T, CocktailRecipeDeleteArgs<ExtArgs>>): Prisma__CocktailRecipeClient<$Result.GetResult<Prisma.$CocktailRecipePayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one CocktailRecipe.
+     * @param {CocktailRecipeUpdateArgs} args - Arguments to update one CocktailRecipe.
+     * @example
+     * // Update one CocktailRecipe
+     * const cocktailRecipe = await prisma.cocktailRecipe.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends CocktailRecipeUpdateArgs>(args: SelectSubset<T, CocktailRecipeUpdateArgs<ExtArgs>>): Prisma__CocktailRecipeClient<$Result.GetResult<Prisma.$CocktailRecipePayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more CocktailRecipes.
+     * @param {CocktailRecipeDeleteManyArgs} args - Arguments to filter CocktailRecipes to delete.
+     * @example
+     * // Delete a few CocktailRecipes
+     * const { count } = await prisma.cocktailRecipe.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends CocktailRecipeDeleteManyArgs>(args?: SelectSubset<T, CocktailRecipeDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more CocktailRecipes.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {CocktailRecipeUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many CocktailRecipes
+     * const cocktailRecipe = await prisma.cocktailRecipe.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends CocktailRecipeUpdateManyArgs>(args: SelectSubset<T, CocktailRecipeUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more CocktailRecipes and returns the data updated in the database.
+     * @param {CocktailRecipeUpdateManyAndReturnArgs} args - Arguments to update many CocktailRecipes.
+     * @example
+     * // Update many CocktailRecipes
+     * const cocktailRecipe = await prisma.cocktailRecipe.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more CocktailRecipes and only return the `id`
+     * const cocktailRecipeWithIdOnly = await prisma.cocktailRecipe.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends CocktailRecipeUpdateManyAndReturnArgs>(args: SelectSubset<T, CocktailRecipeUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CocktailRecipePayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one CocktailRecipe.
+     * @param {CocktailRecipeUpsertArgs} args - Arguments to update or create a CocktailRecipe.
+     * @example
+     * // Update or create a CocktailRecipe
+     * const cocktailRecipe = await prisma.cocktailRecipe.upsert({
+     *   create: {
+     *     // ... data to create a CocktailRecipe
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the CocktailRecipe we want to update
+     *   }
+     * })
+     */
+    upsert<T extends CocktailRecipeUpsertArgs>(args: SelectSubset<T, CocktailRecipeUpsertArgs<ExtArgs>>): Prisma__CocktailRecipeClient<$Result.GetResult<Prisma.$CocktailRecipePayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of CocktailRecipes.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {CocktailRecipeCountArgs} args - Arguments to filter CocktailRecipes to count.
+     * @example
+     * // Count the number of CocktailRecipes
+     * const count = await prisma.cocktailRecipe.count({
+     *   where: {
+     *     // ... the filter for the CocktailRecipes we want to count
+     *   }
+     * })
+    **/
+    count<T extends CocktailRecipeCountArgs>(
+      args?: Subset<T, CocktailRecipeCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], CocktailRecipeCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a CocktailRecipe.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {CocktailRecipeAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends CocktailRecipeAggregateArgs>(args: Subset<T, CocktailRecipeAggregateArgs>): Prisma.PrismaPromise<GetCocktailRecipeAggregateType<T>>
+
+    /**
+     * Group by CocktailRecipe.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {CocktailRecipeGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends CocktailRecipeGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: CocktailRecipeGroupByArgs['orderBy'] }
+        : { orderBy?: CocktailRecipeGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, CocktailRecipeGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetCocktailRecipeGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the CocktailRecipe model
+   */
+  readonly fields: CocktailRecipeFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for CocktailRecipe.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__CocktailRecipeClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the CocktailRecipe model
+   */
+  interface CocktailRecipeFieldRefs {
+    readonly id: FieldRef<"CocktailRecipe", 'Int'>
+    readonly title: FieldRef<"CocktailRecipe", 'String'>
+    readonly description: FieldRef<"CocktailRecipe", 'String'>
+    readonly author: FieldRef<"CocktailRecipe", 'String'>
+    readonly coverPhoto: FieldRef<"CocktailRecipe", 'String'>
+    readonly ingredients: FieldRef<"CocktailRecipe", 'String'>
+    readonly instructions: FieldRef<"CocktailRecipe", 'String'>
+    readonly createdAt: FieldRef<"CocktailRecipe", 'DateTime'>
+    readonly updatedAt: FieldRef<"CocktailRecipe", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * CocktailRecipe findUnique
+   */
+  export type CocktailRecipeFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CocktailRecipe
+     */
+    select?: CocktailRecipeSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CocktailRecipe
+     */
+    omit?: CocktailRecipeOmit<ExtArgs> | null
+    /**
+     * Filter, which CocktailRecipe to fetch.
+     */
+    where: CocktailRecipeWhereUniqueInput
+  }
+
+  /**
+   * CocktailRecipe findUniqueOrThrow
+   */
+  export type CocktailRecipeFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CocktailRecipe
+     */
+    select?: CocktailRecipeSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CocktailRecipe
+     */
+    omit?: CocktailRecipeOmit<ExtArgs> | null
+    /**
+     * Filter, which CocktailRecipe to fetch.
+     */
+    where: CocktailRecipeWhereUniqueInput
+  }
+
+  /**
+   * CocktailRecipe findFirst
+   */
+  export type CocktailRecipeFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CocktailRecipe
+     */
+    select?: CocktailRecipeSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CocktailRecipe
+     */
+    omit?: CocktailRecipeOmit<ExtArgs> | null
+    /**
+     * Filter, which CocktailRecipe to fetch.
+     */
+    where?: CocktailRecipeWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of CocktailRecipes to fetch.
+     */
+    orderBy?: CocktailRecipeOrderByWithRelationInput | CocktailRecipeOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for CocktailRecipes.
+     */
+    cursor?: CocktailRecipeWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` CocktailRecipes from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` CocktailRecipes.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of CocktailRecipes.
+     */
+    distinct?: CocktailRecipeScalarFieldEnum | CocktailRecipeScalarFieldEnum[]
+  }
+
+  /**
+   * CocktailRecipe findFirstOrThrow
+   */
+  export type CocktailRecipeFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CocktailRecipe
+     */
+    select?: CocktailRecipeSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CocktailRecipe
+     */
+    omit?: CocktailRecipeOmit<ExtArgs> | null
+    /**
+     * Filter, which CocktailRecipe to fetch.
+     */
+    where?: CocktailRecipeWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of CocktailRecipes to fetch.
+     */
+    orderBy?: CocktailRecipeOrderByWithRelationInput | CocktailRecipeOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for CocktailRecipes.
+     */
+    cursor?: CocktailRecipeWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` CocktailRecipes from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` CocktailRecipes.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of CocktailRecipes.
+     */
+    distinct?: CocktailRecipeScalarFieldEnum | CocktailRecipeScalarFieldEnum[]
+  }
+
+  /**
+   * CocktailRecipe findMany
+   */
+  export type CocktailRecipeFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CocktailRecipe
+     */
+    select?: CocktailRecipeSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CocktailRecipe
+     */
+    omit?: CocktailRecipeOmit<ExtArgs> | null
+    /**
+     * Filter, which CocktailRecipes to fetch.
+     */
+    where?: CocktailRecipeWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of CocktailRecipes to fetch.
+     */
+    orderBy?: CocktailRecipeOrderByWithRelationInput | CocktailRecipeOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing CocktailRecipes.
+     */
+    cursor?: CocktailRecipeWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` CocktailRecipes from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` CocktailRecipes.
+     */
+    skip?: number
+    distinct?: CocktailRecipeScalarFieldEnum | CocktailRecipeScalarFieldEnum[]
+  }
+
+  /**
+   * CocktailRecipe create
+   */
+  export type CocktailRecipeCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CocktailRecipe
+     */
+    select?: CocktailRecipeSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CocktailRecipe
+     */
+    omit?: CocktailRecipeOmit<ExtArgs> | null
+    /**
+     * The data needed to create a CocktailRecipe.
+     */
+    data: XOR<CocktailRecipeCreateInput, CocktailRecipeUncheckedCreateInput>
+  }
+
+  /**
+   * CocktailRecipe createMany
+   */
+  export type CocktailRecipeCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many CocktailRecipes.
+     */
+    data: CocktailRecipeCreateManyInput | CocktailRecipeCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * CocktailRecipe createManyAndReturn
+   */
+  export type CocktailRecipeCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CocktailRecipe
+     */
+    select?: CocktailRecipeSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the CocktailRecipe
+     */
+    omit?: CocktailRecipeOmit<ExtArgs> | null
+    /**
+     * The data used to create many CocktailRecipes.
+     */
+    data: CocktailRecipeCreateManyInput | CocktailRecipeCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * CocktailRecipe update
+   */
+  export type CocktailRecipeUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CocktailRecipe
+     */
+    select?: CocktailRecipeSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CocktailRecipe
+     */
+    omit?: CocktailRecipeOmit<ExtArgs> | null
+    /**
+     * The data needed to update a CocktailRecipe.
+     */
+    data: XOR<CocktailRecipeUpdateInput, CocktailRecipeUncheckedUpdateInput>
+    /**
+     * Choose, which CocktailRecipe to update.
+     */
+    where: CocktailRecipeWhereUniqueInput
+  }
+
+  /**
+   * CocktailRecipe updateMany
+   */
+  export type CocktailRecipeUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update CocktailRecipes.
+     */
+    data: XOR<CocktailRecipeUpdateManyMutationInput, CocktailRecipeUncheckedUpdateManyInput>
+    /**
+     * Filter which CocktailRecipes to update
+     */
+    where?: CocktailRecipeWhereInput
+    /**
+     * Limit how many CocktailRecipes to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * CocktailRecipe updateManyAndReturn
+   */
+  export type CocktailRecipeUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CocktailRecipe
+     */
+    select?: CocktailRecipeSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the CocktailRecipe
+     */
+    omit?: CocktailRecipeOmit<ExtArgs> | null
+    /**
+     * The data used to update CocktailRecipes.
+     */
+    data: XOR<CocktailRecipeUpdateManyMutationInput, CocktailRecipeUncheckedUpdateManyInput>
+    /**
+     * Filter which CocktailRecipes to update
+     */
+    where?: CocktailRecipeWhereInput
+    /**
+     * Limit how many CocktailRecipes to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * CocktailRecipe upsert
+   */
+  export type CocktailRecipeUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CocktailRecipe
+     */
+    select?: CocktailRecipeSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CocktailRecipe
+     */
+    omit?: CocktailRecipeOmit<ExtArgs> | null
+    /**
+     * The filter to search for the CocktailRecipe to update in case it exists.
+     */
+    where: CocktailRecipeWhereUniqueInput
+    /**
+     * In case the CocktailRecipe found by the `where` argument doesn't exist, create a new CocktailRecipe with this data.
+     */
+    create: XOR<CocktailRecipeCreateInput, CocktailRecipeUncheckedCreateInput>
+    /**
+     * In case the CocktailRecipe was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<CocktailRecipeUpdateInput, CocktailRecipeUncheckedUpdateInput>
+  }
+
+  /**
+   * CocktailRecipe delete
+   */
+  export type CocktailRecipeDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CocktailRecipe
+     */
+    select?: CocktailRecipeSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CocktailRecipe
+     */
+    omit?: CocktailRecipeOmit<ExtArgs> | null
+    /**
+     * Filter which CocktailRecipe to delete.
+     */
+    where: CocktailRecipeWhereUniqueInput
+  }
+
+  /**
+   * CocktailRecipe deleteMany
+   */
+  export type CocktailRecipeDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which CocktailRecipes to delete
+     */
+    where?: CocktailRecipeWhereInput
+    /**
+     * Limit how many CocktailRecipes to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * CocktailRecipe without action
+   */
+  export type CocktailRecipeDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the CocktailRecipe
+     */
+    select?: CocktailRecipeSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the CocktailRecipe
+     */
+    omit?: CocktailRecipeOmit<ExtArgs> | null
+  }
+
+
+  /**
    * Enums
    */
 
@@ -6732,6 +7904,21 @@ export namespace Prisma {
   };
 
   export type SubscriberScalarFieldEnum = (typeof SubscriberScalarFieldEnum)[keyof typeof SubscriberScalarFieldEnum]
+
+
+  export const CocktailRecipeScalarFieldEnum: {
+    id: 'id',
+    title: 'title',
+    description: 'description',
+    author: 'author',
+    coverPhoto: 'coverPhoto',
+    ingredients: 'ingredients',
+    instructions: 'instructions',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+  };
+
+  export type CocktailRecipeScalarFieldEnum = (typeof CocktailRecipeScalarFieldEnum)[keyof typeof CocktailRecipeScalarFieldEnum]
 
 
   export const SortOrder: {
@@ -7109,6 +8296,80 @@ export namespace Prisma {
     subscribedAt?: DateTimeWithAggregatesFilter<"Subscriber"> | Date | string
   }
 
+  export type CocktailRecipeWhereInput = {
+    AND?: CocktailRecipeWhereInput | CocktailRecipeWhereInput[]
+    OR?: CocktailRecipeWhereInput[]
+    NOT?: CocktailRecipeWhereInput | CocktailRecipeWhereInput[]
+    id?: IntFilter<"CocktailRecipe"> | number
+    title?: StringFilter<"CocktailRecipe"> | string
+    description?: StringFilter<"CocktailRecipe"> | string
+    author?: StringFilter<"CocktailRecipe"> | string
+    coverPhoto?: StringNullableFilter<"CocktailRecipe"> | string | null
+    ingredients?: StringFilter<"CocktailRecipe"> | string
+    instructions?: StringFilter<"CocktailRecipe"> | string
+    createdAt?: DateTimeFilter<"CocktailRecipe"> | Date | string
+    updatedAt?: DateTimeFilter<"CocktailRecipe"> | Date | string
+  }
+
+  export type CocktailRecipeOrderByWithRelationInput = {
+    id?: SortOrder
+    title?: SortOrder
+    description?: SortOrder
+    author?: SortOrder
+    coverPhoto?: SortOrderInput | SortOrder
+    ingredients?: SortOrder
+    instructions?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type CocktailRecipeWhereUniqueInput = Prisma.AtLeast<{
+    id?: number
+    AND?: CocktailRecipeWhereInput | CocktailRecipeWhereInput[]
+    OR?: CocktailRecipeWhereInput[]
+    NOT?: CocktailRecipeWhereInput | CocktailRecipeWhereInput[]
+    title?: StringFilter<"CocktailRecipe"> | string
+    description?: StringFilter<"CocktailRecipe"> | string
+    author?: StringFilter<"CocktailRecipe"> | string
+    coverPhoto?: StringNullableFilter<"CocktailRecipe"> | string | null
+    ingredients?: StringFilter<"CocktailRecipe"> | string
+    instructions?: StringFilter<"CocktailRecipe"> | string
+    createdAt?: DateTimeFilter<"CocktailRecipe"> | Date | string
+    updatedAt?: DateTimeFilter<"CocktailRecipe"> | Date | string
+  }, "id">
+
+  export type CocktailRecipeOrderByWithAggregationInput = {
+    id?: SortOrder
+    title?: SortOrder
+    description?: SortOrder
+    author?: SortOrder
+    coverPhoto?: SortOrderInput | SortOrder
+    ingredients?: SortOrder
+    instructions?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    _count?: CocktailRecipeCountOrderByAggregateInput
+    _avg?: CocktailRecipeAvgOrderByAggregateInput
+    _max?: CocktailRecipeMaxOrderByAggregateInput
+    _min?: CocktailRecipeMinOrderByAggregateInput
+    _sum?: CocktailRecipeSumOrderByAggregateInput
+  }
+
+  export type CocktailRecipeScalarWhereWithAggregatesInput = {
+    AND?: CocktailRecipeScalarWhereWithAggregatesInput | CocktailRecipeScalarWhereWithAggregatesInput[]
+    OR?: CocktailRecipeScalarWhereWithAggregatesInput[]
+    NOT?: CocktailRecipeScalarWhereWithAggregatesInput | CocktailRecipeScalarWhereWithAggregatesInput[]
+    id?: IntWithAggregatesFilter<"CocktailRecipe"> | number
+    title?: StringWithAggregatesFilter<"CocktailRecipe"> | string
+    description?: StringWithAggregatesFilter<"CocktailRecipe"> | string
+    author?: StringWithAggregatesFilter<"CocktailRecipe"> | string
+    coverPhoto?: StringNullableWithAggregatesFilter<"CocktailRecipe"> | string | null
+    ingredients?: StringWithAggregatesFilter<"CocktailRecipe"> | string
+    instructions?: StringWithAggregatesFilter<"CocktailRecipe"> | string
+    createdAt?: DateTimeWithAggregatesFilter<"CocktailRecipe"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"CocktailRecipe"> | Date | string
+  }
+
   export type UserCreateInput = {
     username: string
     password: string
@@ -7385,6 +8646,87 @@ export namespace Prisma {
     lastName?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     subscribedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type CocktailRecipeCreateInput = {
+    title: string
+    description: string
+    author: string
+    coverPhoto?: string | null
+    ingredients: string
+    instructions: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type CocktailRecipeUncheckedCreateInput = {
+    id?: number
+    title: string
+    description: string
+    author: string
+    coverPhoto?: string | null
+    ingredients: string
+    instructions: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type CocktailRecipeUpdateInput = {
+    title?: StringFieldUpdateOperationsInput | string
+    description?: StringFieldUpdateOperationsInput | string
+    author?: StringFieldUpdateOperationsInput | string
+    coverPhoto?: NullableStringFieldUpdateOperationsInput | string | null
+    ingredients?: StringFieldUpdateOperationsInput | string
+    instructions?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type CocktailRecipeUncheckedUpdateInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    title?: StringFieldUpdateOperationsInput | string
+    description?: StringFieldUpdateOperationsInput | string
+    author?: StringFieldUpdateOperationsInput | string
+    coverPhoto?: NullableStringFieldUpdateOperationsInput | string | null
+    ingredients?: StringFieldUpdateOperationsInput | string
+    instructions?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type CocktailRecipeCreateManyInput = {
+    id?: number
+    title: string
+    description: string
+    author: string
+    coverPhoto?: string | null
+    ingredients: string
+    instructions: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type CocktailRecipeUpdateManyMutationInput = {
+    title?: StringFieldUpdateOperationsInput | string
+    description?: StringFieldUpdateOperationsInput | string
+    author?: StringFieldUpdateOperationsInput | string
+    coverPhoto?: NullableStringFieldUpdateOperationsInput | string | null
+    ingredients?: StringFieldUpdateOperationsInput | string
+    instructions?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type CocktailRecipeUncheckedUpdateManyInput = {
+    id?: IntFieldUpdateOperationsInput | number
+    title?: StringFieldUpdateOperationsInput | string
+    description?: StringFieldUpdateOperationsInput | string
+    author?: StringFieldUpdateOperationsInput | string
+    coverPhoto?: NullableStringFieldUpdateOperationsInput | string | null
+    ingredients?: StringFieldUpdateOperationsInput | string
+    instructions?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type IntFilter<$PrismaModel = never> = {
@@ -7701,6 +9043,50 @@ export namespace Prisma {
   }
 
   export type SubscriberSumOrderByAggregateInput = {
+    id?: SortOrder
+  }
+
+  export type CocktailRecipeCountOrderByAggregateInput = {
+    id?: SortOrder
+    title?: SortOrder
+    description?: SortOrder
+    author?: SortOrder
+    coverPhoto?: SortOrder
+    ingredients?: SortOrder
+    instructions?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type CocktailRecipeAvgOrderByAggregateInput = {
+    id?: SortOrder
+  }
+
+  export type CocktailRecipeMaxOrderByAggregateInput = {
+    id?: SortOrder
+    title?: SortOrder
+    description?: SortOrder
+    author?: SortOrder
+    coverPhoto?: SortOrder
+    ingredients?: SortOrder
+    instructions?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type CocktailRecipeMinOrderByAggregateInput = {
+    id?: SortOrder
+    title?: SortOrder
+    description?: SortOrder
+    author?: SortOrder
+    coverPhoto?: SortOrder
+    ingredients?: SortOrder
+    instructions?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type CocktailRecipeSumOrderByAggregateInput = {
     id?: SortOrder
   }
 

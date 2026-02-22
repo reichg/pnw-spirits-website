@@ -54,3 +54,15 @@ model Subscriber {
   email        String   @unique
   subscribedAt DateTime @default(now())
 }
+
+model CocktailRecipe {
+  id           Int      @id @default(autoincrement())
+  title        String
+  description  String
+  author       String
+  coverPhoto   String? // URL or file reference for the recipe's cover photo
+  ingredients  String // JSON or comma-separated list
+  instructions String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}

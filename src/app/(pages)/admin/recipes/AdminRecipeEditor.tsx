@@ -3,30 +3,31 @@ import { logger } from "@/utils/logger";
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import styles from "./AdminBlogEditor.module.css";
-import { useAdminToken } from "./AdminTokenContext";
+import { useAdminToken } from "../AdminTokenContext";
+import styles from "./AdminRecipeEditor.module.css";
 
-interface Blog {
+interface CocktailRecipe {
   id?: number;
   title: string;
-  content: string;
+  description: string;
   author: string;
   coverImageUrl?: string;
+  ingredients: string;
+  instructions: string;
 }
 
-interface AdminBlogEditorProps {
-  blog: Blog | null;
+interface AdminRecipeEditorProps {
+  recipe: CocktailRecipe | null;
   onClose: (refresh?: boolean) => void;
   forceEmpty?: boolean;
 }
 
-export default function AdminBlogEditor({
-  blog,
+export default function AdminRecipeEditor({
+  recipe,
   onClose,
   forceEmpty = false,
-}: AdminBlogEditorProps) {
+}: AdminRecipeEditorProps) {
   const { token: adminToken, setToken } = useAdminToken();
-  // Always check localStorage for adminToken and update context
   useEffect(() => {
     const checkToken = () => {
       const t =
@@ -40,11 +41,11 @@ export default function AdminBlogEditor({
     return () => clearInterval(interval);
   }, [adminToken, setToken]);
 
-  const getInitialField = (field: "title" | "content" | "author") => {
-    if (blog) return blog[field] || "";
+  const getInitialField = (field: keyof CocktailRecipe) => {
+    if (recipe) return recipe[field] || "";
     if (forceEmpty) return "";
     if (typeof window !== "undefined") {
-      const draft = localStorage.getItem("blogDraft");
+      const draft = localStorage.getItem("recipeDraft");
       if (draft) {
         try {
           const parsed = JSON.parse(draft);
@@ -56,13 +57,19 @@ export default function AdminBlogEditor({
   };
 
   const [title, setTitle] = useState(() => getInitialField("title"));
-  const [content, setContent] = useState(() => getInitialField("content"));
-  const [author, setAuthor] = useState(() => getInitialField("author"));
-  // S3 key for the cover image
-  const [coverImageKey, setCoverImageKey] = useState<string>(
-    blog?.coverImageUrl || "",
+  const [description, setDescription] = useState(() =>
+    getInitialField("description"),
   );
-  // Signed URL for preview
+  const [author, setAuthor] = useState(() => getInitialField("author"));
+  const [ingredients, setIngredients] = useState(() =>
+    getInitialField("ingredients"),
+  );
+  const [instructions, setInstructions] = useState(() =>
+    getInitialField("instructions"),
+  );
+  const [coverImageKey, setCoverImageKey] = useState<string>(
+    recipe?.coverImageUrl || "",
+  );
   const [coverImagePreviewUrl, setCoverImagePreviewUrl] = useState<string>("");
   const [coverImageLoading, setCoverImageLoading] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -72,36 +79,42 @@ export default function AdminBlogEditor({
   const coverInputRef = useRef<HTMLInputElement>(null);
   const [mediaLoading, setMediaLoading] = useState(false);
 
-  // Redirect or logout if adminToken is missing
   useEffect(() => {
     if (!adminToken) {
-      // Save draft before redirect
       if (typeof window !== "undefined") {
         localStorage.setItem(
-          "blogDraft",
+          "recipeDraft",
           JSON.stringify({
             title,
-            content,
+            description,
             author,
+            ingredients,
+            instructions,
             coverPhoto: coverImageKey,
           }),
         );
       }
       window.location.href = "/admin/login";
     }
-  }, [adminToken, title, content, author, coverImageKey]);
+  }, [
+    adminToken,
+    title,
+    description,
+    author,
+    ingredients,
+    instructions,
+    coverImageKey,
+  ]);
 
-  // Disable form if token is missing
   const isDisabled = !adminToken;
 
-  // Handle cover image upload
   const handleCoverChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
     const file = files[0];
     const formData = new FormData();
     formData.append("file", file);
-    formData.append("type", "cover");
+    formData.append("type", "recipe-cover");
     setCoverImageLoading(true);
     setError("");
     try {
@@ -112,6 +125,28 @@ export default function AdminBlogEditor({
         },
         body: formData,
       });
+      if (res.status === 401) {
+        if (typeof window !== "undefined") {
+          localStorage.setItem(
+            "recipeDraft",
+            JSON.stringify({
+              title,
+              description,
+              author,
+              ingredients,
+              instructions,
+              coverPhoto: coverImageKey,
+            }),
+          );
+        }
+        setError("Session expired. Your draft is saved. Please log in again.");
+        setTimeout(() => {
+          window.location.href = "/admin/login";
+        }, 1500);
+        setCoverImageLoading(false);
+        if (coverInputRef.current) coverInputRef.current.value = "";
+        return;
+      }
       const data = await res.json();
       if (res.ok && data.key) {
         setCoverImageKey(data.key);
@@ -125,7 +160,6 @@ export default function AdminBlogEditor({
     if (coverInputRef.current) coverInputRef.current.value = "";
   };
 
-  // Fetch a signed URL for preview whenever the coverImageKey changes
   useEffect(() => {
     async function fetchSignedUrl() {
       if (!coverImageKey) {
@@ -150,13 +184,13 @@ export default function AdminBlogEditor({
     fetchSignedUrl();
   }, [coverImageKey]);
 
-  // Handle media upload for content
   const handleMediaChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
     const file = files[0];
     const formData = new FormData();
     formData.append("file", file);
+    formData.append("type", "recipe-content");
     setMediaLoading(true);
     setError("");
     try {
@@ -167,6 +201,28 @@ export default function AdminBlogEditor({
         },
         body: formData,
       });
+      if (res.status === 401) {
+        if (typeof window !== "undefined") {
+          localStorage.setItem(
+            "recipeDraft",
+            JSON.stringify({
+              title,
+              description,
+              author,
+              ingredients,
+              instructions,
+              coverPhoto: coverImageKey,
+            }),
+          );
+        }
+        setError("Session expired. Your draft is saved. Please log in again.");
+        setTimeout(() => {
+          window.location.href = "/admin/login";
+        }, 1500);
+        setMediaLoading(false);
+        if (fileInputRef.current) fileInputRef.current.value = "";
+        return;
+      }
       const data = await res.json();
       if (res.ok && data.key) {
         const textarea = textareaRef.current;
@@ -177,7 +233,9 @@ export default function AdminBlogEditor({
           const isImage = file.type.startsWith("image/");
           let insert = s3Key;
           if (isImage) insert = `![image](${s3Key})`;
-          setContent(content.slice(0, start) + insert + content.slice(end));
+          setInstructions(
+            instructions.slice(0, start) + insert + instructions.slice(end),
+          );
           setTimeout(() => {
             textarea.selectionStart = textarea.selectionEnd =
               start + insert.length;
@@ -194,7 +252,6 @@ export default function AdminBlogEditor({
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
-  // Submit blog post, including cover image key
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!adminToken) {
@@ -204,8 +261,8 @@ export default function AdminBlogEditor({
     }
     setLoading(true);
     setError("");
-    const method = blog ? "PUT" : "POST";
-    const url = blog ? `/api/blogs/${blog.id}` : "/api/blogs";
+    const method = recipe ? "PUT" : "POST";
+    const url = recipe ? `/api/recipes/${recipe.id}` : "/api/recipes";
     const res = await fetch(url, {
       method,
       headers: {
@@ -214,16 +271,25 @@ export default function AdminBlogEditor({
       },
       body: JSON.stringify({
         title,
-        content,
+        description,
         author,
+        ingredients,
+        instructions,
         coverPhoto: coverImageKey,
       }),
     });
     setLoading(false);
     if (res.status === 401) {
       localStorage.setItem(
-        "blogDraft",
-        JSON.stringify({ title, content, author, coverPhoto: coverImageKey }),
+        "recipeDraft",
+        JSON.stringify({
+          title,
+          description,
+          author,
+          ingredients,
+          instructions,
+          coverPhoto: coverImageKey,
+        }),
       );
       setError("Session expired. Your draft is saved. Please log in again.");
       setTimeout(() => {
@@ -232,11 +298,11 @@ export default function AdminBlogEditor({
       return;
     }
     if (res.ok) {
-      localStorage.removeItem("blogDraft");
+      localStorage.removeItem("recipeDraft");
       onClose(true);
     } else {
       const data = await res.json();
-      setError(data.error || "Failed to save blog");
+      setError(data.error || "Failed to save recipe");
     }
   };
 
@@ -244,7 +310,9 @@ export default function AdminBlogEditor({
   return createPortal(
     <div className={styles.modal}>
       <form className={styles.form} onSubmit={handleSubmit}>
-        <h3 className={styles.heading}>{blog ? "Edit Blog" : "New Blog"}</h3>
+        <h3 className={styles.heading}>
+          {recipe ? "Edit Recipe" : "New Recipe"}
+        </h3>
         <div className={styles.fieldsContainer}>
           {/* Cover Photo Upload */}
           <div className={styles.field}>
@@ -285,7 +353,8 @@ export default function AdminBlogEditor({
                   )}
               </div>
               <small>
-                Optional. This image will be shown as the blog card background.
+                Optional. This image will be shown as the recipe card
+                background.
               </small>
             </label>
           </div>
@@ -303,16 +372,47 @@ export default function AdminBlogEditor({
               />
             </label>
           </div>
-          {/* Content Field & Media */}
+          {/* Description Field */}
           <div className={styles.field}>
             <label className={styles.label}>
-              Content
+              Description
+              <br />
+              <textarea
+                className={styles.textarea}
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                required
+                rows={3}
+                disabled={isDisabled}
+              />
+            </label>
+          </div>
+          {/* Ingredients Field */}
+          <div className={styles.field}>
+            <label className={styles.label}>
+              Ingredients
+              <br />
+              <textarea
+                className={styles.textarea}
+                value={ingredients}
+                onChange={(e) => setIngredients(e.target.value)}
+                required
+                rows={3}
+                disabled={isDisabled}
+              />
+              <small>Comma-separated or JSON list.</small>
+            </label>
+          </div>
+          {/* Instructions Field & Media */}
+          <div className={styles.field}>
+            <label className={styles.label}>
+              Instructions
               <br />
               <textarea
                 className={styles.textarea}
                 ref={textareaRef}
-                value={content}
-                onChange={(e) => setContent(e.target.value)}
+                value={instructions}
+                onChange={(e) => setInstructions(e.target.value)}
                 required
                 rows={6}
                 disabled={isDisabled}
@@ -338,20 +438,13 @@ export default function AdminBlogEditor({
                         const start = textarea.selectionStart;
                         const end = textarea.selectionEnd;
                         const url = data.url;
-                        const poster = data.poster;
                         const isImage = file.type.startsWith("image/");
-                        const isVideo = file.type.startsWith("video/");
                         let insert = url;
                         if (isImage) insert = `![alt text](${url})`;
-                        if (isVideo) {
-                          if (poster) {
-                            insert = `![video|poster=${poster}](${url})`;
-                          } else {
-                            insert = `![video](${url})`;
-                          }
-                        }
-                        setContent(
-                          content.slice(0, start) + insert + content.slice(end),
+                        setInstructions(
+                          instructions.slice(0, start) +
+                            insert +
+                            instructions.slice(end),
                         );
                         setTimeout(() => {
                           textarea.selectionStart = textarea.selectionEnd =

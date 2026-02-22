@@ -1,14 +1,15 @@
-.container {
+.page {
   display: flex;
   min-height: calc(var(--vh, 1vh) * 100);
-  padding: 64px;
+  font-family: var(--font-geist-sans);
   background: url("/images/Vermouth.jpg") center center/cover no-repeat;
+  padding: 64px;
   justify-content: center;
   position: relative;
   overflow: hidden;
 }
 
-.container::before {
+.page::before {
   content: "";
   position: absolute;
   top: -10;
@@ -21,7 +22,7 @@
   pointer-events: none;
 }
 
-.container > * {
+.page > * {
   position: relative;
   z-index: 1;
 }
@@ -40,12 +41,15 @@
   font-size: 2.2em;
   font-weight: 700;
   color: var(--color-accent-primary);
-  margin-bottom: 1em;
+  color: var(--color-accent-secondary);
   text-align: center;
 }
 
 @media (max-width: 600px) {
-  .container {
-    padding: 32px 32px 32px 32px;
+  .page {
+    padding: 32px 4px 32px 4px;
+  }
+  .main {
+    padding: 1em 0;
   }
 }

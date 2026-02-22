@@ -1,8 +1,9 @@
 "use client";
+import Link from "next/link";
 import { useEffect, useState } from "react";
+import { useAdminToken } from "../AdminTokenContext";
 import AdminBlogEditor from "./AdminBlogEditor";
 import styles from "./AdminBlogList.module.css";
-import { useAdminToken } from "./AdminTokenContext";
 
 function Pagination({
   page,
@@ -141,52 +142,71 @@ export default function AdminBlogList() {
   };
 
   return (
-    <>
+    <div className={styles.adminPageBg}>
       <div className={styles.container}>
         <div className={styles.actionRow}>
-          <button className={styles.adminActionBtn} onClick={handleCreate}>
-            New Blog
-          </button>
+          <Link href="/admin" className={styles.adminNavBtn}>
+            <button>Back to Admin Portal</button>
+          </Link>
+          <button onClick={handleCreate}>New Blog</button>
           {hasDraft && (
-            <button
-              className={styles.adminActionBtn}
-              onClick={handleContinueDraft}
-            >
-              Continue Draft
-            </button>
+            <button onClick={handleContinueDraft}>Continue Draft</button>
           )}
         </div>
         {loading && <div>Loading...</div>}
         {error && <div className={styles.error}>{error}</div>}
-        <ul className={styles.list}>
+        <div className={styles.adminBlogList}>
           {blogs.map((blog) => (
-            <li key={blog.id} className={styles.item}>
-              <div className={styles.cardHeader}>
-                <div className={styles.title}>{blog.title}</div>
-              </div>
-              <div className={styles.cardMeta}>
-                <div className={styles.metaAuthor}>By {blog.author}</div>
-                <div className={styles.metaDate}>
-                  {new Date(blog.createdAt).toLocaleString()}
+            <div
+              key={blog.id}
+              className={styles.adminCard}
+              tabIndex={0}
+              role="button"
+              onClick={(e) => {
+                // Prevent card click if Edit/Delete button is clicked
+                if ((e.target as HTMLElement).closest("button")) return;
+                handleEdit(blog);
+              }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  handleEdit(blog);
+                }
+              }}
+              style={{ cursor: "pointer" }}
+            >
+              <div className={styles.glassOverlay}></div>
+              <div className={styles.adminCardContent}>
+                <div className={styles.adminCardHeader}>
+                  <div className={styles.adminCardTitle}>{blog.title}</div>
+                </div>
+                <div className={styles.adminCardMeta}>
+                  <div>By {blog.author}</div>
+                  <div>Date {new Date(blog.createdAt).toLocaleString()}</div>
+                </div>
+                <div className={styles.adminCardActions}>
+                  <button
+                    className={styles.editBtn}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleEdit(blog);
+                    }}
+                  >
+                    Edit
+                  </button>
+                  <button
+                    className={styles.deleteBtn}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDelete(blog.id);
+                    }}
+                  >
+                    Delete
+                  </button>
                 </div>
               </div>
-              <div className={styles.actions}>
-                <button
-                  className={styles.editBtn}
-                  onClick={() => handleEdit(blog)}
-                >
-                  Edit
-                </button>
-                <button
-                  className={styles.deleteBtn}
-                  onClick={() => handleDelete(blog.id)}
-                >
-                  Delete
-                </button>
-              </div>
-            </li>
+            </div>
           ))}
-        </ul>
+        </div>
         <Pagination page={page} totalPages={totalPages} setPage={setPage} />
       </div>
       {showEditor && (
@@ -196,6 +216,6 @@ export default function AdminBlogList() {
           forceEmpty={forceEmpty}
         />
       )}
-    </>
+    </div>
   );
 }

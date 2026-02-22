@@ -161,6 +161,18 @@ exports.Prisma.SubscriberScalarFieldEnum = {
   subscribedAt: 'subscribedAt'
 };
 
+exports.Prisma.CocktailRecipeScalarFieldEnum = {
+  id: 'id',
+  title: 'title',
+  description: 'description',
+  author: 'author',
+  coverPhoto: 'coverPhoto',
+  ingredients: 'ingredients',
+  instructions: 'instructions',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -182,7 +194,8 @@ exports.Prisma.ModelName = {
   Blog: 'Blog',
   Comment: 'Comment',
   Reaction: 'Reaction',
-  Subscriber: 'Subscriber'
+  Subscriber: 'Subscriber',
+  CocktailRecipe: 'CocktailRecipe'
 };
 
 /**

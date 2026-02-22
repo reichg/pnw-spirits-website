@@ -1,18 +1,20 @@
-.section img {
-  display: block;
-  max-height: 500px;
-  max-width: 100%;
-  margin: 1.5em auto;
-  border-radius: 12px;
-  box-shadow: 0 2px 12px 0 rgba(44, 34, 32, 0.13);
-  object-fit: contain;
+/* Centered container for instruction images */
+.instructionImageContainer {
+  display: flex;
+  justify-content: center;
+  margin: 1.5rem 0;
 }
 
+.instructionImage {
+  max-width: 100%;
+  height: auto;
+  border-radius: 8px;
+  box-shadow: 0 2px 12px rgba(35, 66, 54, 0.13);
+}
 /* Background container for page background */
 .page {
   height: 100vh;
   width: 100%;
-  max-width: 100vw;
   display: flex;
   flex-direction: column;
   background: url("/images/Bottles.jpg");
@@ -52,7 +54,8 @@
 
 .featuredCard {
   width: 100%;
-  max-width: 100vw;
+  max-width: 1000px;
+  min-width: 0;
   display: flex;
   flex-direction: column;
   align-items: stretch;
@@ -129,6 +132,35 @@
   font-family: var(--font-primary);
 }
 
+.featuredTitle {
+  font-size: 2.2rem;
+  font-weight: 700;
+  color: var(--color-accent-copper);
+  margin-bottom: 0.2rem;
+  letter-spacing: 0.02em;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.22);
+}
+
+.featuredMeta {
+  font-size: 1.05rem;
+  color: var(--color-accent-gold);
+  margin-bottom: 0.7rem;
+  font-style: italic;
+  opacity: 0.85;
+}
+
+.main {
+  width: auto;
+  margin: 2rem auto;
+  background: var(--color-surface);
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(35, 66, 54, 0.1);
+  padding: 2rem;
+  color: var(--color-text);
+  min-height: 100vh;
+  overflow-y: auto;
+}
+
 .cover {
   width: 100%;
   height: 240px;
@@ -143,6 +175,11 @@
   margin-bottom: 1rem;
 }
 
+.description {
+  font-size: 1.1rem;
+  margin-bottom: 1.5rem;
+}
+
 .section {
   margin-bottom: 1.5rem;
 }
@@ -151,6 +188,19 @@
   color: var(--color-accent-copper);
   font-size: 1.5rem;
   margin-bottom: 0.75rem;
+}
+
+.ingredients {
+  font-size: 1rem;
+  padding: 0.75rem;
+  border-radius: 4px;
+  margin-bottom: 1rem;
+}
+
+.instructions {
+  font-size: 1rem;
+  padding: 0.75rem;
+  border-radius: 4px;
 }
 
 .loading {

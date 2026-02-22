@@ -8,6 +8,9 @@ const Footer = () => {
         <Link className={styles.footerLink} href="/blogs-landing">
           Blogs
         </Link>
+        <Link className={styles.footerLink} href="/recipes-landing">
+          Recipes
+        </Link>
         <Link className={styles.footerLink} href="/videos-landing">
           Videos
         </Link>
