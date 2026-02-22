@@ -1,4 +1,8 @@
-import { PutObjectCommand } from "@aws-sdk/client-s3";
+// Utility to get the full S3 image URL from a key or return the URL if already absolute
+// Always use NEXT_PUBLIC_S3_BASE_URL from env for the bucket base URL
+import { GetObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3";
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+import { logger } from "./logger";
 /**
  * Returns a short-lived (15 min) signed S3 upload URL for a given key and content type.
  * Uses AWS credentials from environment variables for private uploads.
@@ -64,11 +68,87 @@ export async function getS3UploadUrl(
     return undefined;
   }
 }
-// Utility to get the full S3 image URL from a key or return the URL if already absolute
-// Always use NEXT_PUBLIC_S3_BASE_URL from env for the bucket base URL
-import { GetObjectCommand, S3Client } from "@aws-sdk/client-s3";
-import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
-import { logger } from "./logger";
+
+import { DeleteObjectCommand, S3Client } from "@aws-sdk/client-s3";
+/**
+ * Deletes one or more S3 objects given their keys or URLs.
+ * Accepts a single key/url or an array. Ignores absolute URLs and only deletes keys.
+ * Logs each deletion attempt and result.
+ *
+ * @param keysOrUrls string | string[] - S3 object keys or URLs
+ * @returns Promise<{ deleted: string[], errors: string[] }>
+ */
+export async function deleteS3Objects(
+  keysOrUrls: string | string[],
+): Promise<{ deleted: string[]; errors: string[] }> {
+  const region = process.env.AWS_REGION;
+  const bucket = process.env.AWS_S3_BUCKET;
+  const accessKeyId = process.env.AWS_ACCESS_KEY_ID;
+  const secretAccessKey = process.env.AWS_SECRET_ACCESS_KEY;
+
+  if (!region || !bucket || !accessKeyId || !secretAccessKey) {
+    logger.error("Missing S3 environment variables for deletion", {
+      context: "deleteS3Objects",
+      data: {
+        region,
+        bucket,
+        accessKeyId: !!accessKeyId,
+        secretAccessKey: !!secretAccessKey,
+      },
+    });
+    return { deleted: [], errors: ["Missing S3 environment variables"] };
+  }
+
+  const s3 = new S3Client({
+    region,
+    credentials: { accessKeyId, secretAccessKey },
+  });
+
+  const keys = Array.isArray(keysOrUrls) ? keysOrUrls : [keysOrUrls];
+  const deleted: string[] = [];
+  const errors: string[] = [];
+
+  for (const item of keys) {
+    let key = item;
+    if (key.startsWith("http://") || key.startsWith("https://")) {
+      try {
+        const url = new URL(key);
+        if (url.hostname.includes(bucket)) {
+          key = url.pathname.replace(/^\//, "");
+        } else {
+          logger.info("Skipping deletion for non-bucket URL", {
+            context: "deleteS3Objects",
+            data: { item },
+          });
+          continue;
+        }
+      } catch (e) {
+        logger.error("Invalid URL format for S3 deletion", {
+          context: "deleteS3Objects",
+          data: { item },
+        });
+        errors.push(item);
+        continue;
+      }
+    }
+    try {
+      const command = new DeleteObjectCommand({ Bucket: bucket, Key: key });
+      await s3.send(command);
+      logger.info("S3 object deleted", {
+        context: "deleteS3Objects",
+        data: { key },
+      });
+      deleted.push(key);
+    } catch (error) {
+      logger.error("Failed to delete S3 object", {
+        context: "deleteS3Objects",
+        data: { key, error: (error as Error).message },
+      });
+      errors.push(key);
+    }
+  }
+  return { deleted, errors };
+}
 
 /**
  * Returns a short-lived (1 hour) signed S3 image URL for a given key, or returns the URL if already absolute.
