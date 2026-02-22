@@ -14,4 +14,15 @@ export async function invalidateRecipeCache() {
   }
 }
 
+/**
+ * Invalidate all blog cache keys (keys starting with 'blogs:').
+ * Used after any blog mutation (create, update, delete).
+ */
+export async function invalidateBlogCache() {
+  const keys = await redis.keys("blogs:*");
+  if (keys.length > 0) {
+    await redis.del(...keys);
+  }
+}
+
 export default redis;
