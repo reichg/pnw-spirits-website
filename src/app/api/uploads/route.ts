@@ -1,5 +1,9 @@
 import { requireAdmin } from "@/utils/auth";
-import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import {
+  HeadObjectCommand,
+  PutObjectCommand,
+  S3Client,
+} from "@aws-sdk/client-s3";
 import { NextRequest, NextResponse } from "next/server";
 
 export const runtime = "nodejs";
@@ -34,7 +38,7 @@ export async function POST(req: NextRequest) {
     const ext = file.name.includes(".")
       ? file.name.substring(file.name.lastIndexOf("."))
       : ".bin";
-    const filename = `${Date.now()}-${Math.random().toString(36).slice(2)}${ext}`;
+    const filename = file.name;
 
     // S3 setup
     const s3 = new S3Client({
@@ -66,16 +70,30 @@ export async function POST(req: NextRequest) {
     }
 
     const s3Key = `${s3Dir}/${filename}`;
-    await s3.send(
-      new PutObjectCommand({
-        Bucket: bucket,
-        Key: s3Key,
-        Body: buffer,
-        ContentType: file.type,
-      }),
-    );
-    // Return only the S3 key, not the full URL
-    return NextResponse.json({ key: s3Key });
+    // Check if object already exists in S3
+    try {
+      await s3.send(new HeadObjectCommand({ Bucket: bucket, Key: s3Key }));
+      // If no error, object exists
+      return NextResponse.json({ key: s3Key, existed: true });
+    } catch (err: any) {
+      if (err?.$metadata?.httpStatusCode !== 404) {
+        // Unexpected error
+        return NextResponse.json(
+          { error: "Failed to check S3 for existing object." },
+          { status: 500 },
+        );
+      }
+      // Not found, proceed to upload
+      await s3.send(
+        new PutObjectCommand({
+          Bucket: bucket,
+          Key: s3Key,
+          Body: buffer,
+          ContentType: file.type,
+        }),
+      );
+      return NextResponse.json({ key: s3Key, existed: false });
+    }
   } catch (err) {
     return NextResponse.json(
       { error: "Image upload failed. Please try again." },

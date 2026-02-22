@@ -153,6 +153,7 @@ export default function AdminBlogList() {
             <button onClick={handleContinueDraft}>Continue Draft</button>
           )}
         </div>
+        <h2 className={styles.heading}>Blogs</h2>
         {loading && <div>Loading...</div>}
         {error && <div className={styles.error}>{error}</div>}
         <div className={styles.adminBlogList}>
