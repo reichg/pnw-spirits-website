@@ -99,25 +99,36 @@ export default function AdminBlogEditor({
     const files = e.target.files;
     if (!files || files.length === 0) return;
     const file = files[0];
-    const formData = new FormData();
-    formData.append("file", file);
-    formData.append("type", "cover");
     setCoverImageLoading(true);
     setError("");
     try {
-      const res = await fetch("/api/uploads", {
+      // 1. Get a signed upload URL
+      const key = `blog-covers/${Date.now()}-${file.name}`;
+      const res = await fetch("/api/s3-signed-url", {
         method: "POST",
-        headers: {
-          Authorization: `Bearer ${adminToken}`,
-        },
-        body: formData,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ key, contentType: file.type }),
       });
       const data = await res.json();
-      if (res.ok && data.key) {
-        setCoverImageKey(data.key);
-      } else {
+      if (!res.ok || !data.url) {
         setError(data.error || "Cover upload failed");
+        setCoverImageLoading(false);
+        if (coverInputRef.current) coverInputRef.current.value = "";
+        return;
       }
+      // 2. Upload file directly to S3
+      const uploadRes = await fetch(data.url, {
+        method: "PUT",
+        headers: { "Content-Type": file.type },
+        body: file,
+      });
+      if (!uploadRes.ok) {
+        setError("Cover upload failed (S3 error)");
+        setCoverImageLoading(false);
+        if (coverInputRef.current) coverInputRef.current.value = "";
+        return;
+      }
+      setCoverImageKey(key);
     } catch {
       setError("Cover upload failed");
     }
@@ -155,47 +166,50 @@ export default function AdminBlogEditor({
     const files = e.target.files;
     if (!files || files.length === 0) return;
     const file = files[0];
-    const formData = new FormData();
-    formData.append("file", file);
-    // Set a clear type for blog content images
-    const isImage = file.type.startsWith("image/");
-    const isVideo = file.type.startsWith("video/");
-    if (isImage) {
-      formData.append("type", "blog-image");
-    } else if (isVideo) {
-      formData.append("type", "blog-video");
-    } else {
-      formData.append("type", "blog-media");
-    }
     setMediaLoading(true);
     setError("");
     try {
-      const res = await fetch("/api/uploads", {
+      // 1. Get a signed upload URL
+      const key = `blog-media/${Date.now()}-${file.name}`;
+      const res = await fetch("/api/s3-signed-url", {
         method: "POST",
-        headers: {
-          Authorization: `Bearer ${adminToken}`,
-        },
-        body: formData,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ key, contentType: file.type }),
       });
       const data = await res.json();
-      if (res.ok && data.key) {
-        const textarea = textareaRef.current;
-        if (textarea) {
-          const start = textarea.selectionStart;
-          const end = textarea.selectionEnd;
-          const s3Key = data.key;
-          const isImage = file.type.startsWith("image/");
-          let insert = s3Key;
-          if (isImage) insert = `![image](${s3Key})`;
-          setContent(content.slice(0, start) + insert + content.slice(end));
-          setTimeout(() => {
-            textarea.selectionStart = textarea.selectionEnd =
-              start + insert.length;
-            textarea.focus();
-          }, 0);
-        }
-      } else {
+      if (!res.ok || !data.url) {
         setError(data.error || "Upload failed");
+        setMediaLoading(false);
+        if (fileInputRef.current) fileInputRef.current.value = "";
+        return;
+      }
+      // 2. Upload file directly to S3
+      const uploadRes = await fetch(data.url, {
+        method: "PUT",
+        headers: { "Content-Type": file.type },
+        body: file,
+      });
+      if (!uploadRes.ok) {
+        setError("Upload failed (S3 error)");
+        setMediaLoading(false);
+        if (fileInputRef.current) fileInputRef.current.value = "";
+        return;
+      }
+      // 3. Insert S3 key or markdown image into content
+      const textarea = textareaRef.current;
+      if (textarea) {
+        const start = textarea.selectionStart;
+        const end = textarea.selectionEnd;
+        const s3Key = key;
+        const isImage = file.type.startsWith("image/");
+        let insert = s3Key;
+        if (isImage) insert = `![image](${s3Key})`;
+        setContent(content.slice(0, start) + insert + content.slice(end));
+        setTimeout(() => {
+          textarea.selectionStart = textarea.selectionEnd =
+            start + insert.length;
+          textarea.focus();
+        }, 0);
       }
     } catch {
       setError("Upload failed");
