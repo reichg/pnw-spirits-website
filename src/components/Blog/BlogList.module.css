@@ -32,6 +32,12 @@
   }
 }
 
+.noResultsText {
+  color: var(--color-text-muted);
+  font-family: var(--font-primary);
+  font-size: 1.1rem;
+}
+
 /* BlogList layout and pagination styles only. Blog cards now use FeaturedBlog.module.css for card visuals. */
 .blogList {
   display: flex;
