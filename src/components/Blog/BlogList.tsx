@@ -65,7 +65,9 @@ const BlogList: React.FC<BlogListProps> = ({
   return (
     <>
       <div className={styles.blogList}>
-        {blogs.length === 0 && <div>No blog posts yet.</div>}
+        {blogs.length === 0 && (
+          <div className={styles.noResultsText}>No blog posts yet.</div>
+        )}
         {blogs.map((blog) => (
           <BlogCard blog={blog} key={blog.id} />
         ))}
