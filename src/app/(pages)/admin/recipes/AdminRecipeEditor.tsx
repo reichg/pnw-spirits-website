@@ -43,7 +43,10 @@ export default function AdminRecipeEditor({
   }, [adminToken, setToken]);
 
   const getInitialField = (field: keyof CocktailRecipe) => {
-    if (recipe) return recipe[field] || "";
+    if (recipe) {
+      if (field === "coverPhoto" && recipe[field] == null) return null;
+      return recipe[field] || "";
+    }
     if (forceEmpty) return "";
     if (typeof window !== "undefined") {
       const draft = localStorage.getItem("recipeDraft");
@@ -69,10 +72,12 @@ export default function AdminRecipeEditor({
     getInitialField("instructions"),
   );
   const [coverImageKey, setCoverImageKey] = useState<string>(
-    recipe?.coverPhoto || "",
+    recipe?.coverPhoto ?? "",
   );
   const [coverImagePreviewUrl, setCoverImagePreviewUrl] = useState<string>("");
   const [coverImageLoading, setCoverImageLoading] = useState(false);
+  // Removal state
+  const [coverMarkedForRemoval, setCoverMarkedForRemoval] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -152,7 +157,7 @@ export default function AdminRecipeEditor({
 
   useEffect(() => {
     async function fetchSignedUrl() {
-      if (!coverImageKey) {
+      if (!coverImageKey || coverMarkedForRemoval) {
         setCoverImagePreviewUrl("");
         return;
       }
@@ -171,11 +176,10 @@ export default function AdminRecipeEditor({
         setCoverImagePreviewUrl("");
       }
     }
-    // Fallback: if we have a key but no preview URL, fetch it on mount
-    if (coverImageKey && !coverImagePreviewUrl) {
+    if (coverImageKey && !coverImagePreviewUrl && !coverMarkedForRemoval) {
       fetchSignedUrl();
     }
-  }, [coverImageKey, coverImagePreviewUrl]);
+  }, [coverImageKey, coverImagePreviewUrl, coverMarkedForRemoval]);
 
   const handleMediaChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
@@ -244,22 +248,38 @@ export default function AdminRecipeEditor({
     }
     setLoading(true);
     setError("");
-    const method = recipe ? "PUT" : "POST";
-    const url = recipe ? `/api/recipes/${recipe.id}` : "/api/recipes";
+    const method = recipe ? "PATCH" : "POST";
+    const url = recipe ? `/api/recipes` : "/api/recipes";
+    // If marked for removal, send coverPhoto: null
+    const coverPhotoPayload = coverMarkedForRemoval
+      ? null
+      : coverImageKey || undefined;
+    // PATCH must include id
+    const payload = recipe
+      ? {
+          id: recipe.id,
+          title,
+          description,
+          author,
+          ingredients,
+          instructions,
+          coverPhoto: coverPhotoPayload,
+        }
+      : {
+          title,
+          description,
+          author,
+          ingredients,
+          instructions,
+          coverPhoto: coverPhotoPayload,
+        };
     const res = await fetch(url, {
       method,
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${adminToken}`,
       },
-      body: JSON.stringify({
-        title,
-        description,
-        author,
-        ingredients,
-        instructions,
-        coverPhoto: coverImageKey,
-      }),
+      body: JSON.stringify(payload),
     });
     setLoading(false);
     if (res.status === 401) {
@@ -271,7 +291,7 @@ export default function AdminRecipeEditor({
           author,
           ingredients,
           instructions,
-          coverPhoto: coverImageKey,
+          coverPhoto: coverPhotoPayload,
         }),
       );
       setError("Session expired. Your draft is saved. Please log in again.");
@@ -299,47 +319,77 @@ export default function AdminRecipeEditor({
         <div className={styles.fieldsContainer}>
           {/* Cover Photo Upload */}
           <div className={styles.field}>
-            <label className={styles.label}>
+            <label className={styles.label} htmlFor="recipe-cover-photo-input">
               Cover Photo
-              <br />
-              <div className={styles.coverRow}>
+            </label>
+            <div
+              className={styles.coverRow}
+              aria-labelledby="recipe-cover-photo-input"
+            >
+              <button
+                type="button"
+                className={`${styles.mediaBtn} ${styles.coverAddBtn}`}
+                onClick={() => coverInputRef.current?.click()}
+                disabled={coverImageLoading || loading || isDisabled}
+                aria-label={
+                  coverImagePreviewUrl && !coverMarkedForRemoval
+                    ? "Change cover photo"
+                    : "Add cover photo"
+                }
+              >
+                {coverImageLoading
+                  ? "Uploading..."
+                  : coverImagePreviewUrl && !coverMarkedForRemoval
+                    ? "Change Cover"
+                    : "Add Cover"}
+              </button>
+              <input
+                id="recipe-cover-photo-input"
+                type="file"
+                accept="image/*"
+                ref={coverInputRef}
+                className={styles.coverInputHidden}
+                onChange={(e) => {
+                  handleCoverChange(e);
+                  setCoverMarkedForRemoval(false);
+                }}
+                tabIndex={-1}
+                disabled={isDisabled}
+              />
+              {coverImagePreviewUrl &&
+                !coverMarkedForRemoval &&
+                /^https?:\/\//.test(coverImagePreviewUrl) && (
+                  <Image
+                    src={coverImagePreviewUrl}
+                    alt="Cover preview"
+                    className={styles.coverPreview}
+                    width={90}
+                    height={60}
+                  />
+                )}
+              {coverImagePreviewUrl && !coverMarkedForRemoval && (
                 <button
                   type="button"
-                  className={styles.mediaBtn}
-                  onClick={() => coverInputRef.current?.click()}
-                  disabled={coverImageLoading || loading || isDisabled}
+                  className={`${styles.mediaBtn} ${styles.coverRemoveBtn}`}
+                  onClick={() => {
+                    setCoverMarkedForRemoval(true);
+                    setCoverImagePreviewUrl("");
+                  }}
+                  disabled={loading || isDisabled}
+                  aria-label="Remove cover photo"
                 >
-                  {coverImageLoading
-                    ? "Uploading..."
-                    : coverImagePreviewUrl
-                      ? "Change Cover"
-                      : "Add Cover"}
+                  Remove Cover
                 </button>
-                <input
-                  type="file"
-                  accept="image/*"
-                  ref={coverInputRef}
-                  style={{ display: "none" }}
-                  onChange={handleCoverChange}
-                  tabIndex={-1}
-                  disabled={isDisabled}
-                />
-                {coverImagePreviewUrl &&
-                  /^https?:\/\//.test(coverImagePreviewUrl) && (
-                    <Image
-                      src={coverImagePreviewUrl}
-                      alt="Cover preview"
-                      className={styles.coverPreview}
-                      width={90}
-                      height={60}
-                    />
-                  )}
-              </div>
-              <small>
-                Optional. This image will be shown as the recipe card
-                background.
-              </small>
-            </label>
+              )}
+              {coverMarkedForRemoval && (
+                <div className={styles.coverPlaceholder} aria-live="polite">
+                  Cover photo will be removed
+                </div>
+              )}
+            </div>
+            <small>
+              Optional. This image will be shown as the recipe card background.
+            </small>
           </div>
           {/* Title Field */}
           <div className={styles.field}>
