@@ -50,9 +50,9 @@
 
 .adminRecipeList {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 2rem;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   justify-items: center;
+  gap: 1rem;
   width: 100%;
   margin: 0 auto;
   box-sizing: border-box;
@@ -63,7 +63,6 @@
   border-radius: 1.2rem;
   width: 100%;
   max-width: 300px;
-  min-width: 0;
   height: 20rem;
   display: flex;
   flex-direction: column;
@@ -178,31 +177,7 @@
   letter-spacing: 0.04em;
   text-align: center;
 }
-/* Consolidated list/item/actions/title/author/error styles */
-.list {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-  gap: 2rem;
-  padding: 0;
-  margin: 2rem 0;
-  list-style: none;
-}
-.item {
-  background: var(--color-surface);
-  border-radius: 1.2rem;
-  box-shadow: var(--shadow-md);
-  padding: 1.5rem;
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  transition: box-shadow var(--transition-medium);
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 0.5rem;
-}
-.item:hover {
-  box-shadow: var(--shadow-lg);
-}
+
 .actions {
   display: flex;
   gap: 1rem;
@@ -231,19 +206,6 @@
   padding: 0.5rem 1rem;
   border-radius: 4px;
   cursor: pointer;
-}
-.list {
-  list-style: none;
-  padding: 0;
-}
-.item {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 1rem;
-  margin-bottom: 0.5rem;
-  background: var(--color-surface);
-  border-radius: 4px;
 }
 .title {
   font-weight: bold;

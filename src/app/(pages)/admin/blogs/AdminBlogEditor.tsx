@@ -12,6 +12,7 @@ interface Blog {
   content: string;
   author: string;
   coverImageUrl?: string;
+  coverPhoto?: string; // S3 key for cover image
 }
 
 interface AdminBlogEditorProps {
@@ -60,7 +61,7 @@ export default function AdminBlogEditor({
   const [author, setAuthor] = useState(() => getInitialField("author"));
   // S3 key for the cover image
   const [coverImageKey, setCoverImageKey] = useState<string>(
-    blog?.coverImageUrl || "",
+    blog?.coverPhoto || "",
   );
   // Signed URL for preview
   const [coverImagePreviewUrl, setCoverImagePreviewUrl] = useState<string>("");
@@ -158,8 +159,11 @@ export default function AdminBlogEditor({
         setCoverImagePreviewUrl("");
       }
     }
-    fetchSignedUrl();
-  }, [coverImageKey]);
+    // Fallback: if we have a key but no preview URL, fetch it on mount
+    if (coverImageKey && !coverImagePreviewUrl) {
+      fetchSignedUrl();
+    }
+  }, [coverImageKey, coverImagePreviewUrl]);
 
   // Handle media upload for content
   const handleMediaChange = async (e: React.ChangeEvent<HTMLInputElement>) => {

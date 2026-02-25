@@ -32,6 +32,23 @@ PNW Spirits is a modern, cozy, and professional website inspired by the speakeas
 - **Postman:** API testing and documentation.
 - **Docker:** Containerized development and deployment.
 
+
+### Local Network Access
+
+To make the app available on your local network, the development server is configured to listen on all interfaces (0.0.0.0). Start the dev server with:
+
+```
+npm run dev
+```
+
+Then access the app from other devices on your network using:
+
+```
+http://<your-local-ip>:3000
+```
+
+Replace `<your-local-ip>` with your computer's IP address (e.g., 192.168.1.100).
+
 ### Project Structure
 
 - `src/app/` — Main app pages, layouts, and global styles.

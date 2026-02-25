@@ -166,3 +166,26 @@
   text-align: center;
   margin: 2rem 0;
 }
+
+
+@media (max-width: 600px) {
+  .featuredTitle {
+    font-size: 1.5rem;
+  }
+
+  .featuredMeta {
+    font-size: 1rem;
+  }
+
+  .featuredContent {
+    padding: 2.5rem 1rem ;
+  }
+
+  .page {
+    padding: 2rem 1rem;
+  }
+
+  .section h2 {
+    font-size: 1.1rem;
+  }
+}

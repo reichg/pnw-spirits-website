@@ -32,7 +32,12 @@ export async function GET(
   const coverPhotoUrl = blog.coverPhoto
     ? await getS3ImageUrl(blog.coverPhoto)
     : null;
-  return NextResponse.json({ ...blog, coverPhoto: coverPhotoUrl });
+  // Return both the S3 key and the signed URL for frontend compatibility
+  return NextResponse.json({
+    ...blog,
+    coverPhoto: blog.coverPhoto || null,
+    coverImageUrl: coverPhotoUrl,
+  });
 }
 
 export async function PUT(
@@ -48,14 +53,32 @@ export async function PUT(
       return NextResponse.json({ error: "Invalid blog id" }, { status: 400 });
     const data = await req.json();
     const { title, content, author, coverPhoto } = data;
-    // Fetch previous blog to compare coverPhoto
+    // Helper to extract S3 key from a signed URL or return as-is if already a key
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    function extractS3Key(input: any) {
+      if (!input) return input;
+      try {
+        // If input is a signed URL, extract the path after the bucket domain
+        const url = new URL(input);
+        // Remove leading slash
+        return url.pathname.startsWith("/")
+          ? url.pathname.slice(1)
+          : url.pathname;
+      } catch {
+        // Not a URL, assume it's already a key
+        return input;
+      }
+    }
+    // Always store and compare S3 keys only
     const prevBlog = await prisma.blog.findUnique({ where: { id: parsedId } });
+    const prevKey = extractS3Key(prevBlog?.coverPhoto);
+    const newKey = extractS3Key(coverPhoto);
     let shouldDeletePrevPhoto = false;
-    if (prevBlog && prevBlog.coverPhoto && prevBlog.coverPhoto !== coverPhoto) {
+    if (prevKey && prevKey !== newKey) {
       // Check if previous coverPhoto is referenced elsewhere
       const otherBlogs = await prisma.blog.findMany({
         where: {
-          coverPhoto: prevBlog.coverPhoto,
+          coverPhoto: prevKey,
           id: { not: parsedId },
         },
       });
@@ -67,21 +90,19 @@ export async function PUT(
     // (Assume upload logic is elsewhere; here, just avoid unnecessary S3 actions)
     const updated = await prisma.blog.update({
       where: { id: parsedId },
-      data: { title, content, author, coverPhoto },
+      data: { title, content, author, coverPhoto: newKey },
     });
     if (shouldDeletePrevPhoto) {
       try {
-        if (prevBlog && prevBlog.coverPhoto) {
-          await deleteS3Objects(prevBlog.coverPhoto);
-          logger.info("Deleted unused S3 coverPhoto", {
-            context: "blog.update",
-            data: { coverPhoto: prevBlog.coverPhoto },
-          });
-        }
+        await deleteS3Objects(prevKey);
+        logger.info("Deleted unused S3 coverPhoto", {
+          context: "blog.update",
+          data: { coverPhoto: prevKey },
+        });
       } catch (err) {
         logger.error("Failed to delete S3 coverPhoto", {
           context: "blog.update",
-          data: { coverPhoto: prevBlog?.coverPhoto, error: err },
+          data: { coverPhoto: prevKey, error: err },
         });
       }
     }
@@ -89,7 +110,12 @@ export async function PUT(
     const coverPhotoUrl = updated.coverPhoto
       ? await getS3ImageUrl(updated.coverPhoto)
       : null;
-    return NextResponse.json({ ...updated, coverPhoto: coverPhotoUrl });
+    // Always return the S3 key as coverPhoto, and the signed URL as coverImageUrl
+    return NextResponse.json({
+      ...updated,
+      coverPhoto: updated.coverPhoto || null,
+      coverImageUrl: coverPhotoUrl,
+    });
   } catch (error) {
     console.error("[PUT /api/blogs/:id] Error:", error);
     return NextResponse.json(

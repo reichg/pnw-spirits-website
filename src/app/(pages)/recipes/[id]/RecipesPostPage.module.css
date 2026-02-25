@@ -61,19 +61,9 @@
   border-radius: 8px;
   border: 2px solid var(--color-accent-copper);
 }
-
-.cardHeader {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.1rem;
-  margin-bottom: 0.7rem;
-}
-
-.featuredTitle {
-  font-size: 2.2rem;
+.featureTitle {
+  color: var(--color-accent-gold);
   font-weight: 700;
-  color: var(--color-accent-copper);
   margin-bottom: 0.1rem;
   letter-spacing: 0.02em;
   text-shadow: 0 2px 8px rgba(0, 0, 0, 0.22);
@@ -205,4 +195,27 @@
   font-size: 1.1rem;
   text-align: center;
   margin: 2rem 0;
+}
+
+@media (max-width: 600px) {
+  .page {
+    padding: 32px 16px;
+  }
+
+  .featuredContent {
+    padding: 1.5rem;
+  }
+
+  .featuredTitle {
+    font-size: 1.5rem;
+  }
+
+  .main {
+    padding: 1rem;
+    margin: 1rem auto;
+  }
+
+  .page h2 {
+    font-size: 1.1rem;
+  }
 }
