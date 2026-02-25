@@ -63,9 +63,10 @@ export default function AdminBlogEditor({
   const [coverImageKey, setCoverImageKey] = useState<string>(
     blog?.coverPhoto || "",
   );
-  // Signed URL for preview
   const [coverImagePreviewUrl, setCoverImagePreviewUrl] = useState<string>("");
   const [coverImageLoading, setCoverImageLoading] = useState(false);
+  // Removal state
+  const [coverMarkedForRemoval, setCoverMarkedForRemoval] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -140,7 +141,7 @@ export default function AdminBlogEditor({
   // Fetch a signed URL for preview whenever the coverImageKey changes
   useEffect(() => {
     async function fetchSignedUrl() {
-      if (!coverImageKey) {
+      if (!coverImageKey || coverMarkedForRemoval) {
         setCoverImagePreviewUrl("");
         return;
       }
@@ -159,11 +160,10 @@ export default function AdminBlogEditor({
         setCoverImagePreviewUrl("");
       }
     }
-    // Fallback: if we have a key but no preview URL, fetch it on mount
-    if (coverImageKey && !coverImagePreviewUrl) {
+    if (coverImageKey && !coverImagePreviewUrl && !coverMarkedForRemoval) {
       fetchSignedUrl();
     }
-  }, [coverImageKey, coverImagePreviewUrl]);
+  }, [coverImageKey, coverImagePreviewUrl, coverMarkedForRemoval]);
 
   // Handle media upload for content
   const handleMediaChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -234,6 +234,10 @@ export default function AdminBlogEditor({
     setError("");
     const method = blog ? "PUT" : "POST";
     const url = blog ? `/api/blogs/${blog.id}` : "/api/blogs";
+    // If marked for removal, send coverPhoto: null
+    const coverPhotoPayload = coverMarkedForRemoval
+      ? null
+      : coverImageKey || undefined;
     const res = await fetch(url, {
       method,
       headers: {
@@ -244,14 +248,19 @@ export default function AdminBlogEditor({
         title,
         content,
         author,
-        coverPhoto: coverImageKey,
+        coverPhoto: coverPhotoPayload,
       }),
     });
     setLoading(false);
     if (res.status === 401) {
       localStorage.setItem(
         "blogDraft",
-        JSON.stringify({ title, content, author, coverPhoto: coverImageKey }),
+        JSON.stringify({
+          title,
+          content,
+          author,
+          coverPhoto: coverPhotoPayload,
+        }),
       );
       setError("Session expired. Your draft is saved. Please log in again.");
       setTimeout(() => {
@@ -276,46 +285,77 @@ export default function AdminBlogEditor({
         <div className={styles.fieldsContainer}>
           {/* Cover Photo Upload */}
           <div className={styles.field}>
-            <label className={styles.label}>
+            <label className={styles.label} htmlFor="cover-photo-input">
               Cover Photo
-              <br />
-              <div className={styles.coverRow}>
+            </label>
+            <div
+              className={styles.coverRow}
+              aria-labelledby="cover-photo-input"
+            >
+              <button
+                type="button"
+                className={`${styles.mediaBtn} ${styles.coverAddBtn}`}
+                onClick={() => coverInputRef.current?.click()}
+                disabled={coverImageLoading || loading || isDisabled}
+                aria-label={
+                  coverImagePreviewUrl && !coverMarkedForRemoval
+                    ? "Change cover photo"
+                    : "Add cover photo"
+                }
+              >
+                {coverImageLoading
+                  ? "Uploading..."
+                  : coverImagePreviewUrl && !coverMarkedForRemoval
+                    ? "Change Cover"
+                    : "Add Cover"}
+              </button>
+              <input
+                id="cover-photo-input"
+                type="file"
+                accept="image/*"
+                ref={coverInputRef}
+                className={styles.coverInputHidden}
+                onChange={(e) => {
+                  handleCoverChange(e);
+                  setCoverMarkedForRemoval(false);
+                }}
+                tabIndex={-1}
+                disabled={isDisabled}
+              />
+              {coverImagePreviewUrl &&
+                !coverMarkedForRemoval &&
+                /^https?:\/\//.test(coverImagePreviewUrl) && (
+                  <Image
+                    src={coverImagePreviewUrl}
+                    alt="Cover preview"
+                    className={styles.coverPreview}
+                    width={90}
+                    height={60}
+                  />
+                )}
+              {coverImagePreviewUrl && !coverMarkedForRemoval && (
                 <button
                   type="button"
-                  className={styles.mediaBtn}
-                  onClick={() => coverInputRef.current?.click()}
-                  disabled={coverImageLoading || loading || isDisabled}
+                  className={`${styles.mediaBtn} ${styles.coverRemoveBtn}`}
+                  onClick={() => {
+                    setCoverMarkedForRemoval(true);
+                    setCoverImagePreviewUrl("");
+                  }}
+                  disabled={loading || isDisabled}
+                  aria-label="Remove cover photo"
                 >
-                  {coverImageLoading
-                    ? "Uploading..."
-                    : coverImagePreviewUrl
-                      ? "Change Cover"
-                      : "Add Cover"}
+                  Remove Cover
                 </button>
-                <input
-                  type="file"
-                  accept="image/*"
-                  ref={coverInputRef}
-                  style={{ display: "none" }}
-                  onChange={handleCoverChange}
-                  tabIndex={-1}
-                  disabled={isDisabled}
-                />
-                {coverImagePreviewUrl &&
-                  /^https?:\/\//.test(coverImagePreviewUrl) && (
-                    <Image
-                      src={coverImagePreviewUrl}
-                      alt="Cover preview"
-                      className={styles.coverPreview}
-                      width={90}
-                      height={60}
-                    />
-                  )}
-              </div>
-              <small>
-                Optional. This image will be shown as the blog card background.
-              </small>
-            </label>
+              )}
+              {coverMarkedForRemoval && (
+                <div className={styles.coverPlaceholder} aria-live="polite">
+                  Cover photo will be removed
+                </div>
+              )}
+            </div>
+            <small>
+              Optional. This image will be shown as the blog card background.
+            </small>
           </div>
           {/* Title Field */}
           <div className={styles.field}>

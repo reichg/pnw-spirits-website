@@ -1,4 +1,82 @@
 /* Container for all recipe editor fields */
+/* Cover photo row and preview */
+.coverRow {
+  display: flex;
+  align-items: center;
+  gap: 0.7em;
+  margin: 0.5em 0 0.2em 0;
+}
+
+.coverPreview {
+  width: auto;
+  max-width: 90px;
+  max-height: 60px;
+  border-radius: 8px;
+  object-fit: cover;
+  box-shadow: 0 2px 8px rgba(35, 66, 54, 0.13);
+  background: var(--color-bg-warm);
+}
+
+.coverAddBtn {
+  background: linear-gradient(
+    90deg,
+    var(--color-accent-primary, #b85c5c) 60%,
+    var(--color-accent-secondary, #3d4a3a) 100%
+  );
+  color: #fff;
+  border: none;
+  border-radius: 9px;
+  padding: 10px 22px;
+  font-size: 1.08rem;
+  font-family: var(--font-sans, "Geist", "Inter", sans-serif);
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background 0.2s,
+    box-shadow 0.2s;
+  margin-top: 14px;
+  box-shadow: 0 2px 8px rgba(35, 66, 54, 0.1);
+}
+button.coverAddBtn:hover,
+button.coverAddBtn:focus {
+  background: linear-gradient(
+    90deg,
+    var(--color-accent-secondary, #3d4a3a) 60%,
+    var(--color-accent-primary, #b85c5c) 100%
+  );
+  box-shadow: 0 4px 16px rgba(35, 66, 54, 0.13);
+}
+
+.coverRemoveBtn {
+  background: var(--color-accent-secondary);
+  color: var(--color-text-inverse);
+  border: none;
+  border-radius: 9px;
+  padding: 10px 22px;
+  font-size: 1.08rem;
+  font-family: var(--font-sans, "Geist", "Inter", sans-serif);
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background 0.2s,
+    box-shadow 0.2s;
+  margin-top: 14px;
+  box-shadow: 0 2px 8px rgba(35, 66, 54, 0.1);
+}
+button.coverRemoveBtn:hover,
+button.coverRemoveBtn:focus {
+  background: linear-gradient(
+    90deg,
+    var(--color-accent-primary, #b85c5c) 60%,
+    var(--color-accent-secondary, #3d4a3a) 100%
+  );
+  color: var(--color-text-inverse);
+  box-shadow: 0 4px 16px rgba(35, 66, 54, 0.13);
+}
+
+.coverInputHidden {
+  display: none;
+}
 .fieldsContainer {
   display: flex;
   flex-direction: column;
@@ -127,4 +205,14 @@
     max-width: 100%;
     gap: 20px;
   }
+}
+
+.coverPlaceholder {
+  background: var(--color-bg-muted);
+  color: var(--color-text-secondary);
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  margin-left: 1rem;
+  font-size: 1rem;
+  font-family: var(--font-sans);
 }

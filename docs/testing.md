@@ -31,6 +31,11 @@
 
 - Search input is labeled and keyboard accessible.
 
+## Admin Cover Photo Removal Workflow
+
+- Admin blog/recipe editors: 'Remove cover photo' button is keyboard accessible, ARIA-labeled, and placeholder state is announced for screen readers.
+- Removal workflow: API payload includes `coverPhoto: null` only if marked for removal; undo is possible before saving.
+
 ## How to run
 
 [...existing code...]

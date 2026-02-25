@@ -11,7 +11,7 @@ const RecipeSchema = z.object({
   author: z.string().min(1),
   ingredients: z.string().min(1),
   instructions: z.string().min(1),
-  coverPhoto: z.string().optional(),
+  coverPhoto: z.string().nullable().optional(),
 });
 
 export async function POST(req: NextRequest) {
