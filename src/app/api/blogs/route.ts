@@ -4,7 +4,6 @@ import { requireAdmin } from "@/utils/auth";
 import { logger } from "@/utils/logger";
 import prisma from "@/utils/prisma";
 import redis from "@/utils/redisClient";
-import { getS3ImageUrl } from "@/utils/s3";
 import { NextRequest, NextResponse } from "next/server";
 import { Prisma } from "../../../../generated/prisma";
 
@@ -30,7 +29,7 @@ export async function GET(req: NextRequest) {
         if (expiresMatch && dateMatch) {
           const expires = parseInt(expiresMatch[1], 10);
           const dateStr = dateMatch[1];
-          logger.info(`s3 blog expire: date=${dateStr} expiresIn=${expires}s`)
+          logger.info(`s3 blog expire: date=${dateStr} expiresIn=${expires}s`);
           // Parse dateStr (YYYYMMDDTHHMMSSZ)
           const year = parseInt(dateStr.slice(0, 4), 10);
           const month = parseInt(dateStr.slice(4, 6), 10) - 1;
@@ -78,13 +77,8 @@ export async function GET(req: NextRequest) {
     skip: (page - 1) * pageSize,
     take: pageSize,
   });
-  // Resolve S3 signed URLs for coverPhoto (server-side)
-  const blogs = await Promise.all(
-    blogsRaw.map(async (blog) => ({
-      ...blog,
-      coverPhoto: blog.coverPhoto ? await getS3ImageUrl(blog.coverPhoto) : null,
-    })),
-  );
+  // Only return S3 keys for coverPhoto; signed URLs are fetched on-demand by the frontend
+  const blogs = blogsRaw;
   const total = await prisma.blog.count({ where });
   const response = { blogs, total, page, pageSize };
   await redis.set(cacheKey, JSON.stringify(response), "EX", 60 * 60); // cache for 60 minutes

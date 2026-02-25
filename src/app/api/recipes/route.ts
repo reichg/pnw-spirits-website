@@ -147,14 +147,10 @@ export async function GET(req: NextRequest) {
     const where = search
       ? {
           OR: [
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            { title: { contains: search, mode: "insensitive" } } as any,
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            { description: { contains: search, mode: "insensitive" } } as any,
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            { ingredients: { contains: search, mode: "insensitive" } } as any,
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            { instructions: { contains: search, mode: "insensitive" } } as any,
+            { title: { contains: search, mode: "insensitive" } },
+            { description: { contains: search, mode: "insensitive" } },
+            { ingredients: { contains: search, mode: "insensitive" } },
+            { instructions: { contains: search, mode: "insensitive" } },
           ],
         }
       : undefined;
@@ -166,6 +162,7 @@ export async function GET(req: NextRequest) {
       skip: (page - 1) * pageSize,
       take: pageSize,
     });
+    // Only return S3 keys for coverPhoto; signed URLs are fetched on-demand by the frontend
     const response = { recipes, total, page, pageSize };
     await redis.set(cacheKey, JSON.stringify(response), "EX", 60 * 5); // Cache for 5 min
     return NextResponse.json(response);

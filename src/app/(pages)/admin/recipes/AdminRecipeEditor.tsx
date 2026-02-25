@@ -12,6 +12,7 @@ interface CocktailRecipe {
   description: string;
   author: string;
   coverImageUrl?: string;
+  coverPhoto?: string; // S3 key for cover image
   ingredients: string;
   instructions: string;
 }
@@ -68,7 +69,7 @@ export default function AdminRecipeEditor({
     getInitialField("instructions"),
   );
   const [coverImageKey, setCoverImageKey] = useState<string>(
-    recipe?.coverImageUrl || "",
+    recipe?.coverPhoto || "",
   );
   const [coverImagePreviewUrl, setCoverImagePreviewUrl] = useState<string>("");
   const [coverImageLoading, setCoverImageLoading] = useState(false);
@@ -170,8 +171,11 @@ export default function AdminRecipeEditor({
         setCoverImagePreviewUrl("");
       }
     }
-    fetchSignedUrl();
-  }, [coverImageKey]);
+    // Fallback: if we have a key but no preview URL, fetch it on mount
+    if (coverImageKey && !coverImagePreviewUrl) {
+      fetchSignedUrl();
+    }
+  }, [coverImageKey, coverImagePreviewUrl]);
 
   const handleMediaChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;

@@ -54,7 +54,12 @@ export async function GET(
   const coverPhotoUrl = recipe.coverPhoto
     ? await getS3ImageUrl(recipe.coverPhoto)
     : null;
-  return NextResponse.json({ ...recipe, coverPhoto: coverPhotoUrl });
+  // Return both the S3 key and the signed URL for frontend compatibility
+  return NextResponse.json({
+    ...recipe,
+    coverPhoto: recipe.coverPhoto || null,
+    coverImageUrl: coverPhotoUrl,
+  });
 }
 
 export async function PUT(
@@ -82,18 +87,32 @@ export async function PUT(
       { status: 400 },
     );
   }
-  // Fetch previous recipe to compare coverPhoto
+  // Helper to extract S3 key from a signed URL or return as-is if already a key
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  function extractS3Key(input: any) {
+    if (!input) return input;
+    try {
+      // If input is a signed URL, extract the path after the bucket domain
+      const url = new URL(input);
+      // Remove leading slash
+      return url.pathname.startsWith("/")
+        ? url.pathname.slice(1)
+        : url.pathname;
+    } catch {
+      // Not a URL, assume it's already a key
+      return input;
+    }
+  }
+  // Always store and compare S3 keys only
   const prevRecipe = await prisma.cocktailRecipe.findUnique({ where: { id } });
+  const prevKey = extractS3Key(prevRecipe?.coverPhoto);
+  const newKey = extractS3Key(parsed.data.coverPhoto);
   let shouldDeletePrevPhoto = false;
-  if (
-    prevRecipe &&
-    prevRecipe.coverPhoto &&
-    prevRecipe.coverPhoto !== parsed.data.coverPhoto
-  ) {
+  if (prevKey && prevKey !== newKey) {
     // Check if previous coverPhoto is referenced elsewhere
     const otherRecipes = await prisma.cocktailRecipe.findMany({
       where: {
-        coverPhoto: prevRecipe.coverPhoto,
+        coverPhoto: prevKey,
         id: { not: id },
       },
     });
@@ -108,22 +127,20 @@ export async function PUT(
       where: { id },
       data: {
         ...parsed.data,
-        coverPhoto: parsed.data.coverPhoto || null,
+        coverPhoto: newKey || null,
       },
     });
     if (shouldDeletePrevPhoto) {
       try {
-        if (prevRecipe && prevRecipe.coverPhoto) {
-          await deleteS3Objects(prevRecipe.coverPhoto);
-          logger.info("Deleted unused S3 coverPhoto", {
-            context: "recipe.update",
-            data: { coverPhoto: prevRecipe.coverPhoto },
-          });
-        }
+        await deleteS3Objects(prevKey);
+        logger.info("Deleted unused S3 coverPhoto", {
+          context: "recipe.update",
+          data: { coverPhoto: prevKey },
+        });
       } catch (err) {
         logger.error("Failed to delete S3 coverPhoto", {
           context: "recipe.update",
-          data: { coverPhoto: prevRecipe?.coverPhoto, error: err },
+          data: { coverPhoto: prevKey, error: err },
         });
       }
     }
