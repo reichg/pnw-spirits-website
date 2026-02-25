@@ -144,13 +144,14 @@ export async function GET(req: NextRequest) {
   if (cached) return NextResponse.json(JSON.parse(cached));
   try {
     // Build Prisma filter for search
+    const insensitive = "insensitive" as const;
     const where = search
       ? {
           OR: [
-            { title: { contains: search, mode: "insensitive" } },
-            { description: { contains: search, mode: "insensitive" } },
-            { ingredients: { contains: search, mode: "insensitive" } },
-            { instructions: { contains: search, mode: "insensitive" } },
+            { title: { contains: search, mode: insensitive } },
+            { description: { contains: search, mode: insensitive } },
+            { ingredients: { contains: search, mode: insensitive } },
+            { instructions: { contains: search, mode: insensitive } },
           ],
         }
       : undefined;
