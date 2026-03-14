@@ -2,10 +2,11 @@
   display: flex;
   min-height: 100vh;
   font-family: var(--font-geist-sans);
-  padding: 64px 16px 64px 16px;
+  padding: clamp(32px, 6vw, 72px) clamp(12px, 4vw, 28px);
   background: url("/images/Bottles.jpg");
   background-size: cover;
   background-repeat: no-repeat;
+  background-position: center;
   position: relative;
   overflow: hidden;
 }
@@ -13,12 +14,11 @@
 .page::before {
   content: "";
   position: absolute;
-  top: -10;
-  left: -10;
+  inset: -12px;
   width: 103%;
   height: 103%;
   background: inherit;
-  filter: blur(6px) brightness(0.22) saturate(1.1);
+  filter: blur(8px) brightness(0.2) saturate(1.05);
   box-shadow:
     0 0 0 8px rgba(40, 20, 10, 0.18) inset,
     0 0 32px 0 rgba(0, 0, 0, 0.22) inset;
@@ -37,48 +37,173 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: flex-start;
-  padding: 2em 0;
+  justify-content: center;
+  gap: clamp(20px, 3vw, 32px);
+}
+
+.contactCard {
+  width: min(760px, 100%);
+  border-radius: var(--radius-md);
+  background: linear-gradient(
+    180deg,
+    rgba(39, 24, 5, 0.7) 0%,
+    rgba(49, 32, 6, 0.7) 100%
+  );
+  
+  border: 1px solid rgba(190, 152, 95, 0.3);
+  box-shadow: var(--shadow-md);
+  padding: clamp(22px, 4vw, 40px);
+  text-align: center;
+}
+
+.hero {
+  display: grid;
+  gap: 10px;
+  justify-items: center;
+  text-align: center;
+  margin-bottom: 14px;
+}
+
+.eyebrow {
+  margin: 0;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-accent-primary);
 }
 
 .heading {
-  font-size: 2.2em;
+  margin: 0;
+  font-size: clamp(1.9rem, 4vw, 2.6rem);
   font-weight: 700;
   color: var(--color-accent-gold);
-  margin-bottom: 1em;
+  line-height: 1.2;
   text-align: center;
 }
 
 .text {
-  font-size: 1.18em;
-  color: var(--color-text-primary);
-  background: rgba(245, 233, 218, 0.92); /* --color-bg-warm with opacity */
-  border-radius: 12px;
-  box-shadow: 0 2px 16px 0 rgba(45, 35, 32, 0.07); /* --color-bg-deep with opacity */
-  max-width: 650px;
-  padding: 1.5em 1.2em;
+  margin: 0;
+  font-size: clamp(1rem, 2vw, 1.08rem);
+  color: var(--color-accent-primary);
   text-align: center;
-  line-height: 1.7;
-  text-shadow:
-    0 1px 0 var(--color-bg-soft),
-    0 2px 8px rgba(45, 35, 32, 0.08); /* --color-bg-deep with opacity */
+  line-height: 1.72;
+}
+
+.emailWrapper {
+  margin: clamp(14px, 2.5vw, 24px) 0 clamp(4px, 1vw, 8px);
+  text-align: center;
 }
 
 .email {
+  color: var(--color-accent-gold);
+  font-size: clamp(1.15rem, 3.5vw, 1.9rem);
+  font-weight: 600;
+  text-decoration: none;
+  display: inline-block;
+  position: relative;
+  padding: clamp(8px, 1.5vw, 14px) clamp(20px, 4vw, 36px);
+  word-break: break-all;
+  max-width: 100%;
+  border-radius: var(--radius-sm);
+  transition: text-shadow 0.5s ease;
+}
+
+.email::after {
+  content: "";
+  position: absolute;
+  left: clamp(20px, 4vw, 36px);
+  right: clamp(20px, 4vw, 36px);
+  bottom: clamp(6px, 1vw, 10px);
+  height: 2px;
+  background: var(--color-accent-gold);
+  border-radius: var(--radius-sm);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.35s ease;
+}
+
+.email:hover {
+  text-shadow:
+    1px 1px 5px rgba(226, 176, 126, 0.9)
+}
+
+.email:hover::after,
+.email:focus-visible::after {
+  transform: scaleX(1);
+}
+
+.email:focus-visible {
+  outline: 2px solid var(--color-accent-gold);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+.channelsSection {
+  width: min(760px, 100%);
+  padding: clamp(14px, 2vw, 20px);
+  background: rgba(255, 248, 236, 0.9);
+  border: 1px solid rgba(190, 152, 95, 0.24);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.channelsHeading {
+  margin: 0;
+  font-size: clamp(1.05rem, 2.4vw, 1.2rem);
+  font-weight: 600;
+  color: var(--color-text-primary);
+  text-align: center;
+  font-family: var(--font-geist-sans);
+}
+
+.socialLinks {
+  display: flex;
+  justify-content: center;
+  gap: 18px;
+}
+
+.socialLink {
+  width: 44px;
+  height: 44px;
+  border-radius: 999px;
+  border: 1px solid rgba(190, 152, 95, 0.3);
+  background: rgba(255, 255, 255, 0.85);
   color: var(--color-accent-primary);
-  text-decoration: underline;
+  font-size: 1.35rem;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  transition:
+    color 0.2s ease,
+    background 0.2s ease,
+    transform 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.socialLink:hover {
+  color: var(--color-bg-soft);
+  background: var(--color-accent-primary);
+  border-color: var(--color-accent-primary);
+  transform: translateY(-1px);
+}
+
+.socialLink:focus-visible {
+  outline: 2px solid var(--color-accent-gold);
+  outline-offset: 2px;
 }
 
 @media (max-width: 600px) {
   .page {
-    padding: 32px 4px 32px 4px;
+    padding: 24px 8px;
   }
-  .main {
-    padding: 1em 0;
-  }
-  .text {
-    font-size: 1em;
-    padding: 1em 0.7em;
-    width: 90%;
+
+  .contactCard,
+  .channelsSection {
+    border-radius: var(--radius-sm);
   }
 }

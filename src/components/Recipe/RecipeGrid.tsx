@@ -1,7 +1,7 @@
-'use client';
+"use client";
+import S3CardBackgroundImage from "@/components/Media/S3CardBackgroundImage";
 import Link from "next/link";
 import styles from "./RecipeGrid.module.css";
-import { useS3ImageUrl } from "@/utils/useS3ImageUrl";
 
 export interface RecipeCardProps {
   id: number;
@@ -11,24 +11,20 @@ export interface RecipeCardProps {
 }
 
 const RecipeCard: React.FC<{ recipe: RecipeCardProps }> = ({ recipe }) => {
-  const { url: coverUrl } = useS3ImageUrl(recipe.coverPhoto);
-  const cardStyle = coverUrl
-    ? {
-        backgroundImage: `url(${coverUrl})`,
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-        backgroundRepeat: "no-repeat",
-      }
-    : {};
   return (
     <Link
       href={`/recipes/${recipe.id}`}
       className={styles.recipeCard}
-      style={cardStyle}
       tabIndex={0}
       aria-label={`View recipe: ${recipe.title}`}
       prefetch={false}
     >
+      <S3CardBackgroundImage
+        s3Key={recipe.coverPhoto}
+        alt={`Cover image for ${recipe.title}`}
+        sizes="(max-width: 900px) 100vw, 300px"
+        className={styles.cardImage}
+      />
       <div className={styles.glassOverlay} />
       <div className={styles.recipeContent}>
         <div className={styles.recipeTitle}>{recipe.title}</div>

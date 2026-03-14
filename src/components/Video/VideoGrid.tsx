@@ -1,5 +1,4 @@
 // VideoGrid.tsx - styled to match BlogGrid for a cozy, speakeasy-inspired look
-"use client";
 import Image from "next/image";
 import React from "react";
 import styles from "./VideoGrid.module.css";

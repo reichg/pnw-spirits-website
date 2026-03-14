@@ -2,10 +2,11 @@
   display: flex;
   min-height: 100vh;
   font-family: var(--font-geist-sans);
-  padding: 64px 16px 64px 16px;
+  padding: clamp(32px, 6vw, 72px) clamp(12px, 4vw, 28px);
   background: url("/images/Bottles.jpg");
   background-size: cover;
   background-repeat: no-repeat;
+  background-position: center;
   position: relative;
   overflow: hidden;
 }
@@ -13,12 +14,11 @@
 .page::before {
   content: "";
   position: absolute;
-  top: -10;
-  left: -10;
+  inset: -12px;
   width: 103%;
   height: 103%;
   background: inherit;
-  filter: blur(6px) brightness(0.22) saturate(1.1);
+  filter: blur(8px) brightness(0.2) saturate(1.05);
   box-shadow:
     0 0 0 8px rgba(40, 20, 10, 0.18) inset,
     0 0 32px 0 rgba(0, 0, 0, 0.22) inset;
@@ -37,87 +37,186 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: flex-start;
-  padding: 2em 0;
+  justify-content: center;
+  gap: clamp(20px, 3vw, 32px);
+}
+
+.contentShell {
+  width: min(1080px, 100%);
+  border-radius: var(--radius-md);
+  background: linear-gradient(
+    180deg,
+    rgba(90, 56, 15, 0.2) 0%,
+    rgba(187, 120, 20, 0.2) 100%
+  );
+  border: 1px solid rgba(190, 152, 95, 0.3);
+  box-shadow: var(--shadow-md);
+  padding: clamp(20px, 4vw, 40px);
+}
+
+.hero {
+  display: grid;
+  gap: 10px;
+  justify-items: center;
+  text-align: center;
+  margin-bottom: clamp(20px, 3vw, 30px);
+}
+
+.eyebrow {
+  margin: 0;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-accent-primary);
 }
 
 .heading {
-  font-size: 2.2em;
+  margin: 0;
+  font-size: clamp(1.9rem, 4vw, 2.6rem);
   font-weight: 700;
   color: var(--color-accent-gold);
-  margin-bottom: 1em;
+  line-height: 1.2;
   text-align: center;
 }
 
-.text {
-  font-size: 1.18em;
-  color: var(--color-text-primary);
-  background: rgba(245, 233, 218, 0.92); /* --color-bg-warm with opacity */
-  border-radius: 12px;
-  box-shadow: 0 2px 16px 0 rgba(45, 35, 32, 0.07); /* --color-bg-deep with opacity */
-  width: 90%;
-  max-width: 650px;
-  padding: 1.5em 1.2em;
-  text-align: center;
-  line-height: 1.7;
-  text-shadow:
-    0 1px 0 var(--color-bg-soft),
-    0 2px 8px rgba(45, 35, 32, 0.08); /* --color-bg-deep with opacity */
-  margin-bottom: 1.5em;
+.sectionGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: clamp(12px, 2vw, 20px);
 }
 
 .section {
-  width: 100%;
-  max-width: 700px;
-  margin-bottom: 2.2em;
+  min-height: 100%;
   display: flex;
   flex-direction: column;
-  align-items: center;
+  gap: 10px;
+  padding: clamp(14px, 2vw, 20px);
+  border-radius: var(--radius-md);
+  background: rgba(255, 250, 243, 0.9);
+  border: 1px solid rgba(190, 152, 95, 0.24);
 }
 
 .subheading {
-  font-size: 1.25em;
+  margin: 0;
+  font-size: clamp(1.05rem, 2.4vw, 1.25rem);
   font-weight: 600;
-  color: var(--color-accent-gold);
-  margin-bottom: 0.5em;
+  color: var(--color-text-primary);
   letter-spacing: 0.01em;
-  text-align: center;
+  text-align: left;
   font-family: var(--font-geist-sans);
 }
 
+.text {
+  margin: 0;
+  font-size: clamp(0.98rem, 2vw, 1.06rem);
+  color: var(--color-text-primary);
+  line-height: 1.72;
+}
+
 .signatureBox {
-  margin-top: 2.5em;
-  padding: 1em 2em;
+  margin-top: clamp(20px, 3vw, 30px);
+  padding: clamp(12px, 2vw, 16px) clamp(14px, 3vw, 24px);
   background: linear-gradient(
     90deg,
     var(--color-accent-primary) 0%,
     var(--color-bg-soft) 100%
   );
-  border-radius: 16px;
-  box-shadow: 0 2px 16px 0 rgba(45, 35, 32, 0.1); /* --color-bg-deep with opacity */
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
   display: flex;
   justify-content: center;
   align-items: center;
 }
 
+.channelsSection {
+  width: min(1080px, 100%);
+  padding: clamp(14px, 2vw, 20px);
+  background: rgba(255, 248, 236, 0.9);
+  border: 1px solid rgba(190, 152, 95, 0.24);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.channelsHeading {
+  margin: 0;
+  font-size: clamp(1.05rem, 2.4vw, 1.2rem);
+  font-weight: 600;
+  color: var(--color-text-primary);
+  text-align: center;
+}
+
+.socialLinks {
+  display: flex;
+  justify-content: center;
+  gap: 18px;
+}
+
+.socialLink {
+  width: 44px;
+  height: 44px;
+  border-radius: 999px;
+  border: 1px solid rgba(190, 152, 95, 0.3);
+  background: rgba(255, 255, 255, 0.85);
+  color: var(--color-accent-primary);
+  font-size: 1.35rem;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  transition:
+    color 0.2s ease,
+    background 0.2s ease,
+    transform 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.socialLink:hover {
+  color: var(--color-bg-soft);
+  background: var(--color-accent-primary);
+  border-color: var(--color-accent-primary);
+  transform: translateY(-1px);
+}
+
+.socialLink:focus-visible {
+  outline: 2px solid var(--color-accent-gold);
+  outline-offset: 2px;
+}
+
 .signature {
+  margin: 0;
   font-family: var(--font-geist-sans);
-  font-size: 1.15em;
+  font-size: clamp(1rem, 2.3vw, 1.15rem);
   font-weight: 700;
   color: var(--color-text-primary);
   letter-spacing: 0.03em;
+  text-align: center;
+}
+
+@media (max-width: 900px) {
+  .sectionGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .subheading {
+    text-align: center;
+  }
+
+  .text {
+    text-align: center;
+  }
 }
 
 @media (max-width: 600px) {
   .page {
-    padding: 32px 4px 32px 4px;
+    padding: 24px 8px;
   }
-  .main {
-    padding: 1em 0;
-  }
-  .text {
-    font-size: 1em;
-    padding: 1em 0.7em;
-    width: 90%;
+
+  .contentShell,
+  .channelsSection {
+    border-radius: var(--radius-sm);
   }
 }

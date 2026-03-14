@@ -1,5 +1,3 @@
-"use client";
-
 import AdminLanding from "@/app/(pages)/admin/AdminLanding";
 import { AdminTokenProvider } from "./AdminTokenContext";
 

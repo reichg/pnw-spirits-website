@@ -1,5 +1,5 @@
 "use client";
-import { useS3ImageUrl } from "@/utils/useS3ImageUrl";
+import S3CardBackgroundImage from "@/components/Media/S3CardBackgroundImage";
 import Link from "next/link";
 import React, { useEffect, useRef, useState } from "react";
 import featuredStyles from "./FeaturedRecipe.module.css";
@@ -23,25 +23,20 @@ type RecipeListProps = {
 };
 
 const RecipeCard: React.FC<{ recipe: Recipe }> = ({ recipe }) => {
-  const { url: coverUrl } = useS3ImageUrl(recipe.coverPhoto);
-  const cardStyle = coverUrl
-    ? {
-        backgroundImage: `url(${coverUrl})`,
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-        backgroundRepeat: "no-repeat",
-      }
-    : {};
-
   return (
     <Link
       href={`/recipes/${recipe.id}`}
       className={featuredStyles.featuredCard}
-      style={cardStyle}
       tabIndex={0}
       aria-label={`View recipe: ${recipe.title}`}
       prefetch={false}
     >
+      <S3CardBackgroundImage
+        s3Key={recipe.coverPhoto}
+        alt={`Cover image for ${recipe.title}`}
+        sizes="(max-width: 900px) 100vw, 1200px"
+        className={featuredStyles.cardImage}
+      />
       <div className={featuredStyles.glassOverlay} />
       <div className={featuredStyles.featuredContent}>
         <div className={featuredStyles.featuredTitle}>{recipe.title}</div>

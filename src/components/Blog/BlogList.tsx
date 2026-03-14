@@ -1,5 +1,6 @@
 "use client";
-import { useS3ImageUrl } from "@/utils/useS3ImageUrl";
+import S3CardBackgroundImage from "@/components/Media/S3CardBackgroundImage";
+import Link from "next/link";
 import styles from "./BlogList.module.css";
 import featuredStyles from "./FeaturedBlog.module.css";
 
@@ -20,28 +21,21 @@ type BlogListProps = {
   setPage: (p: number) => void;
 };
 
-import Link from "next/link";
-
 const BlogCard: React.FC<{ blog: Blog }> = ({ blog }) => {
-  const { url: coverUrl } = useS3ImageUrl(blog.coverPhoto);
-  const cardStyle = coverUrl
-    ? {
-        backgroundImage: `url(${coverUrl})`,
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-        backgroundRepeat: "no-repeat",
-      }
-    : {};
-
   return (
     <Link
       href={`/blogs/${blog.id}`}
       className={featuredStyles.featuredCard}
-      style={cardStyle}
       tabIndex={0}
       aria-label={`Read blog: ${blog.title}`}
       prefetch={false}
     >
+      <S3CardBackgroundImage
+        s3Key={blog.coverPhoto}
+        alt={`Cover image for ${blog.title}`}
+        sizes="(max-width: 900px) 100vw, 1200px"
+        className={featuredStyles.cardImage}
+      />
       <div className={featuredStyles.glassOverlay} />
       <div className={featuredStyles.featuredContent}>
         <div className={featuredStyles.featuredTitle}>{blog.title}</div>

@@ -35,8 +35,7 @@
   transition: opacity var(--transition-medium);
 }
 
-.featuredCard:hover .glassOverlay,
-.featuredCard:focus-within .glassOverlay {
+.featuredCard:hover .glassOverlay {
   background: linear-gradient(
     120deg,
     var(--color-bg-overlay) 70%,
@@ -47,7 +46,6 @@
   -webkit-backdrop-filter: blur(0px) saturate(1.1);
 }
 
-.featuredCard:focus-within,
 .featuredCard:hover {
   box-shadow:
     0 4px 32px var(--color-shadow),
@@ -117,5 +115,14 @@
   }
   .featuredTitle {
     font-size: 1.3rem;
+  }
+  .featuredCard:hover {
+    box-shadow: none;
+    filter: none;
+  }
+  .featuredCard:hover .glassOverlay {
+    opacity: 0.9;
+    backdrop-filter: blur(1px) saturate(1.1);
+    -webkit-backdrop-filter: blur(1px) saturate(1.1);
   }
 }

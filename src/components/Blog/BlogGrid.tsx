@@ -1,5 +1,5 @@
 "use client";
-import { useS3ImageUrl } from "@/utils/useS3ImageUrl";
+import S3CardBackgroundImage from "@/components/Media/S3CardBackgroundImage";
 import Link from "next/link";
 import React from "react";
 import styles from "./BlogGrid.module.css";
@@ -15,24 +15,20 @@ export type BlogGridBlog = {
 };
 
 const BlogCard: React.FC<{ blog: BlogGridBlog }> = ({ blog }) => {
-  const { url: coverUrl } = useS3ImageUrl(blog.coverPhoto);
-  const cardStyle = coverUrl
-    ? {
-        backgroundImage: `url(${coverUrl})`,
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-        backgroundRepeat: "no-repeat",
-      }
-    : {};
   return (
     <Link
       href={`/blogs/${blog.id}`}
       className={styles.articleCard}
-      style={cardStyle}
       tabIndex={0}
       aria-label={`Read blog: ${blog.title}`}
       prefetch={false}
     >
+      <S3CardBackgroundImage
+        s3Key={blog.coverPhoto}
+        alt={`Cover image for ${blog.title}`}
+        sizes="(max-width: 900px) 100vw, 300px"
+        className={styles.cardImage}
+      />
       {/* Glassy overlay for text readability and cozy effect */}
       <div className={styles.glassOverlay} />
       <div className={styles.articleContent}>
