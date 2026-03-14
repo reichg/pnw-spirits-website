@@ -1,6 +1,9 @@
 "use client";
 import { useEffect, useState } from "react";
 
+type CacheEntry = { url: string; expiresAt: number };
+const signedUrlCache = new Map<string, CacheEntry>();
+
 /**
  * Custom hook to fetch and refresh S3 signed URLs for expiring images.
  * Automatically refreshes the URL before expiry to prevent 403 errors.
@@ -17,10 +20,6 @@ export function useS3ImageUrl(
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // In-memory cache for signed URLs
-  type CacheEntry = { url: string; expiresAt: number };
-  const cache: Record<string, CacheEntry> = {};
-
   useEffect(() => {
     let isMounted = true;
 
@@ -34,16 +33,20 @@ export function useS3ImageUrl(
       }
       // If already absolute URL, use as-is
       if (key.startsWith("http://") || key.startsWith("https://")) {
-        setUrl(key);
-        setLoading(false);
+        if (isMounted) {
+          setUrl(key);
+          setLoading(false);
+        }
         return;
       }
       // Check cache
       const now = Date.now();
-      const cached = cache[key];
+      const cached = signedUrlCache.get(key);
       if (cached && cached.expiresAt > now) {
-        setUrl(cached.url);
-        setLoading(false);
+        if (isMounted) {
+          setUrl(cached.url);
+          setLoading(false);
+        }
         return;
       }
       try {
@@ -54,7 +57,7 @@ export function useS3ImageUrl(
         const data = await res.json();
         // Assume expiry is refreshIntervalSeconds from now
         const expiresAt = now + refreshIntervalSeconds * 1000 - 5000; // 5s buffer
-        cache[key] = { url: data.url, expiresAt };
+        signedUrlCache.set(key, { url: data.url, expiresAt });
         if (isMounted) setUrl(data.url);
       } catch (err) {
         if (err instanceof Error) {
@@ -77,7 +80,6 @@ export function useS3ImageUrl(
       clearInterval(interval);
     };
     // Only re-run if key changes
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [key, refreshIntervalSeconds]);
 
   return { url, loading, error };

@@ -1,16 +1,3 @@
-.adminFooterLink {
-  opacity: 0.7;
-  font-size: 0.98em;
-  font-style: italic;
-  letter-spacing: 0.2px;
-  transition:
-    opacity 0.2s,
-    color 0.2s;
-}
-.adminFooterLink:hover {
-  opacity: 1;
-  color: var(--color-accent-primary);
-}
 .footer {
   width: 100%;
   background: rgba(11, 11, 11, 0.95);
@@ -37,6 +24,26 @@
   transition: color 0.2s;
 }
 .footerLink:hover {
+  color: var(--color-accent-primary);
+}
+
+.socialLinks {
+  display: flex;
+  justify-content: center;
+  gap: 2em;
+  margin-bottom: 1em;
+  flex-wrap: wrap;
+}
+
+.socialLink {
+  color: var(--color-accent-light);
+  text-decoration: none;
+  font-size: 1.6em;
+  display: inline-flex;
+  align-items: center;
+  transition: color 0.2s;
+}
+.socialLink:hover {
   color: var(--color-accent-primary);
 }
 

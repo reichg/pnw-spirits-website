@@ -2,11 +2,7 @@
 import { useState } from "react";
 import styles from "./AdminLogin.module.css";
 
-export default function AdminLogin({
-  onLogin,
-}: {
-  onLogin: (token: string) => void;
-}) {
+export default function AdminLogin() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -24,7 +20,8 @@ export default function AdminLogin({
       });
       const data = await res.json();
       if (res.ok && data.token) {
-        onLogin(data.token);
+        localStorage.setItem("adminToken", data.token);
+        window.location.href = "/admin";
       } else {
         setError(data.error || "Login failed");
       }

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { FaFacebook, FaInstagram, FaYoutube } from "react-icons/fa";
 import styles from "./Footer.module.css";
 
 const Footer = () => {
@@ -20,12 +21,29 @@ const Footer = () => {
         <Link className={styles.footerLink} href="/contact">
           Contact
         </Link>
-        <Link
-          className={`${styles.footerLink} ${styles.adminFooterLink}`}
-          href="/admin"
+      </div>
+      <div className={styles.socialLinks}>
+        <a
+          className={styles.socialLink}
+          href="https://www.instagram.com/thepnwspirits"
+          aria-label="Instagram"
         >
-          Admin
-        </Link>
+          <FaInstagram />
+        </a>
+        <a
+          className={styles.socialLink}
+          href="https://www.facebook.com/profile.php?id=61573458505824"
+          aria-label="Facebook"
+        >
+          <FaFacebook />
+        </a>
+        <a
+          className={styles.socialLink}
+          href="https://www.youtube.com/@thepnwspirits"
+          aria-label="YouTube"
+        >
+          <FaYoutube />
+        </a>
       </div>
       <div className={styles.copyright}>
         &copy; {new Date().getFullYear()} PNW Spirits. All rights reserved.

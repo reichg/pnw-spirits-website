@@ -48,6 +48,12 @@
   background: none;
 }
 
+.cardImage {
+  object-fit: cover;
+  border-radius: 1.2rem;
+  z-index: 0;
+}
+
 .glassOverlay {
   position: absolute;
   top: 0;

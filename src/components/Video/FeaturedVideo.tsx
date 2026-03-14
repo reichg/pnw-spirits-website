@@ -1,5 +1,4 @@
 // FeaturedVideo.tsx - styled to match FeaturedBlog for a cozy, speakeasy-inspired look
-"use client";
 import Image from "next/image";
 import React from "react";
 import styles from "./FeaturedVideo.module.css";
