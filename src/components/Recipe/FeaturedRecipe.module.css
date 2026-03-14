@@ -118,14 +118,6 @@
   font-family: var(--font-primary);
 }
 
-.featuredExcerpt {
-  font-size: 1.13rem;
-  margin-bottom: 1.1rem;
-  color: var(--color-text-secondary);
-  font-family: var(--font-secondary);
-  line-height: 1.6;
-}
-
 @media (max-width: 900px) {
   .featuredCard {
     max-width: 100%;

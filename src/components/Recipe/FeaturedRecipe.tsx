@@ -35,9 +35,6 @@ const FeaturedRecipe: React.FC<{ recipe: FeaturedRecipeProps }> = ({
       <div className={styles.featuredContent}>
         <div className={styles.featuredTitle}>{recipe.title}</div>
         <div className={styles.featuredMeta}>By {recipe.author}</div>
-        {recipe.description && (
-          <div className={styles.featuredExcerpt}>{recipe.description}</div>
-        )}
       </div>
     </Link>
   );
