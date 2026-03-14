@@ -1,9 +1,9 @@
 "use client";
-import { logger } from "@/utils/logger";
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useAdminToken } from "../AdminTokenContext";
+import { useAdminCoverImagePreview } from "../useAdminCoverImagePreview";
 import styles from "./AdminBlogEditor.module.css";
 
 interface Blog {
@@ -63,10 +63,11 @@ export default function AdminBlogEditor({
   const [coverImageKey, setCoverImageKey] = useState<string>(
     blog?.coverPhoto || "",
   );
-  const [coverImagePreviewUrl, setCoverImagePreviewUrl] = useState<string>("");
   const [coverImageLoading, setCoverImageLoading] = useState(false);
   // Removal state
   const [coverMarkedForRemoval, setCoverMarkedForRemoval] = useState(false);
+  const { coverImagePreviewUrl, setCoverImagePreviewUrl } =
+    useAdminCoverImagePreview(coverImageKey, coverMarkedForRemoval);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -130,6 +131,7 @@ export default function AdminBlogEditor({
         if (coverInputRef.current) coverInputRef.current.value = "";
         return;
       }
+      setCoverMarkedForRemoval(false);
       setCoverImageKey(key);
     } catch {
       setError("Cover upload failed");
@@ -137,33 +139,6 @@ export default function AdminBlogEditor({
     setCoverImageLoading(false);
     if (coverInputRef.current) coverInputRef.current.value = "";
   };
-
-  // Fetch a signed URL for preview whenever the coverImageKey changes
-  useEffect(() => {
-    async function fetchSignedUrl() {
-      if (!coverImageKey || coverMarkedForRemoval) {
-        setCoverImagePreviewUrl("");
-        return;
-      }
-      try {
-        const res = await fetch(
-          `/api/s3-signed-url?key=${encodeURIComponent(coverImageKey)}`,
-        );
-        const data = await res.json();
-        if (res.ok && data.url) {
-          logger.info("Cover image signed URL:", data.url);
-          setCoverImagePreviewUrl(data.url);
-        } else {
-          setCoverImagePreviewUrl("");
-        }
-      } catch {
-        setCoverImagePreviewUrl("");
-      }
-    }
-    if (coverImageKey && !coverImagePreviewUrl && !coverMarkedForRemoval) {
-      fetchSignedUrl();
-    }
-  }, [coverImageKey, coverImagePreviewUrl, coverMarkedForRemoval]);
 
   // Handle media upload for content
   const handleMediaChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -315,10 +290,7 @@ export default function AdminBlogEditor({
                 accept="image/*"
                 ref={coverInputRef}
                 className={styles.coverInputHidden}
-                onChange={(e) => {
-                  handleCoverChange(e);
-                  setCoverMarkedForRemoval(false);
-                }}
+                onChange={handleCoverChange}
                 tabIndex={-1}
                 disabled={isDisabled}
               />
