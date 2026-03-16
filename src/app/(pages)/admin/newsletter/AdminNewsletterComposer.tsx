@@ -7,6 +7,8 @@ import styles from "./AdminNewsletterComposer.module.css";
 
 type NewsletterResponse = {
   status?: string;
+  message?: string;
+  testRecipient?: string;
   totalSubscribers?: number;
   attempted?: number;
   sent?: number;
@@ -14,6 +16,14 @@ type NewsletterResponse = {
   failures?: Array<{ subscriberId: number; email: string; error: string }>;
   error?: string;
   details?: Array<{ message?: string }>;
+};
+
+const NEWSLETTER_DRAFT_STORAGE_KEY = "admin-newsletter-composer-draft";
+
+type NewsletterDraft = {
+  subject: string;
+  html: string;
+  replyTo: string;
 };
 
 export default function AdminNewsletterComposer() {
@@ -25,13 +35,62 @@ export default function AdminNewsletterComposer() {
     null,
   );
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
   const [result, setResult] = useState<NewsletterResponse | null>(null);
+  const [isDraftLoaded, setIsDraftLoaded] = useState(false);
+
+  useEffect(() => {
+    try {
+      const rawDraft = window.localStorage.getItem(NEWSLETTER_DRAFT_STORAGE_KEY);
+      if (rawDraft) {
+        const parsedDraft = JSON.parse(rawDraft) as Partial<NewsletterDraft>;
+        if (typeof parsedDraft.subject === "string") {
+          setSubject(parsedDraft.subject);
+        }
+        if (typeof parsedDraft.html === "string") {
+          setHtml(parsedDraft.html);
+        }
+        if (typeof parsedDraft.replyTo === "string") {
+          setReplyTo(parsedDraft.replyTo);
+        }
+      }
+    } catch {
+      // Ignore invalid local draft payloads.
+    } finally {
+      setIsDraftLoaded(true);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!isDraftLoaded) return;
+    const draft: NewsletterDraft = { subject, html, replyTo };
+    window.localStorage.setItem(
+      NEWSLETTER_DRAFT_STORAGE_KEY,
+      JSON.stringify(draft),
+    );
+  }, [subject, html, replyTo, isDraftLoaded]);
 
   useEffect(() => {
     if (!adminToken) {
       window.location.href = "/admin/login";
     }
   }, [adminToken]);
+
+  useEffect(() => {
+    if (!success) return;
+    const timeoutId = window.setTimeout(() => {
+      setSuccess("");
+    }, 8000);
+    return () => window.clearTimeout(timeoutId);
+  }, [success]);
+
+  useEffect(() => {
+    if (!error) return;
+    const timeoutId = window.setTimeout(() => {
+      setError("");
+    }, 8000);
+    return () => window.clearTimeout(timeoutId);
+  }, [error]);
 
   const canSubmit = useMemo(() => {
     return (
@@ -67,6 +126,7 @@ export default function AdminNewsletterComposer() {
 
     setSendingAction(mode);
     setError("");
+    setSuccess("");
     setResult(null);
 
     try {
@@ -106,6 +166,15 @@ export default function AdminNewsletterComposer() {
       }
 
       setResult(data);
+      if (mode === "test") {
+        setSuccess(
+          `Test email sent to ${
+            data.testRecipient || "the configured test recipient"
+          }.`,
+        );
+      } else {
+        setSuccess("Newsletter send completed.");
+      }
     } catch {
       setError(
         mode === "test"
@@ -178,7 +247,13 @@ export default function AdminNewsletterComposer() {
 
           {error && <div className={styles.error}>{error}</div>}
 
-          {result && (
+          {success && (
+            <div className={styles.success} role="status" aria-live="polite">
+              {success}
+            </div>
+          )}
+
+          {result && result.status !== "test_sent" && (
             <div className={styles.result} role="status" aria-live="polite">
               <p>Status: {result.status || "success"}</p>
               <p>Total Subscribers: {result.totalSubscribers ?? 0}</p>

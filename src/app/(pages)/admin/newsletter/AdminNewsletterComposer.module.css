@@ -81,6 +81,13 @@
   background: color-mix(in srgb, var(--color-error) 80%, black 20%);
 }
 
+.success {
+  border-radius: var(--radius-sm);
+  padding: 0.6rem 0.75rem;
+  color: var(--color-text-inverse);
+  background: color-mix(in srgb, var(--color-success) 70%, black 30%);
+}
+
 .result {
   border-radius: var(--radius-sm);
   padding: 0.75rem;
