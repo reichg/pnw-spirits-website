@@ -95,7 +95,7 @@ export default function AdminNewsletterComposer() {
       <div className={styles.container}>
         <div className={styles.actionRow}>
           <Link href="/admin" className={styles.adminNavBtn}>
-            <button type="button">Back to Admin Portal</button>
+            <button type="button">&#8592; Back to Admin Portal</button>
           </Link>
         </div>
 
