@@ -70,6 +70,8 @@ export async function POST(req: NextRequest) {
 
       return NextResponse.json({
         status: "test_sent",
+        message: "Test email sent successfully",
+        testRecipient,
         totalSubscribers: 1,
         attempted: 1,
         sent: 1,
