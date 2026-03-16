@@ -54,6 +54,9 @@ function AdminLanding() {
           <Link href="/admin/recipes" className={styles.adminNavBtn}>
             <button>Manage Recipes</button>
           </Link>
+          <Link href="/admin/newsletter" className={styles.adminNavBtn}>
+            <button>Send Newsletter</button>
+          </Link>
         </div>
       </div>
     </div>
