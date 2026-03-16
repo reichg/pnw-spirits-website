@@ -20,9 +20,10 @@ export default function AdminNewsletterComposer() {
   const { token: adminToken } = useAdminToken();
   const [subject, setSubject] = useState("");
   const [html, setHtml] = useState("");
-  const [text, setText] = useState("");
   const [replyTo, setReplyTo] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [sendingAction, setSendingAction] = useState<"all" | "test" | null>(
+    null,
+  );
   const [error, setError] = useState("");
   const [result, setResult] = useState<NewsletterResponse | null>(null);
 
@@ -33,16 +34,38 @@ export default function AdminNewsletterComposer() {
   }, [adminToken]);
 
   const canSubmit = useMemo(() => {
-    const hasBody = html.trim().length > 0 || text.trim().length > 0;
-    return subject.trim().length > 0 && hasBody && !loading;
-  }, [subject, html, text, loading]);
+    return (
+      subject.trim().length > 0 && html.trim().length > 0 && !sendingAction
+    );
+  }, [subject, html, sendingAction]);
+
+  const htmlPreview = useMemo(() => {
+    const trimmedHtml = html.trim();
+    if (!trimmedHtml) {
+      return '<p style="font-family: sans-serif; color: #777;">Newsletter preview appears here as you type HTML.</p>';
+    }
+    return trimmedHtml;
+  }, [html]);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    if (!adminToken) return;
-    if (!window.confirm("Send this newsletter to all subscribers?")) return;
+    await sendNewsletter("all");
+  }
 
-    setLoading(true);
+  async function handleSendTest() {
+    await sendNewsletter("test");
+  }
+
+  async function sendNewsletter(mode: "all" | "test") {
+    if (!adminToken) return;
+    if (
+      mode === "all" &&
+      !window.confirm("Send this newsletter to all subscribers?")
+    ) {
+      return;
+    }
+
+    setSendingAction(mode);
     setError("");
     setResult(null);
 
@@ -54,9 +77,9 @@ export default function AdminNewsletterComposer() {
           Authorization: `Bearer ${adminToken}`,
         },
         body: JSON.stringify({
+          mode,
           subject: subject.trim(),
           html,
-          text: text.trim() || undefined,
           replyTo: replyTo.trim() || undefined,
         }),
       });
@@ -84,9 +107,13 @@ export default function AdminNewsletterComposer() {
 
       setResult(data);
     } catch {
-      setError("Failed to send newsletter");
+      setError(
+        mode === "test"
+          ? "Failed to send test email"
+          : "Failed to send newsletter",
+      );
     } finally {
-      setLoading(false);
+      setSendingAction(null);
     }
   }
 
@@ -135,19 +162,18 @@ export default function AdminNewsletterComposer() {
             value={html}
             onChange={(e) => setHtml(e.target.value)}
             rows={10}
-            placeholder="Optional if plain text content is provided"
+            placeholder="Enter newsletter HTML"
+            required
           />
 
-          <label className={styles.label} htmlFor="newsletter-text">
-            Plain Text Content (optional)
+          <label className={styles.label} htmlFor="newsletter-preview">
+            HTML Preview
           </label>
-          <textarea
-            id="newsletter-text"
-            className={styles.textarea}
-            value={text}
-            onChange={(e) => setText(e.target.value)}
-            rows={6}
-            placeholder="Optional if HTML content is provided"
+          <iframe
+            id="newsletter-preview"
+            title="Newsletter HTML Preview"
+            className={styles.previewFrame}
+            srcDoc={htmlPreview}
           />
 
           {error && <div className={styles.error}>{error}</div>}
@@ -168,9 +194,20 @@ export default function AdminNewsletterComposer() {
             </div>
           )}
 
-          <button type="submit" disabled={!canSubmit}>
-            {loading ? "Sending..." : "Send To All Subscribers"}
-          </button>
+          <div className={styles.buttonRow}>
+            <button
+              type="button"
+              disabled={!canSubmit}
+              onClick={handleSendTest}
+            >
+              {sendingAction === "test" ? "Sending Test..." : "Send Test Email"}
+            </button>
+            <button type="submit" disabled={!canSubmit}>
+              {sendingAction === "all"
+                ? "Sending..."
+                : "Send To All Subscribers"}
+            </button>
+          </div>
         </form>
       </div>
     </div>

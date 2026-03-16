@@ -1,5 +1,5 @@
 import { requireAdmin } from "@/utils/auth";
-import { sendNewsletterBatch } from "@/utils/email";
+import { sendNewsletterBatch, sendNewsletterEmail } from "@/utils/email";
 import { logger } from "@/utils/logger";
 import prisma from "@/utils/prisma";
 import { NextRequest, NextResponse } from "next/server";
@@ -7,44 +7,21 @@ import { z } from "zod";
 
 const NewsletterSchema = z
   .object({
+    mode: z.enum(["all", "test"]).default("all"),
     subject: z.string().trim().min(1).max(160),
-    html: z.string().trim().optional(),
-    text: z.string().trim().min(1).optional(),
+    html: z.string().trim().min(1),
     replyTo: z.string().email().optional(),
   })
-  .refine((data) => Boolean(data.html || data.text), {
-    message: "Provide HTML or plain text content",
-    path: ["html"],
-  });
+  .strict();
 
-function escapeHtml(input: string) {
-  return input
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#39;");
-}
+function normalizeNewsletterContent(html: string) {
+  const normalizedHtml = html.trim();
+  const textFromHtml = normalizedHtml
+    .replace(/<[^>]*>/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
 
-function normalizeNewsletterContent(html?: string, text?: string) {
-  const normalizedHtml = html?.trim();
-  const normalizedText = text?.trim();
-  if (normalizedHtml && normalizedText) {
-    return { html: normalizedHtml, text: normalizedText };
-  }
-  if (normalizedHtml) {
-    const textFromHtml = normalizedHtml
-      .replace(/<[^>]*>/g, " ")
-      .replace(/\s+/g, " ")
-      .trim();
-    return { html: normalizedHtml, text: textFromHtml || undefined };
-  }
-
-  const escapedText = escapeHtml(normalizedText || "");
-  return {
-    html: `<p>${escapedText.replace(/\r?\n/g, "<br />")}</p>`,
-    text: normalizedText,
-  };
+  return { html: normalizedHtml, text: textFromHtml || undefined };
 }
 
 export async function POST(req: NextRequest) {
@@ -61,10 +38,45 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const content = normalizeNewsletterContent(
-      parsed.data.html,
-      parsed.data.text,
-    );
+    const content = normalizeNewsletterContent(parsed.data.html);
+
+    if (parsed.data.mode === "test") {
+      const testRecipient = process.env.NEWSLETTER_TEST_EMAIL?.trim();
+
+      if (!testRecipient) {
+        return NextResponse.json(
+          {
+            error: "Missing test recipient. Set NEWSLETTER_TEST_EMAIL.",
+          },
+          { status: 500 },
+        );
+      }
+
+      await sendNewsletterEmail({
+        to: testRecipient,
+        subject: parsed.data.subject,
+        html: content.html,
+        text: content.text,
+        replyTo: parsed.data.replyTo,
+      });
+
+      logger.info("Newsletter test email sent", {
+        context: "api/admin/newsletter",
+        data: {
+          subject: parsed.data.subject,
+          recipient: testRecipient,
+        },
+      });
+
+      return NextResponse.json({
+        status: "test_sent",
+        totalSubscribers: 1,
+        attempted: 1,
+        sent: 1,
+        failed: 0,
+        failures: [],
+      });
+    }
 
     const subscribers = await prisma.subscriber.findMany({
       select: {
