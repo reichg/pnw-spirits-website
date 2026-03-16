@@ -41,7 +41,9 @@ export default function AdminNewsletterComposer() {
 
   useEffect(() => {
     try {
-      const rawDraft = window.localStorage.getItem(NEWSLETTER_DRAFT_STORAGE_KEY);
+      const rawDraft = window.localStorage.getItem(
+        NEWSLETTER_DRAFT_STORAGE_KEY,
+      );
       if (rawDraft) {
         const parsedDraft = JSON.parse(rawDraft) as Partial<NewsletterDraft>;
         if (typeof parsedDraft.subject === "string") {
