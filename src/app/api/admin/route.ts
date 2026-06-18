@@ -1,7 +1,9 @@
 // API route for /api/admin
-import prisma from "@/utils/prisma";
-import bcrypt from "bcryptjs";
-import jwt from "jsonwebtoken";
+import {
+  authenticateAdmin,
+  DEFAULT_ADMIN_ENABLED,
+  ensureDefaultAdmin,
+} from "@/services/admin/adminService";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest) {
@@ -14,36 +16,24 @@ export async function POST(req: NextRequest) {
         { status: 400 },
       );
     }
-    const user = await prisma.user.findFirst({
-      where: {
-        OR: [{ username }],
-      },
-    });
-    if (!user) {
+    // Feature-flag gated auto-provision (Standard D): guarantee the default
+    // admin exists before authenticating so it works on a fresh database.
+    if (DEFAULT_ADMIN_ENABLED) {
+      await ensureDefaultAdmin();
+    }
+    const result = await authenticateAdmin(username, password);
+    if (!result) {
       return NextResponse.json(
         { error: "Invalid credentials" },
         { status: 401 },
       );
     }
-    // Use bcrypt to compare hashed password
-    const valid = await bcrypt.compare(password, user.password);
-    if (!valid) {
-      return NextResponse.json(
-        { error: "Invalid credentials" },
-        { status: 401 },
-      );
-    }
-    const token = jwt.sign(
-      { id: user.id, role: user.role },
-      process.env.JWT_SECRET || "secret",
-      { expiresIn: "30m" },
-    );
     return NextResponse.json({
-      token,
+      token: result.token,
       user: {
-        id: user.id,
-        username: user.username,
-        role: user.role,
+        id: result.user.id,
+        username: result.user.username,
+        role: result.user.role,
       },
     });
   } catch {

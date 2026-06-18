@@ -1,4 +1,5 @@
 'use client';
+import jwt from "jsonwebtoken";
 import React, { createContext, useContext, useEffect, useState } from "react";
 
 // Define the shape of the admin token context
@@ -6,6 +7,35 @@ type AdminTokenContextType = {
   token: string | null;
   setToken: (token: string | null) => void;
 };
+
+type DecodedJWT = { exp: number; [key: string]: unknown };
+
+function isDecodedJWT(obj: unknown): obj is DecodedJWT {
+  return (
+    typeof obj === "object" &&
+    obj !== null &&
+    "exp" in obj &&
+    typeof (obj as { exp: unknown }).exp === "number"
+  );
+}
+
+// Single source of truth for admin token validity: present, decodable to an
+// object with a numeric `exp`, and not expired.
+export function isTokenValid(token: string | null): boolean {
+  if (!token) {
+    return false;
+  }
+  try {
+    const decoded = jwt.decode(token);
+    if (!isDecodedJWT(decoded)) {
+      return false;
+    }
+    const now = Math.floor(Date.now() / 1000);
+    return decoded.exp >= now;
+  } catch {
+    return false;
+  }
+}
 
 const AdminTokenContext = createContext<AdminTokenContextType | undefined>(
   undefined,
