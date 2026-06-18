@@ -32,13 +32,51 @@ PNW Spirits is a modern, cozy, and professional website inspired by the speakeas
 - **Postman:** API testing and documentation.
 - **Docker:** Containerized development and deployment.
 
+### Toolchain & Developer Setup
+
+This project uses a pinned, modern toolchain. All dependencies are pinned to exact versions and kept current by a weekly Dependabot update cadence.
+
+- **Node 24 LTS** — pinned via `.nvmrc` and the `engines` field in `package.json`. Run `nvm use` (or `nvm install`) to match the expected version.
+- **pnpm 10** — the only supported package manager (`pnpm-lock.yaml` is committed; there is no `package-lock.json`). Use `pnpm` for all commands. Install dependencies with:
+
+  ```
+  pnpm install
+  ```
+
+- **ESLint flat config** — a single flat config (`eslint.config.*`) drives linting; the legacy `.eslintrc.json` has been removed.
+- **Prisma 7** — database ORM and migrations.
+
+#### Available Scripts
+
+| Command | Description |
+| --- | --- |
+| `pnpm dev` | Start the development server (listens on 0.0.0.0). |
+| `pnpm build` | Build the production app. |
+| `pnpm start` | Run the production build. |
+| `pnpm lint` | Lint the codebase with ESLint. |
+| `pnpm typecheck` | Type-check with `tsc --noEmit`. |
+| `pnpm test` | Run the test suite with Vitest (`vitest run`). |
+| `pnpm format` | Format the codebase with Prettier. |
+| `pnpm format:check` | Check formatting without writing changes. |
+
+#### Prisma Commands
+
+```
+pnpm prisma validate    # validate the schema
+pnpm prisma generate    # generate the Prisma client
+pnpm prisma migrate     # run database migrations
+```
+
+#### Continuous Integration
+
+A CI workflow runs on changes and executes install, typecheck, lint, build, and test. Run `pnpm typecheck`, `pnpm lint`, `pnpm build`, and `pnpm test` locally before pushing to catch failures early.
 
 ### Local Network Access
 
 To make the app available on your local network, the development server is configured to listen on all interfaces (0.0.0.0). Start the dev server with:
 
 ```
-npm run dev
+pnpm dev
 ```
 
 Then access the app from other devices on your network using:
@@ -89,7 +127,9 @@ If you are not familiar with coding, you can still get the PNW Spirits website r
 ### 1. Install Prerequisites
 
 - **Install Node.js:**
-  - Go to [nodejs.org](https://nodejs.org/) and download the LTS version for your operating system.
+  - Go to [nodejs.org](https://nodejs.org/) and download **Node 24 (LTS)** for your operating system. This project pins Node 24 via the `.nvmrc` file, so if you use `nvm` you can simply run `nvm install` then `nvm use` in the project folder.
+- **Install pnpm:**
+  - This project uses **pnpm 10** as its package manager. After installing Node, enable it with `corepack enable` (which ships with Node), or install it from [pnpm.io](https://pnpm.io/installation).
 - **Install Docker (Required):**
   - Download and install Docker Desktop from [docker.com](https://www.docker.com/products/docker-desktop/).
   - Make sure Docker Desktop is running before continuing.
@@ -107,7 +147,7 @@ If you are not familiar with coding, you can still get the PNW Spirits website r
 
 - Open a terminal in the project folder (in VS Code, click "Terminal" > "New Terminal").
 - Type:
-  - `npm install`
+  - `pnpm install`
   - This will download everything the website needs to run.
 
 ### 5. Start Docker Services (Required)
@@ -119,7 +159,7 @@ If you are not familiar with coding, you can still get the PNW Spirits website r
 ### 6. Start the Website
 
 - In the same terminal, type:
-  - `npm run dev`
+  - `pnpm dev`
 - Wait for the message that the site is running (usually at `http://localhost:3000`).
 - Open your web browser and go to that address.
 

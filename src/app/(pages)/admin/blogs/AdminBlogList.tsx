@@ -63,6 +63,9 @@ export default function AdminBlogList() {
   // Check for blog draft in localStorage and listen for token removal
   useEffect(() => {
     if (typeof window !== "undefined") {
+      // SSR-safe: localStorage is only available on the client, so the initial
+      // draft flag must be synced from an effect to avoid a hydration mismatch.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setHasDraft(!!localStorage.getItem("blogDraft"));
       // Listen for changes to localStorage (e.g., draft removed after save or token removed)
       const syncDraft = () => setHasDraft(!!localStorage.getItem("blogDraft"));
@@ -100,6 +103,9 @@ export default function AdminBlogList() {
   };
 
   useEffect(() => {
+    // Data fetch on page change; the leading setLoading(true) inside fetchBlogs
+    // runs synchronously and is intended (loading state must reflect immediately).
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchBlogs();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page]);

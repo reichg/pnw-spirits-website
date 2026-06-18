@@ -4,7 +4,7 @@ import { sendSubscribeEmail } from "@/utils/email";
 import prisma from "@/utils/prisma";
 import { NextRequest, NextResponse } from "next/server";
 
-export async function GET(req: NextRequest) {
+export async function GET() {
   // List subscribers (admin)
   const subscribers = await prisma.subscriber.findMany({
     orderBy: { subscribedAt: "desc" },
@@ -40,7 +40,7 @@ export async function POST(req: NextRequest) {
       console.error("Failed to send welcome email:", e);
     }
     return NextResponse.json(subscriber, { status: 201 });
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { error: "Failed to add subscriber" },
       { status: 500 },

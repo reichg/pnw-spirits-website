@@ -80,6 +80,9 @@ const RecipeList: React.FC<RecipeListProps> = ({
 
   useEffect(() => {
     if (!debouncedSearch) {
+      // Reset to the unfiltered list synchronously so the rendered output and
+      // timing match the prior behavior exactly when the search is cleared.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setFilteredRecipes(recipes);
       setLoading(false);
       return;
@@ -91,7 +94,7 @@ const RecipeList: React.FC<RecipeListProps> = ({
         const res = await fetch(url);
         const data = await res.json();
         setFilteredRecipes(data.recipes || []);
-      } catch (err) {
+      } catch {
         setFilteredRecipes([]);
       } finally {
         setLoading(false);
