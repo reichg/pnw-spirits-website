@@ -1,7 +1,10 @@
 .list {
   list-style: none;
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  /* min(100%, 280px) lets the track collapse to the container width on screens
+     narrower than 280px (no overflow) while keeping the 280px multi-column floor
+     on wider screens. A bare 280px floor overflows containers under ~280px. */
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr));
   gap: 1em;
   width: 100%;
 }

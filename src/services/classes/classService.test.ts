@@ -49,6 +49,9 @@ import {
   updatePhoto,
 } from "./classService";
 import { ClassNotFoundError, NoClassPageError } from "./classErrors";
+// Assert against the shared cap (single source of truth) rather than a literal,
+// so the test tracks src/config/album.ts instead of duplicating its value.
+import { MAX_ALBUM_PHOTOS } from "@/config/album";
 
 const SINGLETON = { id: 1, title: "T", description: "D" };
 
@@ -83,9 +86,13 @@ describe("getClassPage", () => {
       where: { classId: SINGLETON.id },
       orderBy: { startTime: "asc" },
     });
+    // Photos are capped to MAX_ALBUM_PHOTOS (the fixed album set): the
+    // deterministic ordering means `take` returns exactly the photos the album
+    // can ever display (no over-fetch).
     expect(prismaMock.classPhoto.findMany).toHaveBeenCalledWith({
       where: { classId: SINGLETON.id },
       orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }],
+      take: MAX_ALBUM_PHOTOS,
     });
   });
 });

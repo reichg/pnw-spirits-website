@@ -3,7 +3,9 @@
   min-height: calc(var(--vh, 1vh) * 100);
   font-family: var(--font-primary);
   background: url("/images/Vermouth.jpg") center center/cover no-repeat;
-  padding: 64px;
+  /* Smoothly scales from ~20px on phones to 64px on large screens, removing the
+     abrupt 64px -> 12px cliff that left a heavy step in the 600-900px range. */
+  padding: clamp(1.25rem, 4vw, 4rem);
   justify-content: center;
   position: relative;
   overflow: hidden;
@@ -29,7 +31,11 @@
 
 .main {
   flex: 1;
-  max-width: 1000px;
+  /* min-width:0 overrides the default min-width:auto on flex children so .main
+     can shrink below a wide child's min-content instead of forcing overflow.
+     max-width:100% keeps it inside the padded page content box. */
+  min-width: 0;
+  max-width: min(1000px, 100%);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -66,6 +72,8 @@
 
 .section {
   width: 100%;
+  /* Allow grid/carousel children to shrink instead of dictating section width. */
+  min-width: 0;
   margin-bottom: 2.5em;
 }
 
@@ -79,9 +87,8 @@
 }
 
 @media (max-width: 600px) {
-  .page {
-    padding: 32px 12px;
-  }
+  /* .page padding is now handled by the clamp above (floors at ~20px), so the
+     hard 12px cliff is gone. Only the inner spacing/type tweaks remain. */
   .main {
     padding: 1em 0;
   }

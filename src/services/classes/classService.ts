@@ -1,3 +1,4 @@
+import { MAX_ALBUM_PHOTOS } from "@/config/album";
 import { logger } from "@/utils/logger";
 import prisma from "@/utils/prisma";
 import { deleteS3Objects } from "@/utils/s3";
@@ -83,9 +84,13 @@ export async function getClassPage(): Promise<{
       where: { classId: cocktailClass.id },
       orderBy: { startTime: "asc" },
     }),
+    // Cap fetched photos to MAX_ALBUM_PHOTOS: the album renders at most this
+    // many slides, so the deterministic ordering below means take returns
+    // exactly the photos the album can ever display (no over-fetch).
     prisma.classPhoto.findMany({
       where: { classId: cocktailClass.id },
       orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }],
+      take: MAX_ALBUM_PHOTOS,
     }),
   ]);
 
