@@ -15,6 +15,11 @@ export const metadata: Metadata = {
     "Join a PNW Spirits cocktail class. See upcoming dates and browse photos from past sessions.",
 };
 
+// Serves live, admin-editable singleton content read from the database, so it
+// must render per-request rather than being statically prerendered at build
+// time (build environments have no database connection).
+export const dynamic = "force-dynamic";
+
 export default async function ClassesPage() {
   const { class: cocktailClass, sessions, photos } = await getClassPage();
 
