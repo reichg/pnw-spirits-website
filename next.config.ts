@@ -1,7 +1,8 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  // Allow dev-server asset/HMR requests proxied through the cloudflared tunnel origin.
+  allowedDevOrigins: ["pnw-spirits.gabe-reichenberger.com"],
   images: {
     remotePatterns: [
       {

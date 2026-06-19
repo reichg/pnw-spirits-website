@@ -37,16 +37,30 @@ async function getSingletonClass(): Promise<CocktailClass | null> {
 }
 
 /**
+ * Resolve the singleton class id, or null when no class page exists yet. This
+ * is the single non-throwing source of truth for id resolution; callers that
+ * need the full row use getSingletonClass, and guarded writes use
+ * requireSingletonClassId. Selects only the id to avoid over-fetching.
+ */
+export async function getSingletonClassId(): Promise<number | null> {
+  const existing = await prisma.cocktailClass.findFirst({
+    orderBy: { id: "asc" },
+    select: { id: true },
+  });
+  return existing?.id ?? null;
+}
+
+/**
  * Resolve the singleton class id, throwing a clear error when no class page
  * has been saved yet. Sessions and photos cannot be attached before content
  * exists, so dependent writes funnel through this guard.
  */
 async function requireSingletonClassId(): Promise<number> {
-  const existing = await getSingletonClass();
-  if (!existing) {
+  const classId = await getSingletonClassId();
+  if (classId === null) {
     throw new NoClassPageError();
   }
-  return existing.id;
+  return classId;
 }
 
 /**

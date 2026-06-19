@@ -45,6 +45,7 @@ import {
   createSession,
   deletePhoto,
   getClassPage,
+  getSingletonClassId,
   updatePhoto,
 } from "./classService";
 import { ClassNotFoundError, NoClassPageError } from "./classErrors";
@@ -86,6 +87,25 @@ describe("getClassPage", () => {
       where: { classId: SINGLETON.id },
       orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }],
     });
+  });
+});
+
+describe("getSingletonClassId", () => {
+  it("returns the id when a singleton class row exists", async () => {
+    prismaMock.cocktailClass.findFirst.mockResolvedValue({ id: SINGLETON.id });
+
+    await expect(getSingletonClassId()).resolves.toBe(SINGLETON.id);
+    // Selects only the id to avoid over-fetching the full row.
+    expect(prismaMock.cocktailClass.findFirst).toHaveBeenCalledWith({
+      orderBy: { id: "asc" },
+      select: { id: true },
+    });
+  });
+
+  it("returns null when no class page exists (non-throwing)", async () => {
+    prismaMock.cocktailClass.findFirst.mockResolvedValue(null);
+
+    await expect(getSingletonClassId()).resolves.toBeNull();
   });
 });
 
