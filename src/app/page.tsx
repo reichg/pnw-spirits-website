@@ -16,6 +16,7 @@ export default function Home() {
         </div>
       </section>
 
+      
       {/* Four Column Section */}
       <section className={landingStyles.landingFourColSection}>
         <div className={landingStyles.landingFourColRow}>
