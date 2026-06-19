@@ -25,8 +25,21 @@ vi.mock("@/utils/logger", () => ({
 
 import { authenticateAdmin, ensureDefaultAdmin } from "./adminService";
 
+// Deterministic admin env. Every env var the service reads is stubbed with a
+// known test value so the suite never depends on (or leaks) the real .env.
+const TEST_ADMIN_USERNAME = "test-admin";
+const TEST_ADMIN_PASSWORD = "test-admin-pass";
+const TEST_JWT_SECRET = "test-jwt-secret";
+
 beforeEach(() => {
   vi.clearAllMocks();
+  vi.stubEnv("DEFAULT_ADMIN_USERNAME", TEST_ADMIN_USERNAME);
+  vi.stubEnv("DEFAULT_ADMIN_PASSWORD", TEST_ADMIN_PASSWORD);
+  vi.stubEnv("JWT_SECRET", TEST_JWT_SECRET);
+});
+
+afterEach(() => {
+  vi.unstubAllEnvs();
 });
 
 describe("ensureDefaultAdmin", () => {
@@ -38,15 +51,18 @@ describe("ensureDefaultAdmin", () => {
     expect(prismaMock.user.upsert).toHaveBeenCalledTimes(1);
     const arg = prismaMock.user.upsert.mock.calls[0][0];
 
-    // Targets the default admin by username.
-    expect(arg.where).toEqual({ username: "admin" });
+    // Targets the default admin by the configured username.
+    expect(arg.where).toEqual({ username: TEST_ADMIN_USERNAME });
     // The key guarantee: never overwrite an existing admin's stored password.
     expect(arg.update).toEqual({});
-    // Created with the admin role.
+    // Created with the configured username and the admin role.
+    expect(arg.create.username).toBe(TEST_ADMIN_USERNAME);
     expect(arg.create.role).toBe("admin");
     // Password is stored hashed, never as the plaintext default.
-    expect(arg.create.password).not.toBe("adminpass");
-    expect(bcrypt.compareSync("adminpass", arg.create.password)).toBe(true);
+    expect(arg.create.password).not.toBe(TEST_ADMIN_PASSWORD);
+    expect(bcrypt.compareSync(TEST_ADMIN_PASSWORD, arg.create.password)).toBe(
+      true,
+    );
   });
 });
 
@@ -54,23 +70,26 @@ describe("authenticateAdmin", () => {
   it("returns null when the user is not found", async () => {
     prismaMock.user.findFirst.mockResolvedValue(null);
 
-    const result = await authenticateAdmin("admin", "adminpass");
+    const result = await authenticateAdmin(
+      TEST_ADMIN_USERNAME,
+      TEST_ADMIN_PASSWORD,
+    );
 
     expect(result).toBeNull();
     expect(prismaMock.user.findFirst).toHaveBeenCalledWith({
-      where: { username: "admin" },
+      where: { username: TEST_ADMIN_USERNAME },
     });
   });
 
   it("returns null when the password does not match the stored hash", async () => {
     prismaMock.user.findFirst.mockResolvedValue({
       id: 1,
-      username: "admin",
+      username: TEST_ADMIN_USERNAME,
       role: "admin",
       password: bcrypt.hashSync("the-real-password", 10),
     });
 
-    const result = await authenticateAdmin("admin", "wrong-password");
+    const result = await authenticateAdmin(TEST_ADMIN_USERNAME, "wrong-password");
 
     expect(result).toBeNull();
   });
@@ -79,17 +98,22 @@ describe("authenticateAdmin", () => {
     const password = "correct-horse";
     prismaMock.user.findFirst.mockResolvedValue({
       id: 42,
-      username: "admin",
+      username: TEST_ADMIN_USERNAME,
       role: "admin",
       password: bcrypt.hashSync(password, 10),
     });
 
-    const result = await authenticateAdmin("admin", password);
+    const result = await authenticateAdmin(TEST_ADMIN_USERNAME, password);
 
     expect(result).not.toBeNull();
-    expect(result?.user).toEqual({ id: 42, username: "admin", role: "admin" });
+    expect(result?.user).toEqual({
+      id: 42,
+      username: TEST_ADMIN_USERNAME,
+      role: "admin",
+    });
 
-    const decoded = jwt.verify(result!.token, "secret") as {
+    // Signed with the stubbed secret, so verification uses the same value.
+    const decoded = jwt.verify(result!.token, TEST_JWT_SECRET) as {
       id: number;
       role: string;
     };
@@ -99,25 +123,19 @@ describe("authenticateAdmin", () => {
 });
 
 describe("DEFAULT_ADMIN_ENABLED", () => {
-  const ORIGINAL = process.env.ENABLE_DEFAULT_ADMIN;
-
   afterEach(() => {
-    if (ORIGINAL === undefined) {
-      delete process.env.ENABLE_DEFAULT_ADMIN;
-    } else {
-      process.env.ENABLE_DEFAULT_ADMIN = ORIGINAL;
-    }
+    // The constant is captured at import time, so drop the re-imported module.
     vi.resetModules();
   });
 
   it('is true unless ENABLE_DEFAULT_ADMIN === "false"', async () => {
     // The constant is evaluated at import time, so re-import per env value.
-    delete process.env.ENABLE_DEFAULT_ADMIN;
+    vi.stubEnv("ENABLE_DEFAULT_ADMIN", undefined);
     vi.resetModules();
     let mod = await import("./adminService");
     expect(mod.DEFAULT_ADMIN_ENABLED).toBe(true);
 
-    process.env.ENABLE_DEFAULT_ADMIN = "false";
+    vi.stubEnv("ENABLE_DEFAULT_ADMIN", "false");
     vi.resetModules();
     mod = await import("./adminService");
     expect(mod.DEFAULT_ADMIN_ENABLED).toBe(false);
