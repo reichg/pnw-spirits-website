@@ -33,7 +33,7 @@ export async function POST(req: NextRequest) {
       reaction = await prisma.reaction.create({ data: { blogId, type, count: 1 } });
     }
     return NextResponse.json(reaction, { status: 201 });
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: "Failed to add reaction" }, { status: 500 });
   }
 }

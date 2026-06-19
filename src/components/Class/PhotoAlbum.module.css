@@ -1,0 +1,110 @@
+.carousel {
+  width: 100%;
+  /* Theme Swiper arrows/bullets to the site palette and give the nav/pagination
+     room outside the slides so they stay legible over the dark page. */
+  --swiper-theme-color: var(--color-accent-gold);
+  --swiper-navigation-size: 28px;
+  --swiper-navigation-color: var(--color-accent-light);
+  --swiper-pagination-bullet-inactive-color: var(--color-text-inverse);
+  --swiper-pagination-bullet-inactive-opacity: 0.45;
+  padding: 0 0 2.5em;
+}
+
+.carousel :global(.swiper) {
+  padding: 0 0.25em;
+}
+
+.carousel :global(.swiper-button-next),
+.carousel :global(.swiper-button-prev) {
+  filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.7));
+  transition: opacity var(--transition-medium);
+}
+
+.carousel :global(.swiper-pagination-bullet-active) {
+  background: var(--color-accent-gold);
+}
+
+.item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5em;
+  margin: 0;
+}
+
+.thumb {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background: var(--color-bg-deep);
+  border: 1px solid var(--color-border-dark);
+  box-shadow: var(--shadow-md);
+}
+
+.image {
+  object-fit: cover;
+  transition: transform var(--transition-medium);
+}
+.item:hover .image {
+  transform: scale(1.04);
+}
+
+.placeholder {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    100deg,
+    var(--color-bg-deep) 30%,
+    var(--color-bg-deep1) 50%,
+    var(--color-bg-deep) 70%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.4s linear infinite;
+}
+
+.previewFill {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    135deg,
+    var(--color-bg-deep1) 0%,
+    var(--color-bg-deep) 100%
+  );
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+.caption {
+  font-size: 0.95em;
+  color: var(--color-text-inverse);
+  text-align: center;
+  line-height: 1.4;
+}
+
+.empty {
+  font-size: 1.05em;
+  color: var(--color-text-inverse);
+  text-align: center;
+  padding: 1em 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .image {
+    transition-duration: 0.001ms;
+  }
+  .placeholder {
+    animation-duration: 0.001ms;
+  }
+  /* Calm Swiper slide transitions rather than disabling navigation entirely. */
+  .carousel :global(.swiper-wrapper) {
+    transition-duration: 0.001ms !important;
+  }
+}

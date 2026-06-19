@@ -40,8 +40,13 @@ export default function AdminNewsletterComposer() {
   const [isDraftLoaded, setIsDraftLoaded] = useState(false);
 
   useEffect(() => {
+    // SSR-safe: localStorage is only available on the client, so the draft must
+    // be hydrated into state from an effect to avoid a hydration mismatch.
+    /* eslint-disable react-hooks/set-state-in-effect */
     try {
-      const rawDraft = window.localStorage.getItem(NEWSLETTER_DRAFT_STORAGE_KEY);
+      const rawDraft = window.localStorage.getItem(
+        NEWSLETTER_DRAFT_STORAGE_KEY,
+      );
       if (rawDraft) {
         const parsedDraft = JSON.parse(rawDraft) as Partial<NewsletterDraft>;
         if (typeof parsedDraft.subject === "string") {
@@ -59,6 +64,7 @@ export default function AdminNewsletterComposer() {
     } finally {
       setIsDraftLoaded(true);
     }
+    /* eslint-enable react-hooks/set-state-in-effect */
   }, []);
 
   useEffect(() => {

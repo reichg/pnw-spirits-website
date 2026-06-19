@@ -122,7 +122,7 @@ export async function deleteS3Objects(
           });
           continue;
         }
-      } catch (e) {
+      } catch {
         logger.error("Invalid URL format for S3 deletion", {
           context: "deleteS3Objects",
           data: { item },

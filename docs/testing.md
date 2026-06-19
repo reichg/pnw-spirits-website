@@ -63,5 +63,5 @@
 - Simulate user search flows:
   - Enter search terms, select filters, verify results.
   - Confirm accessibility and error handling in real browser context.
-- `npm test` (unit/component)
+- `pnpm test` (unit/component, runs `vitest run`)
 - E2E: Add Playwright tests for full recipe search journey if needed.

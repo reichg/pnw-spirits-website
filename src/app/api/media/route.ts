@@ -21,7 +21,7 @@ export async function GET(req: NextRequest) {
       );
     }
     return NextResponse.redirect(url, 302);
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { error: "Failed to generate signed URL" },
       { status: 500 },

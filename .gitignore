@@ -42,4 +42,9 @@ next-env.d.ts
 
 # github
 /.git
-/.github
+
+# claude
+/.claude
+
+# prisma
+/generated

@@ -12,7 +12,15 @@ export function useAdminCoverImagePreview(
   useEffect(() => {
     let isActive = true;
 
+    async function clearPreview() {
+      if (isActive) {
+        setCoverImagePreviewUrl("");
+      }
+    }
+
     async function fetchSignedUrl(key: string) {
+      setCoverImagePreviewUrl("");
+
       try {
         const res = await fetch(
           `/api/s3-signed-url?key=${encodeURIComponent(key)}`,
@@ -36,14 +44,13 @@ export function useAdminCoverImagePreview(
     }
 
     if (!coverImageKey || coverMarkedForRemoval) {
-      setCoverImagePreviewUrl("");
+      void clearPreview();
 
       return () => {
         isActive = false;
       };
     }
 
-    setCoverImagePreviewUrl("");
     void fetchSignedUrl(coverImageKey);
 
     return () => {

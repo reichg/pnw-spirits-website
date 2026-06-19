@@ -43,6 +43,9 @@ export default function PaginatedBlogList() {
   }, []);
 
   useEffect(() => {
+    // Data fetch on page change; the leading setLoading(true) inside fetchBlogs
+    // runs synchronously and is intended (loading state must reflect immediately).
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchBlogs(page);
   }, [page, fetchBlogs]);
 

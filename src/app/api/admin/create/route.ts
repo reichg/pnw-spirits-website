@@ -45,7 +45,7 @@ export async function POST(req: NextRequest) {
       },
       { status: 201 },
     );
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { error: "Failed to create admin user" },
       { status: 500 },

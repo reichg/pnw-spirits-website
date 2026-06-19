@@ -35,9 +35,6 @@ export async function POST(req: NextRequest) {
       );
     }
     const buffer = Buffer.from(await file.arrayBuffer());
-    const ext = file.name.includes(".")
-      ? file.name.substring(file.name.lastIndexOf("."))
-      : ".bin";
     const filename = file.name;
 
     // S3 setup
@@ -75,8 +72,11 @@ export async function POST(req: NextRequest) {
       await s3.send(new HeadObjectCommand({ Bucket: bucket, Key: s3Key }));
       // If no error, object exists
       return NextResponse.json({ key: s3Key, existed: true });
-    } catch (err: any) {
-      if (err?.$metadata?.httpStatusCode !== 404) {
+    } catch (err: unknown) {
+      const httpStatusCode = (
+        err as { $metadata?: { httpStatusCode?: number } }
+      )?.$metadata?.httpStatusCode;
+      if (httpStatusCode !== 404) {
         // Unexpected error
         return NextResponse.json(
           { error: "Failed to check S3 for existing object." },
@@ -94,7 +94,7 @@ export async function POST(req: NextRequest) {
       );
       return NextResponse.json({ key: s3Key, existed: false });
     }
-  } catch (err) {
+  } catch {
     return NextResponse.json(
       { error: "Image upload failed. Please try again." },
       { status: 500 },
