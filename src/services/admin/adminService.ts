@@ -18,6 +18,24 @@ const CONTEXT = "adminService";
 const DEFAULT_ADMIN_USERNAME = "admin";
 const DEFAULT_ADMIN_PASSWORD = "adminpass";
 
+/** Credentials for the bootstrapped default admin. */
+export interface DefaultAdminCredentials {
+  username: string;
+  password: string;
+}
+
+/**
+ * Resolve default-admin credentials from the environment, falling back to the
+ * built-in defaults. Isolated so the only `process.env` access lives here and
+ * callers (and tests) can inject explicit credentials instead.
+ */
+function resolveDefaultAdminCredentials(): DefaultAdminCredentials {
+  return {
+    username: process.env.DEFAULT_ADMIN_USERNAME ?? DEFAULT_ADMIN_USERNAME,
+    password: process.env.DEFAULT_ADMIN_PASSWORD ?? DEFAULT_ADMIN_PASSWORD,
+  };
+}
+
 /** bcrypt cost factor, matching the existing admin create route. */
 const BCRYPT_ROUNDS = 10;
 
@@ -41,9 +59,10 @@ export const DEFAULT_ADMIN_ENABLED: boolean =
  * (e.g. from a seed): the empty `update: {}` is intentional NO-CLOBBER — if an
  * admin already exists we must never overwrite its (possibly rotated) password.
  */
-export async function ensureDefaultAdmin(): Promise<void> {
-  const username = process.env.DEFAULT_ADMIN_USERNAME ?? DEFAULT_ADMIN_USERNAME;
-  const password = process.env.DEFAULT_ADMIN_PASSWORD ?? DEFAULT_ADMIN_PASSWORD;
+export async function ensureDefaultAdmin(
+  credentials: DefaultAdminCredentials = resolveDefaultAdminCredentials(),
+): Promise<void> {
+  const { username, password } = credentials;
 
   const hashed = await bcrypt.hash(password, BCRYPT_ROUNDS);
 

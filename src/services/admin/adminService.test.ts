@@ -25,16 +25,15 @@ vi.mock("@/utils/logger", () => ({
 
 import { authenticateAdmin, ensureDefaultAdmin } from "./adminService";
 
-// Deterministic admin env. Every env var the service reads is stubbed with a
-// known test value so the suite never depends on (or leaks) the real .env.
+// Deterministic admin credentials, injected directly into the service so the
+// suite never reads (or leaks) the real .env. JWT_SECRET is stubbed because
+// authenticateAdmin signs with process.env.JWT_SECRET internally.
 const TEST_ADMIN_USERNAME = "test-admin";
 const TEST_ADMIN_PASSWORD = "test-admin-pass";
 const TEST_JWT_SECRET = "test-jwt-secret";
 
 beforeEach(() => {
   vi.clearAllMocks();
-  vi.stubEnv("DEFAULT_ADMIN_USERNAME", TEST_ADMIN_USERNAME);
-  vi.stubEnv("DEFAULT_ADMIN_PASSWORD", TEST_ADMIN_PASSWORD);
   vi.stubEnv("JWT_SECRET", TEST_JWT_SECRET);
 });
 
@@ -46,7 +45,10 @@ describe("ensureDefaultAdmin", () => {
   it("upserts the default admin with a NO-CLOBBER empty update and a hashed password", async () => {
     prismaMock.user.upsert.mockResolvedValue({ id: 1 });
 
-    await ensureDefaultAdmin();
+    await ensureDefaultAdmin({
+      username: TEST_ADMIN_USERNAME,
+      password: TEST_ADMIN_PASSWORD,
+    });
 
     expect(prismaMock.user.upsert).toHaveBeenCalledTimes(1);
     const arg = prismaMock.user.upsert.mock.calls[0][0];
