@@ -1,5 +1,4 @@
 "use client";
-import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useAdminToken } from "../AdminTokenContext";
 import AdminRecipeEditor from "./AdminRecipeEditor";
@@ -134,9 +133,6 @@ export default function AdminRecipeList() {
     <div className={styles.adminPageBg}>
       <div className={styles.container}>
         <div className={styles.actionRow}>
-          <Link href="/admin" className={styles.adminNavBtn}>
-            <button>Back to Admin Portal</button>
-          </Link>
           <button onClick={handleCreate} disabled={loading}>
             New Recipe
           </button>

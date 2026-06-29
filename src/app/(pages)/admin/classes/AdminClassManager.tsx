@@ -1,9 +1,24 @@
 "use client";
-import Image from "next/image";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import {
+  closestCenter,
+  DndContext,
+  type DragEndEvent,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from "@dnd-kit/core";
+import {
+  arrayMove,
+  rectSortingStrategy,
+  SortableContext,
+  sortableKeyboardCoordinates,
+} from "@dnd-kit/sortable";
 import { useAdminToken } from "../AdminTokenContext";
-import { useS3ImageUrl } from "@/utils/useS3ImageUrl";
+import { MAX_ALBUM_PHOTOS } from "@/config/album";
+import SortablePhotoCard from "./SortablePhotoCard";
 import styles from "./AdminClassManager.module.css";
 
 // S3 key prefix for cocktail-class photo-album uploads.
@@ -12,6 +27,7 @@ const LOGIN_PATH = "/admin/login";
 const CLASSES_ENDPOINT = "/api/classes";
 const SESSIONS_ENDPOINT = `${CLASSES_ENDPOINT}/sessions`;
 const PHOTOS_ENDPOINT = `${CLASSES_ENDPOINT}/photos`;
+const PHOTOS_REORDER_ENDPOINT = `${PHOTOS_ENDPOINT}/reorder`;
 const SIGNED_URL_ENDPOINT = "/api/s3-signed-url";
 
 interface ClassContent {
@@ -102,13 +118,27 @@ export default function AdminClassManager() {
   const [sessionBusy, setSessionBusy] = useState(false);
 
   const [photoCaption, setPhotoCaption] = useState("");
-  const [photoSortOrder, setPhotoSortOrder] = useState("0");
   const [photoUploading, setPhotoUploading] = useState(false);
   const [photoError, setPhotoError] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const hasContent = content !== null;
   const isDisabled = !token;
+
+  // Drag-and-drop sensors for reordering the photo album. Declared
+  // unconditionally before the loading/error early returns to respect the rules
+  // of hooks. Pointer covers mouse/touch; keyboard preserves accessibility.
+  // The whole card is the drag source, so a small activation distance keeps a
+  // plain click/focus on the caption input, Save, or Delete from starting a
+  // drag — only a deliberate move past the threshold begins reordering.
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: { distance: 8 },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    }),
+  );
 
   // On 401 from any admin call, mirror the existing editors and redirect to login.
   const requireAuth = useCallback(
@@ -129,9 +159,7 @@ export default function AdminClassManager() {
       return fetch(input, {
         ...rest,
         headers: {
-          ...(json !== undefined
-            ? { "Content-Type": "application/json" }
-            : {}),
+          ...(json !== undefined ? { "Content-Type": "application/json" } : {}),
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
           ...headers,
         },
@@ -141,12 +169,16 @@ export default function AdminClassManager() {
     [token],
   );
 
-  // Single source of truth for (re)loading the class page state.
+  // Single source of truth for (re)loading the class page state. Reads via
+  // authFetch so an authenticated admin receives the uncapped photo list; the
+  // public GET has no auth requirement, so an absent token simply yields the
+  // capped/anonymous set. Depends on authFetch (which closes over token) so a
+  // token arriving after mount re-runs the load and replaces the capped result.
   const reload = useCallback(async () => {
     setLoading(true);
     setLoadError("");
     try {
-      const res = await fetch(CLASSES_ENDPOINT);
+      const res = await authFetch(CLASSES_ENDPOINT);
       if (!res.ok) {
         setLoadError("Failed to load cocktail classes.");
         return;
@@ -162,7 +194,7 @@ export default function AdminClassManager() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [authFetch]);
 
   useEffect(() => {
     // Mount-time fetch: reload() sets loading state synchronously, which the
@@ -300,9 +332,7 @@ export default function AdminClassManager() {
     }
   };
 
-  const handlePhotoUpload = async (
-    e: React.ChangeEvent<HTMLInputElement>,
-  ) => {
+  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
     setPhotoUploading(true);
@@ -330,14 +360,14 @@ export default function AdminClassManager() {
         setPhotoError("Upload failed (S3 error).");
         return;
       }
-      // 3. Persist the S3 key via the feature API.
-      const sortOrder = Number.parseInt(photoSortOrder, 10);
+      // 3. Persist the S3 key via the feature API. New uploads append to the end
+      // of the album; users reorder afterward via drag-and-drop.
       const createRes = await authFetch(PHOTOS_ENDPOINT, {
         method: "POST",
         json: {
           s3Key: key,
           caption: photoCaption || undefined,
-          sortOrder: Number.isNaN(sortOrder) ? undefined : sortOrder,
+          sortOrder: photos.length,
         },
       });
       if (!requireAuth(createRes.status)) return;
@@ -351,7 +381,6 @@ export default function AdminClassManager() {
         return;
       }
       setPhotoCaption("");
-      setPhotoSortOrder("0");
       await reload();
     } catch {
       setPhotoError("Upload failed.");
@@ -361,16 +390,19 @@ export default function AdminClassManager() {
     }
   };
 
-  const handleUpdatePhotoCaption = async (
-    photo: ClassPhoto,
-    caption: string,
-    sortOrder: number,
-  ) => {
+  // Caption-only edit. The card no longer exposes sortOrder, so we preserve the
+  // photo's current sortOrder to keep the PUT contract intact (backward
+  // compatible). Reordering is handled separately via drag-and-drop.
+  const handleUpdatePhotoCaption = async (photo: ClassPhoto, caption: string) => {
     setPhotoError("");
     try {
       const res = await authFetch(`${PHOTOS_ENDPOINT}/${photo.id}`, {
         method: "PUT",
-        json: { s3Key: photo.s3Key, caption: caption || undefined, sortOrder },
+        json: {
+          s3Key: photo.s3Key,
+          caption: caption || undefined,
+          sortOrder: photo.sortOrder,
+        },
       });
       if (!requireAuth(res.status)) return;
       if (!res.ok) {
@@ -380,6 +412,39 @@ export default function AdminClassManager() {
       await reload();
     } catch {
       setPhotoError("Failed to update photo.");
+    }
+  };
+
+  // Optimistically reorder the album on drop, then persist the new order to the
+  // reorder endpoint. On any failure we revert to the pre-drag order so the UI
+  // never drifts from the server.
+  const handleDragEnd = async (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+
+    const oldIndex = photos.findIndex((p) => p.id === active.id);
+    const newIndex = photos.findIndex((p) => p.id === over.id);
+    if (oldIndex === -1 || newIndex === -1) return;
+
+    const previous = photos;
+    const newPhotos = arrayMove(photos, oldIndex, newIndex);
+    setPhotos(newPhotos);
+    setPhotoError("");
+
+    try {
+      const res = await authFetch(PHOTOS_REORDER_ENDPOINT, {
+        method: "POST",
+        json: { ids: newPhotos.map((p) => p.id) },
+      });
+      if (!requireAuth(res.status)) return;
+      if (!res.ok) {
+        setPhotos(previous);
+        setPhotoError(await readError(res, "Failed to reorder photos."));
+        return;
+      }
+    } catch {
+      setPhotos(previous);
+      setPhotoError("Failed to reorder photos.");
     }
   };
 
@@ -402,338 +467,313 @@ export default function AdminClassManager() {
 
   if (loading) {
     return (
-      <div className={styles.manager}>
-        <p className={styles.emptyState}>Loading cocktail classes…</p>
+      <div className={styles.adminPageBg}>
+        <div className={styles.container}>
+          <h2 className={styles.heading}>Manage Classes</h2>
+          <p className={styles.emptyState}>Loading cocktail classes…</p>
+        </div>
       </div>
     );
   }
 
   if (loadError) {
     return (
-      <div className={styles.manager}>
-        <p className={styles.error}>{loadError}</p>
-        <button
-          type="button"
-          className={styles.button}
-          onClick={() => void reload()}
-        >
-          Retry
-        </button>
+      <div className={styles.adminPageBg}>
+        <div className={styles.container}>
+          <h2 className={styles.heading}>Manage Classes</h2>
+          <p className={styles.error}>{loadError}</p>
+          <button
+            type="button"
+            className={styles.button}
+            onClick={() => void reload()}
+          >
+            Retry
+          </button>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className={styles.manager}>
-      {/* Page content */}
-      <section className={styles.section}>
-        <h2 className={styles.sectionHeading}>Page Content</h2>
-        <form onSubmit={handleSaveContent}>
-          <div className={styles.field}>
-            <label className={styles.label} htmlFor="class-title">
-              Title
+    <div className={styles.adminPageBg}>
+      <div className={styles.container}>
+        <h2 className={styles.heading}>Manage Classes</h2>
+        <div className={styles.manager}>
+          {/* Page content */}
+          <section className={styles.section}>
+            <h2 className={styles.sectionHeading}>Page Content</h2>
+            <form onSubmit={handleSaveContent}>
+              <div className={styles.field}>
+                <label className={styles.label} htmlFor="class-title">
+                  Title
+                </label>
+                <input
+                  id="class-title"
+                  className={styles.input}
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  required
+                  disabled={isDisabled || contentSaving}
+                />
+              </div>
+              <div className={styles.field}>
+                <label className={styles.label} htmlFor="class-description">
+                  General statement
+                </label>
+                <textarea
+                  id="class-description"
+                  className={styles.textarea}
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  required
+                  disabled={isDisabled || contentSaving}
+                />
+              </div>
+              {!hasContent && (
+                <p className={styles.emptyState}>
+                  Save the page content first to enable adding sessions and
+                  photos.
+                </p>
+              )}
+              {contentError && <p className={styles.error}>{contentError}</p>}
+              {contentSuccess && (
+                <p className={styles.success}>{contentSuccess}</p>
+              )}
+              <button
+                type="submit"
+                className={styles.button}
+                disabled={isDisabled || contentSaving}
+              >
+                {contentSaving ? "Saving…" : "Save Content"}
+              </button>
+            </form>
+          </section>
+
+          {/* Sessions */}
+          <section className={styles.section}>
+            <h2 className={styles.sectionHeading}>Class Dates &amp; Times</h2>
+            {sessions.length === 0 ? (
+              <p className={styles.emptyState}>No sessions scheduled yet.</p>
+            ) : (
+              <ul className={styles.list}>
+                {sessions.map((session) =>
+                  editingSessionId === session.id ? (
+                    <li key={session.id} className={styles.listItem}>
+                      <div className={styles.sessionRow}>
+                        <div className={styles.field}>
+                          <label className={styles.label}>Start</label>
+                          <input
+                            type="datetime-local"
+                            className={styles.input}
+                            value={editStart}
+                            onChange={(e) => setEditStart(e.target.value)}
+                            disabled={sessionBusy}
+                          />
+                        </div>
+                        <div className={styles.field}>
+                          <label className={styles.label}>End</label>
+                          <input
+                            type="datetime-local"
+                            className={styles.input}
+                            value={editEnd}
+                            onChange={(e) => setEditEnd(e.target.value)}
+                            disabled={sessionBusy}
+                          />
+                        </div>
+                        <div className={styles.field}>
+                          <label className={styles.label}>Location</label>
+                          <input
+                            className={styles.input}
+                            value={editLocation}
+                            onChange={(e) => setEditLocation(e.target.value)}
+                            disabled={sessionBusy}
+                          />
+                        </div>
+                        <div className={styles.rowActions}>
+                          <button
+                            type="button"
+                            className={styles.button}
+                            onClick={() => void handleUpdateSession(session.id)}
+                            disabled={sessionBusy}
+                          >
+                            Save
+                          </button>
+                          <button
+                            type="button"
+                            className={styles.buttonSecondary}
+                            onClick={() => setEditingSessionId(null)}
+                            disabled={sessionBusy}
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      </div>
+                    </li>
+                  ) : (
+                    <li key={session.id} className={styles.listItem}>
+                      <span className={styles.sessionLabel}>
+                        {formatSession(session)}
+                      </span>
+                      <div className={styles.rowActions}>
+                        <button
+                          type="button"
+                          className={styles.buttonSecondary}
+                          onClick={() => beginEditSession(session)}
+                          disabled={isDisabled || sessionBusy}
+                        >
+                          Edit
+                        </button>
+                        <button
+                          type="button"
+                          className={styles.dangerButton}
+                          onClick={() => void handleDeleteSession(session.id)}
+                          disabled={isDisabled || sessionBusy}
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </li>
+                  ),
+                )}
+              </ul>
+            )}
+
+            <form onSubmit={handleAddSession} className={styles.sessionForm}>
+              <div className={styles.sessionRow}>
+                <div className={styles.field}>
+                  <label className={styles.label} htmlFor="new-session-start">
+                    Start time
+                  </label>
+                  <input
+                    id="new-session-start"
+                    type="datetime-local"
+                    className={styles.input}
+                    value={newStart}
+                    onChange={(e) => setNewStart(e.target.value)}
+                    required
+                    disabled={isDisabled || sessionBusy || !hasContent}
+                  />
+                </div>
+                <div className={styles.field}>
+                  <label className={styles.label} htmlFor="new-session-end">
+                    End time
+                  </label>
+                  <input
+                    id="new-session-end"
+                    type="datetime-local"
+                    className={styles.input}
+                    value={newEnd}
+                    onChange={(e) => setNewEnd(e.target.value)}
+                    disabled={isDisabled || sessionBusy || !hasContent}
+                  />
+                </div>
+                <div className={styles.field}>
+                  <label
+                    className={styles.label}
+                    htmlFor="new-session-location"
+                  >
+                    Location
+                  </label>
+                  <input
+                    id="new-session-location"
+                    className={styles.input}
+                    value={newLocation}
+                    onChange={(e) => setNewLocation(e.target.value)}
+                    disabled={isDisabled || sessionBusy || !hasContent}
+                  />
+                </div>
+                <button
+                  type="submit"
+                  className={styles.button}
+                  disabled={isDisabled || sessionBusy || !hasContent}
+                >
+                  {sessionBusy ? "Working…" : "Add Session"}
+                </button>
+              </div>
+              {sessionError && <p className={styles.error}>{sessionError}</p>}
+            </form>
+          </section>
+
+          {/* Photo album */}
+          <section className={styles.section}>
+            <h2 className={styles.sectionHeading}>Photo Album</h2>
+            <p className={styles.publicLimitNote}>
+              The public album shows the first {MAX_ALBUM_PHOTOS} photos in album
+              order. Drag to reorder which ones appear.
+            </p>
+            {photos.length > 0 &&
+              (photos.length > MAX_ALBUM_PHOTOS ? (
+                <p className={styles.publicLimitWarning}>
+                  {photos.length} photos — the last{" "}
+                  {photos.length - MAX_ALBUM_PHOTOS} won&apos;t appear on the
+                  public page.
+                </p>
+              ) : (
+                <p className={styles.publicLimitNote}>
+                  {photos.length} of {MAX_ALBUM_PHOTOS} photos.
+                </p>
+              ))}
+            <div className={styles.fieldRow}>
+              <div className={styles.field}>
+                <label className={styles.label} htmlFor="photo-caption">
+                  Caption (optional)
+                </label>
+                <input
+                  id="photo-caption"
+                  className={styles.input}
+                  value={photoCaption}
+                  onChange={(e) => setPhotoCaption(e.target.value)}
+                  disabled={isDisabled || photoUploading || !hasContent}
+                />
+              </div>
+            </div>
+            <label className={styles.uploadArea} htmlFor="photo-upload">
+              {photoUploading
+                ? "Uploading…"
+                : hasContent
+                  ? "Click to upload a photo"
+                  : "Save the page content first"}
             </label>
             <input
-              id="class-title"
-              className={styles.input}
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              required
-              disabled={isDisabled || contentSaving}
+              id="photo-upload"
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              style={{ display: "none" }}
+              onChange={handlePhotoUpload}
+              disabled={isDisabled || photoUploading || !hasContent}
             />
-          </div>
-          <div className={styles.field}>
-            <label className={styles.label} htmlFor="class-description">
-              General statement
-            </label>
-            <textarea
-              id="class-description"
-              className={styles.textarea}
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              required
-              disabled={isDisabled || contentSaving}
-            />
-          </div>
-          {!hasContent && (
-            <p className={styles.emptyState}>
-              Save the page content first to enable adding sessions and photos.
-            </p>
-          )}
-          {contentError && <p className={styles.error}>{contentError}</p>}
-          {contentSuccess && <p className={styles.success}>{contentSuccess}</p>}
-          <button
-            type="submit"
-            className={styles.button}
-            disabled={isDisabled || contentSaving}
-          >
-            {contentSaving ? "Saving…" : "Save Content"}
-          </button>
-        </form>
-      </section>
-
-      {/* Sessions */}
-      <section className={styles.section}>
-        <h2 className={styles.sectionHeading}>Class Dates &amp; Times</h2>
-        {sessions.length === 0 ? (
-          <p className={styles.emptyState}>No sessions scheduled yet.</p>
-        ) : (
-          <ul className={styles.list}>
-            {sessions.map((session) =>
-              editingSessionId === session.id ? (
-                <li key={session.id} className={styles.listItem}>
-                  <div className={styles.sessionRow}>
-                    <div className={styles.field}>
-                      <label className={styles.label}>Start</label>
-                      <input
-                        type="datetime-local"
-                        className={styles.input}
-                        value={editStart}
-                        onChange={(e) => setEditStart(e.target.value)}
-                        disabled={sessionBusy}
+            {photoError && <p className={styles.error}>{photoError}</p>}
+            {photos.length === 0 ? (
+              <p className={styles.emptyState}>No photos uploaded yet.</p>
+            ) : (
+              <DndContext
+                sensors={sensors}
+                collisionDetection={closestCenter}
+                onDragEnd={handleDragEnd}
+              >
+                <SortableContext
+                  items={photos.map((p) => p.id)}
+                  strategy={rectSortingStrategy}
+                >
+                  <div className={styles.photoGrid}>
+                    {photos.map((photo, index) => (
+                      <SortablePhotoCard
+                        key={photo.id}
+                        photo={photo}
+                        disabled={isDisabled}
+                        beyondPublicLimit={index >= MAX_ALBUM_PHOTOS}
+                        onSaveCaption={handleUpdatePhotoCaption}
+                        onDelete={handleDeletePhoto}
                       />
-                    </div>
-                    <div className={styles.field}>
-                      <label className={styles.label}>End</label>
-                      <input
-                        type="datetime-local"
-                        className={styles.input}
-                        value={editEnd}
-                        onChange={(e) => setEditEnd(e.target.value)}
-                        disabled={sessionBusy}
-                      />
-                    </div>
-                    <div className={styles.field}>
-                      <label className={styles.label}>Location</label>
-                      <input
-                        className={styles.input}
-                        value={editLocation}
-                        onChange={(e) => setEditLocation(e.target.value)}
-                        disabled={sessionBusy}
-                      />
-                    </div>
-                    <button
-                      type="button"
-                      className={styles.button}
-                      onClick={() => void handleUpdateSession(session.id)}
-                      disabled={sessionBusy}
-                    >
-                      Save
-                    </button>
-                    <button
-                      type="button"
-                      className={styles.buttonSecondary}
-                      onClick={() => setEditingSessionId(null)}
-                      disabled={sessionBusy}
-                    >
-                      Cancel
-                    </button>
+                    ))}
                   </div>
-                </li>
-              ) : (
-                <li key={session.id} className={styles.listItem}>
-                  <span>{formatSession(session)}</span>
-                  <span>
-                    <button
-                      type="button"
-                      className={styles.buttonSecondary}
-                      onClick={() => beginEditSession(session)}
-                      disabled={isDisabled || sessionBusy}
-                    >
-                      Edit
-                    </button>{" "}
-                    <button
-                      type="button"
-                      className={styles.dangerButton}
-                      onClick={() => void handleDeleteSession(session.id)}
-                      disabled={isDisabled || sessionBusy}
-                    >
-                      Delete
-                    </button>
-                  </span>
-                </li>
-              ),
+                </SortableContext>
+              </DndContext>
             )}
-          </ul>
-        )}
-
-        <form onSubmit={handleAddSession}>
-          <div className={styles.sessionRow}>
-            <div className={styles.field}>
-              <label className={styles.label} htmlFor="new-session-start">
-                Start time
-              </label>
-              <input
-                id="new-session-start"
-                type="datetime-local"
-                className={styles.input}
-                value={newStart}
-                onChange={(e) => setNewStart(e.target.value)}
-                required
-                disabled={isDisabled || sessionBusy || !hasContent}
-              />
-            </div>
-            <div className={styles.field}>
-              <label className={styles.label} htmlFor="new-session-end">
-                End time
-              </label>
-              <input
-                id="new-session-end"
-                type="datetime-local"
-                className={styles.input}
-                value={newEnd}
-                onChange={(e) => setNewEnd(e.target.value)}
-                disabled={isDisabled || sessionBusy || !hasContent}
-              />
-            </div>
-            <div className={styles.field}>
-              <label className={styles.label} htmlFor="new-session-location">
-                Location
-              </label>
-              <input
-                id="new-session-location"
-                className={styles.input}
-                value={newLocation}
-                onChange={(e) => setNewLocation(e.target.value)}
-                disabled={isDisabled || sessionBusy || !hasContent}
-              />
-            </div>
-            <button
-              type="submit"
-              className={styles.button}
-              disabled={isDisabled || sessionBusy || !hasContent}
-            >
-              {sessionBusy ? "Working…" : "Add Session"}
-            </button>
-          </div>
-          {sessionError && <p className={styles.error}>{sessionError}</p>}
-        </form>
-      </section>
-
-      {/* Photo album */}
-      <section className={styles.section}>
-        <h2 className={styles.sectionHeading}>Photo Album</h2>
-        <div className={styles.field}>
-          <label className={styles.label} htmlFor="photo-caption">
-            Caption (optional)
-          </label>
-          <input
-            id="photo-caption"
-            className={styles.input}
-            value={photoCaption}
-            onChange={(e) => setPhotoCaption(e.target.value)}
-            disabled={isDisabled || photoUploading || !hasContent}
-          />
+          </section>
         </div>
-        <div className={styles.field}>
-          <label className={styles.label} htmlFor="photo-sort-order">
-            Order
-          </label>
-          <input
-            id="photo-sort-order"
-            type="number"
-            className={styles.input}
-            value={photoSortOrder}
-            onChange={(e) => setPhotoSortOrder(e.target.value)}
-            disabled={isDisabled || photoUploading || !hasContent}
-          />
-        </div>
-        <label className={styles.uploadArea} htmlFor="photo-upload">
-          {photoUploading
-            ? "Uploading…"
-            : hasContent
-              ? "Click to upload a photo"
-              : "Save the page content first"}
-        </label>
-        <input
-          id="photo-upload"
-          ref={fileInputRef}
-          type="file"
-          accept="image/*"
-          style={{ display: "none" }}
-          onChange={handlePhotoUpload}
-          disabled={isDisabled || photoUploading || !hasContent}
-        />
-        {photoError && <p className={styles.error}>{photoError}</p>}
-        {photos.length === 0 ? (
-          <p className={styles.emptyState}>No photos uploaded yet.</p>
-        ) : (
-          <div className={styles.photoGrid}>
-            {photos.map((photo) => (
-              <PhotoCard
-                key={photo.id}
-                photo={photo}
-                disabled={isDisabled}
-                onSave={handleUpdatePhotoCaption}
-                onDelete={handleDeletePhoto}
-              />
-            ))}
-          </div>
-        )}
-      </section>
-    </div>
-  );
-}
-
-interface PhotoCardProps {
-  photo: ClassPhoto;
-  disabled: boolean;
-  onSave: (photo: ClassPhoto, caption: string, sortOrder: number) => void;
-  onDelete: (id: number) => void;
-}
-
-function PhotoCard({ photo, disabled, onSave, onDelete }: PhotoCardProps) {
-  const { url } = useS3ImageUrl(photo.s3Key);
-  const [caption, setCaption] = useState(photo.caption ?? "");
-  const [sortOrder, setSortOrder] = useState(String(photo.sortOrder));
-
-  const parsedOrder = Number.parseInt(sortOrder, 10);
-
-  return (
-    <div className={styles.photoItem}>
-      {url ? (
-        <Image
-          src={url}
-          alt={photo.caption ?? "Class photo"}
-          className={styles.photoThumb}
-          width={200}
-          height={150}
-        />
-      ) : (
-        <div className={styles.photoThumb} aria-hidden="true" />
-      )}
-      <input
-        className={styles.input}
-        value={caption}
-        placeholder="Caption"
-        onChange={(e) => setCaption(e.target.value)}
-        disabled={disabled}
-      />
-      <input
-        className={styles.input}
-        type="number"
-        value={sortOrder}
-        onChange={(e) => setSortOrder(e.target.value)}
-        disabled={disabled}
-      />
-      <button
-        type="button"
-        className={styles.buttonSecondary}
-        onClick={() =>
-          onSave(photo, caption, Number.isNaN(parsedOrder) ? 0 : parsedOrder)
-        }
-        disabled={disabled}
-      >
-        Save
-      </button>
-      <button
-        type="button"
-        className={styles.dangerButton}
-        onClick={() => onDelete(photo.id)}
-        disabled={disabled}
-      >
-        Delete
-      </button>
+      </div>
     </div>
   );
 }

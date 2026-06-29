@@ -1,0 +1,185 @@
+/* Dedicated ADMIN navbar. Visually distinct from the public Header: a warmer
+   dark base with a copper accent strip and copper active state, so the bar
+   clearly reads as the admin portal rather than the public site nav. */
+.header {
+  width: 100%;
+  background: var(--color-bg-deep1);
+  color: var(--color-bg-primary);
+  /* Thin luminous copper rule signals the admin context. */
+  border-bottom: 2px solid var(--color-accent-copper);
+  box-shadow: var(--shadow-md);
+  top: 0;
+  left: 0;
+  z-index: 200;
+}
+
+.nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1em;
+  max-width: 95%;
+  margin: 0 auto;
+  padding: 0.55em 2em;
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6em;
+  text-decoration: none;
+  color: var(--color-accent-copper);
+  font-family: var(--font-primary);
+  font-size: 1.35em;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  border-radius: var(--radius-md);
+  transition: color var(--transition-fast);
+}
+.brand:hover {
+  color: var(--color-accent-gold);
+}
+
+/* Small pill marking this as the admin area. */
+.brandBadge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.15em 0.6em;
+  border-radius: var(--radius-sm);
+  background: var(--color-accent-copper);
+  color: var(--color-text-inverse);
+  font-size: 0.6em;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.brandLabel {
+  white-space: nowrap;
+}
+
+/* ---- Desktop links ---- */
+.links {
+  display: flex;
+  align-items: center;
+  gap: 0.4em;
+}
+
+.link {
+  color: var(--color-bg-primary);
+  font-size: 1.05em;
+  font-weight: 500;
+  text-decoration: none;
+  padding: 0.35em 0.8em;
+  border-radius: var(--radius-md);
+  border: 1px solid transparent;
+  transition:
+    background var(--transition-fast),
+    color var(--transition-fast),
+    border-color var(--transition-fast);
+}
+.link:hover {
+  background: var(--color-accent-dark);
+  color: var(--color-text-inverse);
+}
+.linkActive {
+  background: var(--color-accent-copper);
+  color: var(--color-text-inverse);
+  border-color: var(--color-accent-gold);
+}
+
+.brand:focus-visible,
+.link:focus-visible,
+.mobileToggle:focus-visible,
+.mobileLink:focus-visible {
+  outline: 2px solid var(--color-accent-gold);
+  outline-offset: 2px;
+}
+
+/* ---- Mobile menu ---- */
+.mobileMenu {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.mobileToggle {
+  background: none;
+  color: var(--color-accent-copper);
+  border: none;
+  border-radius: var(--radius-md);
+  padding: 0.4em 0.9em;
+  font-size: 1.3em;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background var(--transition-fast),
+    color var(--transition-fast);
+}
+.mobileToggle:hover {
+  background: var(--color-accent-dark);
+  color: var(--color-bg-primary);
+}
+
+.mobilePanel {
+  position: absolute;
+  top: 2.8em;
+  right: 0;
+  min-width: 220px;
+  background: var(--color-bg-deep);
+  border: 1px solid var(--color-accent-copper);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  padding: 0.7em;
+  z-index: 210;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3em;
+}
+
+.mobileLink {
+  color: var(--color-bg-primary);
+  font-size: 1.05em;
+  font-weight: 500;
+  text-decoration: none;
+  padding: 0.55em 0.8em;
+  border-radius: var(--radius-sm);
+  transition:
+    background var(--transition-fast),
+    color var(--transition-fast);
+}
+.mobileLink:hover {
+  background: var(--color-accent-dark);
+  color: var(--color-text-inverse);
+}
+.mobileLinkActive {
+  background: var(--color-accent-copper);
+  color: var(--color-text-inverse);
+}
+
+@media (max-width: 750px) {
+  .links {
+    display: none;
+  }
+}
+
+@media (max-width: 600px) {
+  .nav {
+    max-width: 100%;
+    padding: 0.5em 1em;
+  }
+  .brand {
+    font-size: 1.15em;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .brand,
+  .link,
+  .mobileLink,
+  .mobileToggle {
+    transition-duration: 0.001ms;
+  }
+}

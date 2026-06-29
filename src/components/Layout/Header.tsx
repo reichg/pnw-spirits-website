@@ -217,7 +217,7 @@ const Header = () => {
             }}
             priority
           />
-          PNW Spirits
+          The PNW Spirits
         </Link>
 
         {typeof window === "undefined" || !isMobile ? (

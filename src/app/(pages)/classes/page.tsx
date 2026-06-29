@@ -1,6 +1,6 @@
 import ClassSessions from "@/components/Class/ClassSessions";
 import PhotoAlbum from "@/components/Class/PhotoAlbum";
-import { getClassPage } from "@/services/classes/classService";
+import { getClassPageView } from "@/services/classes/classService";
 import type { Metadata } from "next";
 import styles from "./ClassesPage.module.css";
 import {
@@ -10,7 +10,7 @@ import {
 } from "./placeholderClassData";
 
 export const metadata: Metadata = {
-  title: "Cocktail Classes | PNW Spirits",
+  title: "Cocktail Classes | The PNW Spirits",
   description:
     "Join a PNW Spirits cocktail class. See upcoming dates and browse photos from past sessions.",
 };
@@ -21,7 +21,7 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 
 export default async function ClassesPage() {
-  const { class: cocktailClass, sessions, photos } = await getClassPage();
+  const { class: cocktailClass, sessions, photos } = await getClassPageView();
 
   if (!cocktailClass) {
     return (

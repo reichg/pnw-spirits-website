@@ -41,7 +41,7 @@ export const ALBUM_BREAKPOINTS: readonly AlbumBreakpoint[] = [
  * them responsively. The backend caps its query to this and the client renders
  * at most this many slides.
  */
-export const MAX_ALBUM_PHOTOS: number = 12;
+export const MAX_ALBUM_PHOTOS: number = 16;
 
 /**
  * The widest `slidesPerView` across all tiers (evaluates to 4). Used as the

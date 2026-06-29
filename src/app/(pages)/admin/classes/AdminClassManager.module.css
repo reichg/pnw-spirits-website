@@ -1,19 +1,71 @@
+/* Shared admin sub-page shell — mirrors AdminRecipeList / AdminBlogList so the
+   classes manager sits on the same blurred Bottles.jpg background. Portal
+   navigation now lives in the dedicated AdminHeader, so this page renders only
+   its own heading and section cards. */
+.adminPageBg {
+  width: 100%;
+  min-height: 100vh;
+  background: url("/images/Bottles.jpg") center center/cover no-repeat;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 2rem 0;
+  position: relative;
+  overflow: hidden;
+}
+
+.adminPageBg::before {
+  content: "";
+  position: absolute;
+  top: -10;
+  left: -10;
+  width: 103%;
+  height: 103%;
+  background: inherit;
+  filter: blur(4px) brightness(0.2) saturate(1);
+  z-index: 0;
+  pointer-events: none;
+}
+
+.adminPageBg > * {
+  position: relative;
+  z-index: 1;
+}
+
+.container {
+  width: 100%;
+  max-width: 1100px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0 1.5rem;
+}
+
+.heading {
+  font-family: var(--font-primary);
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--color-accent-gold);
+  margin: 0 0 2rem;
+  letter-spacing: 0.04em;
+  text-align: center;
+}
+
 .manager {
   display: flex;
   flex-direction: column;
   gap: 2rem;
-  max-width: 1000px;
   width: 100%;
-  margin: 2rem auto;
-  padding: 0 1rem 3rem;
+  padding-bottom: 1.5rem;
   font-family: var(--font-primary);
 }
 
 .section {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
-  padding: 1.5rem;
+  gap: 1.35rem;
+  padding: 2rem;
   background: var(--color-bg-secondary);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
@@ -21,9 +73,20 @@
 }
 
 .sectionHeading {
-  font-size: 1.5rem;
+  font-size: 1.4rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
   color: var(--color-accent-secondary);
   margin: 0;
+  padding-bottom: 0.7rem;
+  border-bottom: 1px solid var(--color-border);
+}
+
+/* Stack each form's fields with consistent vertical rhythm. */
+.section form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
 }
 
 .field {
@@ -60,12 +123,11 @@
 }
 
 .button {
-  align-self: flex-start;
   background: var(--color-button-bg);
   color: var(--color-button-text);
   border: none;
   border-radius: var(--radius-md);
-  padding: 0.6rem 1.4rem;
+  padding: 0.7rem 1rem;
   font-size: 1rem;
   font-weight: 600;
   font-family: inherit;
@@ -81,7 +143,6 @@
 }
 
 .buttonSecondary {
-  align-self: flex-start;
   background: transparent;
   color: var(--color-accent-secondary);
   border: 1px solid var(--color-accent-secondary);
@@ -120,7 +181,7 @@
   list-style: none;
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: 0.85rem;
   margin: 0;
   padding: 0;
 }
@@ -129,37 +190,144 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 1rem;
-  padding: 0.9rem 1.1rem;
+  gap: 1.25rem;
+  padding: 1rem 1.2rem;
   background: var(--color-bg-tertiary);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
+}
+
+/* Session summary text grows to fill the row so the action buttons sit flush
+   right and stay vertically centered against the label. */
+.sessionLabel {
+  flex: 1 1 auto;
+  min-width: 0;
+  line-height: 1.4;
+}
+
+/* Shared right-aligned cluster for a row's action buttons (session list rows,
+   the session edit row, and photo cards) so controls align consistently. */
+.rowActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+.rowActions .button,
+.rowActions .buttonSecondary,
+.rowActions .dangerButton {
+  align-self: center;
 }
 
 .sessionRow {
   display: flex;
   flex-wrap: wrap;
-  align-items: flex-end;
+  justify-content: center;
   gap: 1rem;
 }
 .sessionRow .field {
-  flex: 1 1 180px;
+  flex: 1 1 200px;
+  min-width: 0;
+}
+/* Keep the inline Add/Save button aligned to the bottom of the field inputs
+   rather than stretching with the wrapped row. */
+.sessionRow > .button {
+  flex: 0 0 auto;
+}
+/* The edit row's Save/Cancel cluster drops onto its own full-width line once
+   the date fields wrap, keeping the crowded inline row legible. */
+.sessionRow .rowActions {
+  flex: 1 1 100%;
+  justify-content: center;
+}
+
+/* The add-session form follows the existing sessions list; the hairline
+   divider keeps the two areas reading as distinct (the section gap handles
+   the surrounding spacing). */
+.sessionForm {
+  padding-top: 1.35rem;
+  border-top: 1px solid var(--color-border);
+}
+
+/* Row wrapper for the album's caption control; keeps the field aligned with
+   the section's rhythm and allows side-by-side growth if more fields are added. */
+.fieldRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+.fieldRow .field {
+  flex: 1 1 220px;
+  min-width: 0;
 }
 
 .photoGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-  gap: 1rem;
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  gap: 1.25rem;
 }
 
 .photoItem {
+  position: relative;
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
-  padding: 0.75rem;
+  gap: 0.6rem;
+  padding: 0.85rem;
   background: var(--color-bg-tertiary);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  /* The whole card is the drag source: grab affordance + touch-action so
+     pointer drags work on touch without the browser scrolling instead. */
+  cursor: grab;
+  touch-action: none;
+  /* dnd-kit transforms the tile during drag; box-shadow/border-color are the
+     only properties this card animates on its own (see .dragging). */
+  transition:
+    box-shadow var(--transition-fast),
+    border-color var(--transition-fast);
+}
+/* Nested controls opt out of the grab cursor so they read as operable; their
+   pointerdown handlers also stop a drag from starting on the card root. */
+.photoItem .input {
+  cursor: auto;
+}
+.photoItem .buttonSecondary,
+.photoItem .dangerButton {
+  cursor: pointer;
+}
+/* Push the Save/Delete cluster to the bottom edge so cards of differing
+   content heights keep their actions aligned along the grid row. */
+.photoItem .rowActions {
+  margin-top: auto;
+  justify-content: flex-start;
+}
+
+/* Raised, translucent state while a card is being dragged so it reads as
+   detached from the grid. dnd-kit owns the positional transform. */
+.dragging {
+  z-index: 2;
+  opacity: 0.85;
+  border-color: var(--color-accent-primary);
+  box-shadow: var(--shadow-md);
+  cursor: grabbing;
+}
+
+/* Decorative grip cue in the card's top corner. The card root carries the drag
+   listeners now, so this is a non-interactive, aria-hidden visual hint only. */
+.dragHandle {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.3rem;
+  border-radius: var(--radius-sm);
+  background: var(--color-bg-soft);
+  color: var(--color-text-secondary);
+  font-size: 1rem;
+  line-height: 0;
+  pointer-events: none;
 }
 
 .photoThumb {
@@ -170,13 +338,57 @@
   background: var(--color-bg-muted);
 }
 
+/* Over-limit tile: this photo sits past the public album cap, so it is dimmed
+   to read as inactive. Controls stay fully interactive (no pointer-events
+   block) so the admin can still drag, caption, save, or delete it — the goal
+   is to signal the state, not lock the card. */
+.beyondLimit {
+  border-color: var(--color-error);
+}
+.beyondLimit .photoThumb {
+  opacity: 0.45;
+  filter: grayscale(0.4);
+  transition: opacity var(--transition-fast);
+}
+/* Text + a contrasting fill carry the meaning so the cue is not color-only. */
+.limitBadge {
+  position: absolute;
+  top: 0.5rem;
+  left: 0.5rem;
+  z-index: 1;
+  padding: 0.2rem 0.55rem;
+  border-radius: var(--radius-sm);
+  background: var(--color-error);
+  color: var(--color-text-inverse);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  line-height: 1.2;
+  box-shadow: var(--shadow-sm);
+}
+
+/* Editor-level public-limit messaging rendered by AdminClassManager.
+   .publicLimitNote: neutral always-on helper text explaining the cap.
+   .publicLimitWarning: emphasized line shown when the cap is exceeded. */
+.publicLimitNote {
+  color: var(--color-text-secondary);
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+.publicLimitWarning {
+  color: var(--color-error);
+  font-weight: 600;
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
 .uploadArea {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  padding: 1.5rem;
+  padding: 2rem 1.5rem;
   border: 2px dashed var(--color-border);
   border-radius: var(--radius-md);
   background: var(--color-bg-tertiary);
@@ -209,6 +421,15 @@
   font-style: italic;
 }
 
+@media (max-width: 768px) {
+  .container {
+    padding: 0 1rem;
+  }
+  .section {
+    padding: 1.5rem;
+  }
+}
+
 @media (max-width: 600px) {
   .listItem {
     flex-direction: column;
@@ -218,6 +439,24 @@
     flex-direction: column;
     align-items: stretch;
   }
+  .sessionRow > .button {
+    align-self: stretch;
+    text-align: center;
+  }
+  /* On narrow screens let the row actions stretch full width and the buttons
+     fill the row so touch targets stay comfortable. */
+  .rowActions {
+    width: 100%;
+  }
+  .rowActions .button,
+  .rowActions .buttonSecondary,
+  .rowActions .dangerButton {
+    flex: 1 1 auto;
+    text-align: center;
+  }
+  .fieldRow {
+    flex-direction: column;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -226,7 +465,9 @@
   .button,
   .buttonSecondary,
   .dangerButton,
-  .uploadArea {
+  .uploadArea,
+  .photoItem,
+  .beyondLimit .photoThumb {
     transition-duration: 0.001ms;
   }
 }

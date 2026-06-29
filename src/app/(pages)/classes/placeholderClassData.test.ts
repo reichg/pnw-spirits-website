@@ -55,10 +55,12 @@ describe("placeholderPhotos", () => {
     expect(new Set(ids).size).toBe(ids.length);
   });
 
-  it("has a non-empty s3Key on every entry", () => {
+  it("exposes a url that is a string or null on every entry (no raw s3Key)", () => {
     for (const photo of placeholderPhotos) {
-      expect(typeof photo.s3Key).toBe("string");
-      expect(photo.s3Key.length).toBeGreaterThan(0);
+      // Preview tiles never render a real image, so url is null here; the
+      // contract is ClassPhotoView, which carries url (string | null), not s3Key.
+      expect(photo.url).toBeNull();
+      expect("s3Key" in photo).toBe(false);
     }
   });
 

@@ -3,7 +3,8 @@ import {
   getClassPage,
   upsertClassContent,
 } from "@/services/classes/classService";
-import { requireAdmin } from "@/utils/auth";
+import { MAX_ALBUM_PHOTOS } from "@/config/album";
+import { isAdmin, requireAdmin } from "@/utils/auth";
 import { logger } from "@/utils/logger";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -13,10 +14,14 @@ const CONTEXT = "api.classes";
  * GET /api/classes
  * Public read for the singleton /classes page. Returns the class plus its
  * sessions and photos (raw s3Keys; signed URLs resolved by the frontend).
+ *
+ * Authenticated admins receive the full, uncapped photo list; anonymous (and
+ * any non-admin) callers keep the capped public album (MAX_ALBUM_PHOTOS).
  */
-export async function GET() {
+export async function GET(req: NextRequest) {
+  const photoLimit = isAdmin(req) ? null : MAX_ALBUM_PHOTOS;
   try {
-    const page = await getClassPage();
+    const page = await getClassPage({ photoLimit });
     return NextResponse.json(page);
   } catch (err) {
     logger.error("Class page fetch error", { context: CONTEXT, data: err });

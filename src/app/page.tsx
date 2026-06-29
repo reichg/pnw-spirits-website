@@ -9,9 +9,9 @@ export default function Home() {
       {/* Hero Section */}
       <section className={landingStyles.landingHero}>
         <div className={landingStyles.landingHeroOverlay}>
-          <div className={landingStyles.landingHeroBrand}>PNW Spirits</div>
+          <p className={landingStyles.landingHeroBrand}>The PNW Spirits</p>
           <h1 className={landingStyles.landingHeroTitle}>
-            Welcome to the PNW Spirits
+            Pacific Northwest craft cocktails, poured with intention
           </h1>
         </div>
       </section>
@@ -39,6 +39,17 @@ export default function Home() {
             <div className={landingStyles.landingFourColGlassOverlay} />
             <span className={landingStyles.landingFourColCardLabel}>
               Videos
+            </span>
+          </Link>
+          <Link
+            href="/classes"
+            className={landingStyles.landingFourColCard}
+            style={{ backgroundImage: "url('/images/AmaronFloat.jpg')" }}
+            aria-label="Classes"
+          >
+            <div className={landingStyles.landingFourColGlassOverlay} />
+            <span className={landingStyles.landingFourColCardLabel}>
+              Classes
             </span>
           </Link>
           <Link
@@ -94,6 +105,13 @@ export default function Home() {
               <Image
                 src="/images/Daq.jpg"
                 alt="Preload Daq"
+                width={10}
+                height={10}
+                priority
+              />
+              <Image
+                src="/images/Bottles.jpg"
+                alt="Preload Bottles"
                 width={10}
                 height={10}
                 priority

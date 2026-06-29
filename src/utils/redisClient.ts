@@ -25,4 +25,15 @@ export async function invalidateBlogCache() {
   }
 }
 
+/**
+ * Invalidate all class cache keys (keys starting with 'classes:').
+ * Used after any class-page mutation (content, sessions, photos).
+ */
+export async function invalidateClassCache() {
+  const keys = await redis.keys("classes:*");
+  if (keys.length > 0) {
+    await redis.del(...keys);
+  }
+}
+
 export default redis;

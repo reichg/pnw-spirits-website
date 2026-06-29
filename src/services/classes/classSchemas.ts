@@ -63,6 +63,17 @@ export const photoUpdateSchema = photoInputSchema.extend({
   id: z.number(),
 });
 
+/**
+ * Batch photo reorder request body. `ids` is the FULL ordered list of photo
+ * ids; each photo's resulting `sortOrder` is its index in this array (index 0
+ * sorts first). The list is the untrusted client view of the album order, so
+ * the service must scope the renumber to the singleton class's own photos and
+ * ignore unknown ids (ordered id list -> sortOrder assigned by array index).
+ */
+export const photoReorderSchema = z.object({
+  ids: z.array(z.number().int().positive()).min(1),
+});
+
 /** Shared id param for delete/lookup operations. */
 export const idParamSchema = z.object({
   id: z.number(),
@@ -73,3 +84,4 @@ export type SessionInput = z.infer<typeof sessionInputSchema>;
 export type SessionUpdateInput = z.infer<typeof sessionUpdateSchema>;
 export type PhotoInput = z.infer<typeof photoInputSchema>;
 export type PhotoUpdateInput = z.infer<typeof photoUpdateSchema>;
+export type PhotoReorderInput = z.infer<typeof photoReorderSchema>;

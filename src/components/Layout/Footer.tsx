@@ -12,6 +12,9 @@ const Footer = () => {
         <Link className={styles.footerLink} href="/recipes-landing">
           Recipes
         </Link>
+        <Link className={styles.footerLink} href="/classes">
+          Classes
+        </Link>
         <Link className={styles.footerLink} href="/videos-landing">
           Videos
         </Link>
@@ -46,7 +49,7 @@ const Footer = () => {
         </a>
       </div>
       <div className={styles.copyright}>
-        &copy; {new Date().getFullYear()} PNW Spirits. All rights reserved.
+        &copy; {new Date().getFullYear()} The PNW Spirits. All rights reserved.
       </div>
     </footer>
   );

@@ -64,6 +64,18 @@
   box-shadow: var(--shadow-md);
 }
 
+/* The thumb doubles as the lightbox trigger when a real image is present.
+   Reset button chrome so it keeps the .thumb framing exactly. */
+.thumbButton {
+  padding: 0;
+  cursor: pointer;
+  appearance: none;
+}
+.thumbButton:focus-visible {
+  outline: 2px solid var(--color-accent-gold);
+  outline-offset: 2px;
+}
+
 .image {
   object-fit: contain;
   transition: transform var(--transition-medium);
@@ -116,6 +128,41 @@
   color: var(--color-text-inverse);
   text-align: center;
   padding: 1em 0;
+}
+
+/* Lightbox: enlarged image + caption inside the shared Modal panel. Widen the
+   panel by driving its --modal-max-width custom property; setting `width`
+   directly would be clamped by the panel's max-width. The property is set on the
+   same panel element (merged className), so it reads deterministically
+   regardless of CSS-file order. */
+.lightbox {
+  --modal-max-width: min(92vw, 1000px);
+}
+
+.lightboxFigure {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8em;
+  margin: 0;
+}
+
+.lightboxFrame {
+  position: relative;
+  width: 100%;
+  /* Cap height to the viewport (minus room for the close button + caption) so
+     the whole image stays visible without scrolling. */
+  height: min(72vh, 720px);
+}
+
+.lightboxImage {
+  object-fit: contain;
+}
+
+.lightboxCaption {
+  font-size: 1em;
+  color: var(--color-text-inverse);
+  text-align: center;
+  line-height: 1.5;
 }
 
 /* Decorative swipe affordance, shown at every breakpoint. The box lines up with the

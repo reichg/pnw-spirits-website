@@ -4,6 +4,10 @@
   min-height: 100vh;
   width: 100vw;
   overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 1.25rem;
   background: url("/images/Vermouth.jpg") center center/cover no-repeat;
 }
 .adminLandingBg::before {
@@ -26,23 +30,115 @@
 .container {
   position: relative;
   z-index: 2;
-  max-width: 600px;
-  margin: 3rem auto;
-  padding: 2rem;
-  background: rgb(1, 8, 4);
-  border-radius: var(--radius-md);
+  width: 100%;
+  max-width: 720px;
+  padding: 2.5rem;
+  background: rgba(1, 8, 4, 0.96);
+  border: 1px solid color-mix(in srgb, var(--color-accent-primary) 35%, transparent);
+  border-radius: var(--radius-lg);
   box-shadow: var(--shadow-md);
+  font-family: var(--font-primary);
+}
+
+.header {
   text-align: center;
+  margin-bottom: 2.25rem;
+}
+
+.eyebrow {
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--color-accent-copper);
+  margin-bottom: 0.6rem;
 }
 
 .heading {
-  font-size: 2.2rem;
+  font-size: clamp(1.8rem, 4vw, 2.4rem);
+  font-weight: 700;
   color: var(--color-accent-gold);
-  margin-bottom: 2rem;
+  letter-spacing: 0.5px;
+  margin-bottom: 0.4rem;
 }
+
+.subheading {
+  font-size: 0.95rem;
+  color: var(--color-text-muted);
+  margin: 0;
+}
+
 .adminNavLinks {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+}
+
+/* The Link itself is the navigation control (no nested <button>) */
+.adminNavBtn {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
-  align-items: center;
+  gap: 0.3rem;
+  padding: 1.15rem 1.35rem;
+  text-align: left;
+  text-decoration: none;
+  background: color-mix(in srgb, var(--color-accent-primary) 8%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-accent-primary) 28%, transparent);
+  border-radius: var(--radius-md);
+  color: var(--color-accent-gold);
+  transition:
+    transform var(--transition-fast),
+    border-color var(--transition-fast),
+    background var(--transition-fast),
+    box-shadow var(--transition-fast);
+}
+
+.navLabel {
+  font-size: 1.08rem;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+}
+
+.navHint {
+  font-size: 0.82rem;
+  font-weight: 400;
+  color: var(--color-text-muted);
+}
+
+.adminNavBtn:hover {
+  transform: translateY(-2px);
+  background: color-mix(in srgb, var(--color-accent-primary) 16%, transparent);
+  border-color: var(--color-accent-gold);
+  box-shadow: var(--shadow-md);
+}
+
+.adminNavBtn:focus-visible {
+  outline: 2px solid var(--color-accent-gold);
+  outline-offset: 3px;
+  border-color: var(--color-accent-gold);
+}
+
+.adminNavBtn:active {
+  transform: translateY(0);
+}
+
+@media (max-width: 600px) {
+  .adminLandingBg {
+    padding: 2rem 1rem;
+  }
+  .container {
+    padding: 1.75rem 1.25rem;
+  }
+  .adminNavLinks {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .adminNavBtn {
+    transition-duration: 0.001ms;
+  }
+  .adminNavBtn:hover {
+    transform: none;
+  }
 }

@@ -1,8 +1,8 @@
-# PNW Spirits Website
+# The PNW Spirits Website
 
 ## Overview
 
-PNW Spirits is a modern, cozy, and professional website inspired by the speakeasy era, designed to showcase Pacific Northwest spirits, blogs, videos, and community engagement. The site is built with a focus on warmth, elegance, and responsiveness, ensuring a seamless experience across desktop and mobile devices.
+The PNW Spirits is a modern, cozy, and professional website inspired by the speakeasy era, designed to showcase Pacific Northwest spirits, blogs, videos, and community engagement. The site is built with a focus on warmth, elegance, and responsiveness, ensuring a seamless experience across desktop and mobile devices.
 
 ### Key Features
 

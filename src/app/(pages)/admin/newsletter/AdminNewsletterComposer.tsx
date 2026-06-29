@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { useAdminToken } from "../AdminTokenContext";
 import styles from "./AdminNewsletterComposer.module.css";
@@ -195,12 +194,6 @@ export default function AdminNewsletterComposer() {
   return (
     <div className={styles.adminPageBg}>
       <div className={styles.container}>
-        <div className={styles.actionRow}>
-          <Link href="/admin" className={styles.adminNavBtn}>
-            <button type="button">&#8592; Back to Admin Portal</button>
-          </Link>
-        </div>
-
         <h2 className={styles.heading}>Send Newsletter</h2>
 
         <form className={styles.form} onSubmit={handleSubmit}>

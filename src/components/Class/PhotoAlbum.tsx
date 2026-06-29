@@ -1,12 +1,13 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { useS3ImageUrl } from "@/utils/useS3ImageUrl";
 import {
   ALBUM_BREAKPOINTS,
   MAX_ALBUM_PHOTOS,
   MAX_ALBUM_SLIDES_PER_VIEW,
 } from "@/config/album";
+import type { ClassPhotoView } from "@/services/classes/classView";
+import Modal from "@/components/ui/Modal";
 import Image from "next/image";
 import { Swiper, SwiperSlide } from "swiper/react";
 import type { SwiperOptions } from "swiper/types";
@@ -16,35 +17,69 @@ import styles from "./PhotoAlbum.module.css";
 import "swiper/css";
 import "swiper/css/pagination";
 
-export type ClassPhotoView = {
-  id: number;
-  s3Key: string;
-  caption: string | null;
-};
-
-function AlbumPhoto({ photo }: { photo: ClassPhotoView }) {
-  const { url, loading } = useS3ImageUrl(photo.s3Key);
+// Consumes the server-signed `photo.url` directly; no client-side signing.
+// next/image lazy-loads off-screen slides by default, so only visible images
+// download their bytes. `priority` is set on the first slide only so the
+// above-the-fold image isn't lazy.
+function AlbumPhoto({
+  photo,
+  priority,
+  onOpen,
+}: {
+  photo: ClassPhotoView;
+  priority: boolean;
+  // Called to open the lightbox; only provided when a real image is present.
+  onOpen?: () => void;
+}) {
   const alt = photo.caption ?? "Photo from a previous cocktail class";
 
-  return (
-    <figure className={styles.item}>
+  // The thumb is the click/keyboard target. A real <button> wrapper gives native
+  // Enter/Space activation and focus. Swiper suppresses click after a drag by
+  // default, so a swipe never opens the lightbox; only a true tap/click does.
+  const thumb =
+    photo.url && onOpen ? (
+      <button
+        type="button"
+        className={`${styles.thumb} ${styles.thumbButton}`}
+        onClick={onOpen}
+        aria-label={
+          photo.caption
+            ? `Enlarge photo: ${photo.caption}`
+            : "Enlarge photo from a previous cocktail class"
+        }
+      >
+        <Image
+          src={photo.url}
+          alt={alt}
+          fill
+          sizes="(max-width: 600px) 80vw, (max-width: 900px) 50vw, (max-width: 1200px) 33vw, 25vw"
+          className={styles.image}
+          priority={priority}
+        />
+      </button>
+    ) : (
       <div className={styles.thumb}>
-        {url ? (
+        {photo.url ? (
           <Image
-            src={url}
+            src={photo.url}
             alt={alt}
             fill
             sizes="(max-width: 600px) 80vw, (max-width: 900px) 50vw, (max-width: 1200px) 33vw, 25vw"
             className={styles.image}
+            priority={priority}
           />
         ) : (
           <div
             className={styles.placeholder}
-            aria-busy={loading}
-            aria-label={loading ? "Loading photo" : "Photo unavailable"}
+            aria-label="Photo unavailable"
           />
         )}
       </div>
+    );
+
+  return (
+    <figure className={styles.item}>
+      {thumb}
       {photo.caption && (
         <figcaption className={styles.caption}>{photo.caption}</figcaption>
       )}
@@ -191,17 +226,21 @@ export default function PhotoAlbum({
   // not dismissed before a real navigation.
   const readyRef = useRef(false);
 
-  // Last logical slide index seen. Async image loads (useS3ImageUrl + its 9-min
-  // refresh) trigger swiper.update() -> loopFix(), which shifts the raw
-  // activeIndex and emits slideChange while realIndex stays put. Dismiss only
-  // when realIndex actually changes so those reposition events don't hide the
-  // hint before a genuine navigation.
+  // Last logical slide index seen. Swiper repositioning (e.g. loop setup or
+  // layout updates) can shift the raw activeIndex and emit slideChange while
+  // realIndex stays put. Dismiss only when realIndex actually changes so those
+  // reposition events don't hide the hint before a genuine navigation.
   const lastRealIndexRef = useRef<number | null>(null);
 
   // Mirrors Swiper's watchOverflow lock: when every photo already fits a
   // breakpoint the carousel can't scroll (and its pagination hides), so the
   // swipe hint should hide too.
   const [locked, setLocked] = useState(false);
+
+  // Selected photo drives a single lightbox Modal. Only real (non-preview)
+  // photos with a signed url ever populate this, so the lightbox never opens on
+  // a broken/placeholder tile.
+  const [lightbox, setLightbox] = useState<ClassPhotoView | null>(null);
 
   // Fixed, viewport-independent slice: the same set renders on server and
   // client, so Swiper initializes once and never remounts slides on resize.
@@ -251,17 +290,49 @@ export default function PhotoAlbum({
         onLock={() => setLocked(true)}
         onUnlock={() => setLocked(false)}
       >
-        {visible.map((photo) => (
+        {visible.map((photo, index) => (
           <SwiperSlide key={photo.id}>
             {preview ? (
               <PreviewPhoto photo={photo} />
             ) : (
-              <AlbumPhoto photo={photo} />
+              <AlbumPhoto
+                photo={photo}
+                priority={index === 0}
+                onOpen={() => setLightbox(photo)}
+              />
             )}
           </SwiperSlide>
         ))}
       </Swiper>
       {showSwipeHint && <SwipeHint />}
+
+      <Modal
+        isOpen={lightbox !== null}
+        onClose={() => setLightbox(null)}
+        label={lightbox?.caption ?? "Enlarged class photo"}
+        className={styles.lightbox}
+      >
+        {lightbox?.url && (
+          <figure className={styles.lightboxFigure}>
+            {/* Dimensions are unknown, so fill within a viewport-capped frame;
+                object-fit keeps the whole image visible without cropping. */}
+            <div className={styles.lightboxFrame}>
+              <Image
+                src={lightbox.url}
+                alt={lightbox.caption ?? "Photo from a previous cocktail class"}
+                fill
+                sizes="90vw"
+                className={styles.lightboxImage}
+              />
+            </div>
+            {lightbox.caption && (
+              <figcaption className={styles.lightboxCaption}>
+                {lightbox.caption}
+              </figcaption>
+            )}
+          </figure>
+        )}
+      </Modal>
     </div>
   );
 }

@@ -178,28 +178,6 @@
   margin: 1rem 0;
 }
 
-.pagination {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  margin-top: 2rem;
-  justify-content: center;
-}
-
-.pageButton:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-.pageButton:hover:not(:disabled) {
-  background: var(--color-accent-gold);
-  color: var(--color-accent-copper);
-}
-.pageInfo {
-  font-size: 1.1rem;
-  color: var(--color-accent-gold);
-  font-family: var(--font-primary);
-}
-
 @media (max-width: 900px) {
   .adminBlogList {
     display: flex;

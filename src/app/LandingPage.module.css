@@ -17,31 +17,47 @@
   left: 0;
   width: 100vw;
   height: 100vh;
-  background: rgba(35, 34, 38, 0.2);
+  /* Radial scrim vignette focuses contrast behind the centered lockup for
+     legibility; rgba mirrors --color-bg-deep (#020f05) to carry alpha. */
+  background: radial-gradient(
+    ellipse at center,
+    rgba(2, 15, 5, 0.80) 10%,
+    rgba(2, 15, 5, 0) 60%
+  );
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   z-index: 2;
   text-align: center;
-  padding: 0 1.5em;
-}
-.landingHeroTitle {
-  font-size: 3.2em;
-  font-weight: 700;
-  color: var(--color-bg-primary);
-  margin-bottom: 0.5em;
-  font-family: "Geist", Inter, sans-serif;
-  letter-spacing: 1.5px;
-  text-shadow: 0 4px 24px rgba(0, 0, 0, 0.18);
+  padding: 0 1.5rem;
 }
 .landingHeroBrand {
-  font-size: 1.5em;
+  font-family: var(--font-primary);
+  font-size: clamp(2.4rem, 9vw, 6rem);
+  font-weight: 700;
+  line-height: 1.02;
+  letter-spacing: -0.01em;
   color: var(--color-accent-gold);
-  font-family: "Geist", Inter, sans-serif;
-  margin-bottom: 1.5em;
-  letter-spacing: 2px;
-  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.13);
+  margin: 0 0 0.35em 0;
+  text-shadow:
+    0 2px 18px rgba(0, 0, 0, 0.45),
+    0 1px 3px rgba(0, 0, 0, 0.6);
+}
+.landingHeroTitle {
+  font-family: var(--font-primary);
+  font-size: clamp(1rem, 2.4vw, 1.5rem);
+  font-weight: 400;
+  line-height: 1.4;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-text-inverse);
+  max-width: 30ch;
+  margin: 0 auto;
+  /* Subtle copper hairline echoes the brand without competing with it. */
+  padding-top: 1em;
+  border-top: 1px solid rgba(184, 115, 51, 0.55);
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.55);
 }
 
 .landingFourColSection {
@@ -55,9 +71,11 @@
 .landingFourColRow {
   display: flex;
   flex-direction: row;
-  gap: 1.5em;
+  /* Tightened gap + wider track keep five 4/5 cards from getting too narrow
+     while still fitting the row without overflow. */
+  gap: 1.1em;
   width: 100%;
-  max-width: 1100px;
+  max-width: 1240px;
   justify-content: center;
   align-items: stretch;
   flex-wrap: nowrap;

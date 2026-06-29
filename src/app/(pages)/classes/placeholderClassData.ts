@@ -4,7 +4,7 @@
 // strings (deterministic) so the preview renders consistently.
 
 import type { ClassSessionView } from "@/components/Class/ClassSessions";
-import type { ClassPhotoView } from "@/components/Class/PhotoAlbum";
+import type { ClassPhotoView } from "@/services/classes/classView";
 
 export const placeholderClass: { title: string; description: string } = {
   title: "Pacific Northwest Craft Cocktail Workshop",
@@ -34,36 +34,37 @@ export const placeholderSessions: ClassSessionView[] = [
   },
 ];
 
-// s3Key is a non-S3 sentinel label here: preview tiles never fetch from S3.
+// Preview tiles never display a real image (PreviewPhoto renders a styled
+// placeholder), so url is null; only the caption is shown.
 export const placeholderPhotos: ClassPhotoView[] = [
   {
     id: 1,
-    s3Key: "placeholder/foraged-garnishes",
+    url: null,
     caption: "Foraged garnishes from the Cascades",
   },
   {
     id: 2,
-    s3Key: "placeholder/small-batch-pour",
+    url: null,
     caption: "Pouring a small-batch PNW gin",
   },
   {
     id: 3,
-    s3Key: "placeholder/shaking-station",
+    url: null,
     caption: "Guests at the shaking station",
   },
   {
     id: 4,
-    s3Key: "placeholder/citrus-prep",
+    url: null,
     caption: "Fresh citrus prep before service",
   },
   {
     id: 5,
-    s3Key: "placeholder/finished-cocktails",
+    url: null,
     caption: "A flight of finished cocktails",
   },
   {
     id: 6,
-    s3Key: "placeholder/toast",
+    url: null,
     caption: "Cheers to a great class",
   },
 ];

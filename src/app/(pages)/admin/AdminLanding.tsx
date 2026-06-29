@@ -1,28 +1,27 @@
 "use client";
 
+import { ADMIN_NAV_ITEMS } from "@/components/Layout/adminNavItems";
 import Link from "next/link";
 import styles from "./AdminLanding.module.css";
 
 function AdminLanding() {
   return (
     <div className={styles.adminLandingBg}>
-      <div className={styles.container}>
-        <h1 className={styles.heading}>Admin Portal</h1>
-        <div className={styles.adminNavLinks}>
-          <Link href="/admin/blogs" className={styles.adminNavBtn}>
-            <button>Manage Blogs</button>
-          </Link>
-          <Link href="/admin/recipes" className={styles.adminNavBtn}>
-            <button>Manage Recipes</button>
-          </Link>
-          <Link href="/admin/classes" className={styles.adminNavBtn}>
-            <button>Manage Classes</button>
-          </Link>
-          <Link href="/admin/newsletter" className={styles.adminNavBtn}>
-            <button>Send Newsletter</button>
-          </Link>
-        </div>
-      </div>
+      <main className={styles.container}>
+        <header className={styles.header}>
+          <p className={styles.eyebrow}>The PNW Spirits</p>
+          <h1 className={styles.heading}>Admin Portal</h1>
+          <p className={styles.subheading}>Choose a section to manage.</p>
+        </header>
+        <nav className={styles.adminNavLinks} aria-label="Admin sections">
+          {ADMIN_NAV_ITEMS.map(({ href, label, hint }) => (
+            <Link key={href} href={href} className={styles.adminNavBtn}>
+              <span className={styles.navLabel}>{label}</span>
+              <span className={styles.navHint}>{hint}</span>
+            </Link>
+          ))}
+        </nav>
+      </main>
     </div>
   );
 }

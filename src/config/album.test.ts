@@ -17,10 +17,10 @@ const EXPECTED_TIERS = [
 ] as const;
 
 describe("MAX_ALBUM_PHOTOS", () => {
-  it("is the fixed album photo cap of 12", () => {
+  it("is the fixed album photo cap of 16", () => {
     // Pins the concrete backend query cap so any change to the fixed set size is
     // a visible, intentional diff rather than a silent drift.
-    expect(MAX_ALBUM_PHOTOS).toBe(12);
+    expect(MAX_ALBUM_PHOTOS).toBe(16);
   });
 });
 
