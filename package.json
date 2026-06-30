@@ -9,7 +9,8 @@
   },
   "scripts": {
     "dev": "next dev -H 0.0.0.0",
-    "build": "next build",
+    "build": "prisma generate && next build",
+    "postinstall": "prisma generate",
     "start": "next start",
     "db:seed": "prisma db seed",
     "lint": "eslint . --max-warnings=0",
