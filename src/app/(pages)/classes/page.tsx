@@ -3,11 +3,6 @@ import PhotoAlbum from "@/components/Class/PhotoAlbum";
 import { getClassPageView } from "@/services/classes/classService";
 import type { Metadata } from "next";
 import styles from "./ClassesPage.module.css";
-import {
-  placeholderClass,
-  placeholderSessions,
-  placeholderPhotos,
-} from "./placeholderClassData";
 
 export const metadata: Metadata = {
   title: "Cocktail Classes | The PNW Spirits",
@@ -23,42 +18,15 @@ export const dynamic = "force-dynamic";
 export default async function ClassesPage() {
   const { class: cocktailClass, sessions, photos } = await getClassPageView();
 
-  if (!cocktailClass) {
-    return (
-      <div className={styles.page}>
-        <main className={styles.main}>
-          <p className={styles.previewNote}>
-            Preview — sample content shown until classes are published.
-          </p>
-          <h1 className={styles.heading}>{placeholderClass.title}</h1>
-          <p className={styles.intro}>{placeholderClass.description}</p>
-
-          <section
-            className={styles.section}
-            aria-labelledby="upcoming-heading"
-          >
-            <h2 id="upcoming-heading" className={styles.sectionHeading}>
-              Upcoming Sessions
-            </h2>
-            <ClassSessions sessions={placeholderSessions} />
-          </section>
-
-          <section className={styles.section} aria-labelledby="album-heading">
-            <h2 id="album-heading" className={styles.sectionHeading}>
-              From Past Classes
-            </h2>
-            <PhotoAlbum photos={placeholderPhotos} preview />
-          </section>
-        </main>
-      </div>
-    );
-  }
+  const title = cocktailClass?.title ?? "Cocktail Classes";
 
   return (
     <div className={styles.page}>
       <main className={styles.main}>
-        <h1 className={styles.heading}>{cocktailClass.title}</h1>
-        <p className={styles.intro}>{cocktailClass.description}</p>
+        <h1 className={styles.heading}>{title}</h1>
+        {cocktailClass?.description && (
+          <p className={styles.intro}>{cocktailClass.description}</p>
+        )}
 
         <section className={styles.section} aria-labelledby="upcoming-heading">
           <h2 id="upcoming-heading" className={styles.sectionHeading}>

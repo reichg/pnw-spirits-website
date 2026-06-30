@@ -97,16 +97,6 @@
   animation: shimmer 1.4s linear infinite;
 }
 
-.previewFill {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    135deg,
-    var(--color-bg-deep1) 0%,
-    var(--color-bg-deep) 100%
-  );
-}
-
 @keyframes shimmer {
   0% {
     background-position: 200% 0;

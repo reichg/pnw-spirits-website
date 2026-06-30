@@ -87,21 +87,6 @@ function AlbumPhoto({
   );
 }
 
-// Static preview tile: no S3 fetch and no loading shimmer, used when the page
-// shows sample content before any class is published.
-function PreviewPhoto({ photo }: { photo: ClassPhotoView }) {
-  return (
-    <figure className={styles.item}>
-      <div className={styles.thumb}>
-        <div className={styles.previewFill} aria-hidden="true" />
-      </div>
-      {photo.caption && (
-        <figcaption className={styles.caption}>{photo.caption}</figcaption>
-      )}
-    </figure>
-  );
-}
-
 // Decorative-only swipe affordance shown at every breakpoint. The overlay
 // blurs/dims the slide row behind it while a sharp, cocktail-themed glass
 // animation floats centered on top; pointer-events: none lets pointers pass
@@ -210,13 +195,7 @@ const SWIPER_BREAKPOINTS: SwiperOptions["breakpoints"] = Object.fromEntries(
   ]),
 );
 
-export default function PhotoAlbum({
-  photos,
-  preview = false,
-}: {
-  photos: ClassPhotoView[];
-  preview?: boolean;
-}) {
+export default function PhotoAlbum({ photos }: { photos: ClassPhotoView[] }) {
   // Dismissed the moment the user touches or advances the carousel; gates the
   // decorative swipe hint. Declared before any early return per rules-of-hooks.
   const [interacted, setInteracted] = useState(false);
@@ -237,9 +216,8 @@ export default function PhotoAlbum({
   // swipe hint should hide too.
   const [locked, setLocked] = useState(false);
 
-  // Selected photo drives a single lightbox Modal. Only real (non-preview)
-  // photos with a signed url ever populate this, so the lightbox never opens on
-  // a broken/placeholder tile.
+  // Selected photo drives a single lightbox Modal. Only photos with a signed url
+  // ever populate this, so the lightbox never opens on a broken/missing tile.
   const [lightbox, setLightbox] = useState<ClassPhotoView | null>(null);
 
   // Fixed, viewport-independent slice: the same set renders on server and
@@ -292,15 +270,11 @@ export default function PhotoAlbum({
       >
         {visible.map((photo, index) => (
           <SwiperSlide key={photo.id}>
-            {preview ? (
-              <PreviewPhoto photo={photo} />
-            ) : (
-              <AlbumPhoto
-                photo={photo}
-                priority={index === 0}
-                onOpen={() => setLightbox(photo)}
-              />
-            )}
+            <AlbumPhoto
+              photo={photo}
+              priority={index === 0}
+              onOpen={() => setLightbox(photo)}
+            />
           </SwiperSlide>
         ))}
       </Swiper>
