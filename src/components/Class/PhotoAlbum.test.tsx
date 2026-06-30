@@ -24,11 +24,10 @@ import PhotoAlbum from "./PhotoAlbum";
 // Actually opening the lightbox (clicking a real photo) needs a renderer with
 // effects/state and a DOM, neither of which exists in this repo's "node" Vitest
 // setup (no jsdom/happy-dom, no @testing-library/react), and the work order
-// forbids new dependencies. The behavior change that IS deterministically
-// assertable from the initial server render is the precondition for the bug the
-// change fixes: real (non-preview, url-present) photos render an interactive
-// enlarge <button> (the lightbox trigger), while preview tiles render NO such
-// button, so a preview tile can never open a broken lightbox.
+// forbids new dependencies. What IS deterministically assertable from the
+// initial server render is which tiles are interactive: a photo with a signed
+// url renders an enlarge <button> (the lightbox trigger), while a photo missing
+// its url renders no such button, so a broken tile can never open the lightbox.
 
 const REAL_PHOTO: ClassPhotoView = {
   id: 1,
@@ -71,22 +70,7 @@ describe("PhotoAlbum", () => {
     );
   });
 
-  it("preview tiles are NOT interactive (no enlarge button, no broken lightbox)", () => {
-    const html = renderToStaticMarkup(
-      React.createElement(PhotoAlbum, {
-        preview: true,
-        photos: [{ id: 1, url: null, caption: "Sample" }],
-      }),
-    );
-
-    expect(html).not.toContain("<button");
-    expect(html).not.toContain("Enlarge");
-    // Preview tiles use the decorative fill, not a real image.
-    expect(html).not.toContain("<img");
-    expect(html).toContain("Sample");
-  });
-
-  it("a non-preview photo missing a url is shown but not interactive", () => {
+  it("a photo missing a url is shown but not interactive", () => {
     // Guards the AlbumPhoto branch: url must be present for the button to render,
     // so a signing failure (url === null) never produces a lightbox trigger.
     const html = renderToStaticMarkup(

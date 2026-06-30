@@ -59,17 +59,6 @@
   color: var(--color-text-inverse);
 }
 
-.previewNote {
-  margin-bottom: 1.5em;
-  padding: 0.5em 1em;
-  font-size: 0.95em;
-  color: var(--color-text-inverse);
-  text-align: center;
-  background: var(--color-bg-overlay);
-  border: 1px solid var(--color-border-dark);
-  border-radius: var(--radius-md);
-}
-
 .section {
   width: 100%;
   /* Allow grid/carousel children to shrink instead of dictating section width. */
