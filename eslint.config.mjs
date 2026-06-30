@@ -12,6 +12,9 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Generated artifacts and dependencies (parity with legacy .eslintrc.json):
+    "generated/**",
+    "node_modules/**",
   ]),
 ]);
 

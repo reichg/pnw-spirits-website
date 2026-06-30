@@ -1,63 +1,3 @@
-@media (max-width: 750px) {
-  .links {
-    display: none;
-  }
-  .dropdownMenu {
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    width: 100%;
-  }
-  .dropdownToggle {
-    background: none;
-    color: var(--color-accent-gold);
-    border: none;
-    border-radius: 6px;
-    padding: 0.5em 1em;
-    font-size: 1.1em;
-    font-weight: 600;
-    cursor: pointer;
-    margin-top: 0.5em;
-    margin-bottom: 0.5em;
-    box-shadow: 0 2px 8px rgba(45, 35, 32, 0.08);
-    transition: background 0.2s;
-  }
-  .dropdownToggle:hover {
-    background: var(--color-accent-dark);
-    color: var(--color-bg-primary);
-  }
-  .dropdownContent {
-    position: absolute;
-    top: 2.5em;
-    right: 0;
-    background: var(--color-bg-deep);
-    border-radius: 8px;
-    box-shadow: 0 4px 16px rgba(45, 35, 32, 0.12);
-    padding: 0.7em 1.2em;
-    z-index: 100;
-    min-width: 160px;
-    display: flex;
-    flex-direction: column;
-    gap: 0.5em;
-  }
-  .dropdownContent .link {
-    color: var(--color-accent-dark);
-    font-size: 1.08em;
-    font-weight: 500;
-    text-decoration: none;
-    padding: 0.3em 0.7em;
-    border-radius: 6px;
-    transition:
-      background 0.2s,
-      color 0.2s;
-  }
-  .dropdownContent .link:hover,
-  .dropdownContent .active {
-    background: var(--color-accent-primary);
-    color: var(--color-bg-deep);
-  }
-}
 .header {
   width: 100%;
   background: rgba(11, 11, 11, 0.95);
@@ -84,12 +24,14 @@
   font-weight: 700;
   letter-spacing: 1px;
   color: var(--color-accent-primary);
-  text-shadow: 0 2px 8px rgba(191, 161, 129, 0.1); /* --color-accent-primary with opacity */
+  text-shadow: 0 2px 8px rgba(191, 161, 129, 0.1);
   white-space: nowrap;
 }
 
+/* ---- Desktop links + dropdowns ---- */
 .links {
   display: flex;
+  align-items: center;
   gap: 0.5em;
 }
 
@@ -101,18 +43,234 @@
   padding: 0.3em 0.7em;
   border-radius: 6px;
   transition:
-    background 0.2s,
-    color 0.2s;
+    background var(--transition-fast),
+    color var(--transition-fast);
 }
 .link:hover,
 .active {
   background: var(--color-accent-primary);
   color: var(--color-bg-deep);
 }
+.link:focus-visible,
+.trigger:focus-visible,
+.menuLink:focus-visible,
+.mobileToggle:focus-visible,
+.mobileLink:focus-visible {
+  outline: 2px solid var(--color-accent-gold);
+  outline-offset: 2px;
+}
+
+.dropdown {
+  position: relative;
+  display: inline-flex;
+}
+
+.trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4em;
+  background: none;
+  color: var(--color-bg-primary);
+  font-size: 1.08em;
+  font-weight: 500;
+  font-family: inherit;
+  padding: 0.3em 0.7em;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition:
+    background var(--transition-fast),
+    color var(--transition-fast);
+}
+.trigger:hover,
+.dropdown:hover .trigger {
+  background: var(--color-accent-primary);
+  color: var(--color-bg-deep);
+}
+.trigger.active {
+  background: var(--color-accent-primary);
+  color: var(--color-bg-deep);
+}
+
+.caret {
+  width: 0.45em;
+  height: 0.45em;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  transform: rotate(45deg) translateY(-1px);
+  transition: transform var(--transition-fast);
+}
+.trigger[aria-expanded="true"] .caret {
+  transform: rotate(-135deg) translateY(-1px);
+}
+
+.dropdownPanel {
+  position: absolute;
+  /* Push the panel down by a real 0.6em so there is visible empty space
+     between the trigger word and the panel's background. The transparent
+     bridge below keeps the hover region continuous across that gap. */
+  top: calc(100% + 0.6em);
+  left: 0;
+  min-width: 180px;
+  /* Never exceed the viewport: the desktop nav uses 2em side padding, so
+     reserve that on both sides. Dropdowns are hidden below 750px, where the
+     padding shrinks, so 4em is a safe defensive ceiling. */
+  max-width: calc(100vw - 4em);
+  display: flex;
+  flex-direction: column;
+  gap: 0.25em;
+  padding: 0.5em;
+  background: var(--color-bg-deep);
+  background-clip: padding-box;
+  border: 1px solid var(--color-border-dark);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  opacity: 0;
+  transform: translateY(-6px);
+  pointer-events: none;
+  transition:
+    opacity var(--transition-fast),
+    transform var(--transition-fast);
+  z-index: 210;
+}
+/* The rightmost desktop group anchors its panel to the right edge of the
+   trigger so it opens leftward and can never overflow the viewport's right
+   edge. The bridge below uses left:0/right:0, so it spans the panel's own box
+   regardless of anchoring and stays correct for both left- and right-aligned
+   panels. */
+.links > .dropdown:last-child .dropdownPanel {
+  left: auto;
+  /* Nudge rightward past the trigger's right edge toward the screen edge,
+     leaving a small gap. Stays within the nav's 2em side padding, so it
+     never overflows; the max-width cap above is the final safety net. */
+  right: -1.5em;
+}
+
+/* Transparent bridge spanning the full visible gap between the trigger and
+   the panel so the cursor never crosses an un-hovered pixel and the group
+   stays hovered. Its height must match the panel's top offset (0.6em). */
+.dropdownPanel::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 100%;
+  height: 0.6em;
+}
+.dropdownPanelOpen {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.menuLink {
+  color: var(--color-bg-primary);
+  font-size: 1.02em;
+  font-weight: 500;
+  text-decoration: none;
+  padding: 0.45em 0.7em;
+  border-radius: var(--radius-sm);
+  transition:
+    background var(--transition-fast),
+    color var(--transition-fast);
+}
+.menuLink:hover,
+.menuLinkActive {
+  background: var(--color-accent-primary);
+  color: var(--color-bg-deep);
+}
+
+/* ---- Mobile menu ---- */
+.mobileMenu {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.mobileToggle {
+  background: none;
+  color: var(--color-accent-gold);
+  border: none;
+  border-radius: 6px;
+  padding: 0.5em 1em;
+  font-size: 1.3em;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background var(--transition-fast),
+    color var(--transition-fast);
+}
+.mobileToggle:hover {
+  background: var(--color-accent-dark);
+  color: var(--color-bg-primary);
+}
+
+.mobilePanel {
+  position: absolute;
+  top: 2.8em;
+  right: 0;
+  min-width: 220px;
+  background: var(--color-bg-deep);
+  border: 1px solid var(--color-border-dark);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  padding: 0.8em;
+  z-index: 210;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4em;
+}
+
+.mobileGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2em;
+  padding-top: 0.4em;
+  border-top: 1px solid var(--color-border-dark);
+}
+
+.mobileGroupLabel {
+  color: var(--color-accent-gold);
+  font-size: 0.8em;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 0.2em 0.7em;
+}
+
+.mobileGroupLinks {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2em;
+  padding-left: 0.5em;
+}
+
+.mobileLink {
+  color: var(--color-bg-primary);
+  font-size: 1.05em;
+  font-weight: 500;
+  text-decoration: none;
+  padding: 0.4em 0.7em;
+  border-radius: var(--radius-sm);
+  transition:
+    background var(--transition-fast),
+    color var(--transition-fast);
+}
+.mobileLink:hover,
+.mobileLinkActive {
+  background: var(--color-accent-primary);
+  color: var(--color-bg-deep);
+}
+
+@media (max-width: 750px) {
+  .links {
+    display: none;
+  }
+}
 
 @media (max-width: 900px) {
   .nav {
-    /* flex-direction: column; */
     gap: 0.7em;
     padding: 0 0.2em;
   }
@@ -122,6 +280,13 @@
   .logo {
     font-size: 1.2em;
   }
+  /* Below 901px the nav padding shrinks to 0.2em, so the larger-screen
+     -1.5em nudge would push the rightmost panel past the screen edge.
+     Re-anchor it flush to the trigger's right edge for the 751-900px range
+     (desktop dropdowns are still shown until 750px). */
+  .links > .dropdown:last-child .dropdownPanel {
+    right: 0;
+  }
 }
 
 @media (max-width: 600px) {
@@ -129,10 +294,19 @@
     max-width: 100%;
     padding: 0 1em;
   }
-  .links {
-    gap: 0.1em;
-  }
   .logo {
     font-size: 1.2em;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dropdownPanel,
+  .caret,
+  .link,
+  .trigger,
+  .menuLink,
+  .mobileLink,
+  .mobileToggle {
+    transition-duration: 0.001ms;
   }
 }

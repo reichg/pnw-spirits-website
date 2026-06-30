@@ -1,0 +1,98 @@
+/* Full-screen backdrop: dims and softly blurs the page behind the dialog,
+   matching the site's existing backdrop-filter usage (see PhotoAlbum swipe
+   hint). Centers the panel; the high z-index keeps it above page chrome. */
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  box-sizing: border-box;
+  background: rgba(0, 0, 0, 0.65);
+  -webkit-backdrop-filter: blur(3px);
+  backdrop-filter: blur(3px);
+  animation: backdropFade var(--transition-medium) ease-out both;
+}
+
+/* Centered, responsive dialog surface. Caps width/height to the viewport and
+   scrolls its own overflow so tall content (long session lists, large photos)
+   never pushes past the screen. */
+.panel {
+  position: relative;
+  width: 100%;
+  /* Consumers widen the panel by setting --modal-max-width via their own
+     className (e.g. the photo lightbox); default keeps the session modal at
+     640px. Using a bare max-width would silently clamp any consumer width, so
+     the knob lives here. */
+  max-width: var(--modal-max-width, 640px);
+  max-height: calc(100vh - 2rem);
+  overflow-y: auto;
+  box-sizing: border-box;
+  padding: 1.5rem;
+  background: var(--color-bg-deep);
+  border: 1px solid var(--color-border-dark);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  color: var(--color-text-inverse);
+  animation: panelIn var(--transition-medium) ease-out both;
+}
+
+/* Close affordance pinned to the top-right corner of the panel. */
+.close {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  font-size: 1.6rem;
+  line-height: 1;
+  color: var(--color-text-inverse);
+  background: var(--color-bg-overlay);
+  border: 1px solid var(--color-border-dark);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition:
+    color var(--transition-medium),
+    border-color var(--transition-medium);
+}
+.close:hover,
+.close:focus-visible {
+  color: var(--color-accent-gold);
+  border-color: var(--color-accent-gold);
+}
+
+@keyframes backdropFade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes panelIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .backdrop,
+  .panel {
+    animation: none;
+  }
+  .close {
+    transition: none;
+  }
+}

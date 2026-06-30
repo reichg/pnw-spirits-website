@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { useAdminToken } from "../AdminTokenContext";
 import styles from "./AdminNewsletterComposer.module.css";
@@ -40,8 +39,13 @@ export default function AdminNewsletterComposer() {
   const [isDraftLoaded, setIsDraftLoaded] = useState(false);
 
   useEffect(() => {
+    // SSR-safe: localStorage is only available on the client, so the draft must
+    // be hydrated into state from an effect to avoid a hydration mismatch.
+    /* eslint-disable react-hooks/set-state-in-effect */
     try {
-      const rawDraft = window.localStorage.getItem(NEWSLETTER_DRAFT_STORAGE_KEY);
+      const rawDraft = window.localStorage.getItem(
+        NEWSLETTER_DRAFT_STORAGE_KEY,
+      );
       if (rawDraft) {
         const parsedDraft = JSON.parse(rawDraft) as Partial<NewsletterDraft>;
         if (typeof parsedDraft.subject === "string") {
@@ -59,6 +63,7 @@ export default function AdminNewsletterComposer() {
     } finally {
       setIsDraftLoaded(true);
     }
+    /* eslint-enable react-hooks/set-state-in-effect */
   }, []);
 
   useEffect(() => {
@@ -189,12 +194,6 @@ export default function AdminNewsletterComposer() {
   return (
     <div className={styles.adminPageBg}>
       <div className={styles.container}>
-        <div className={styles.actionRow}>
-          <Link href="/admin" className={styles.adminNavBtn}>
-            <button type="button">&#8592; Back to Admin Portal</button>
-          </Link>
-        </div>
-
         <h2 className={styles.heading}>Send Newsletter</h2>
 
         <form className={styles.form} onSubmit={handleSubmit}>

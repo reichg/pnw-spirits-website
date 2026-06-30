@@ -24,12 +24,6 @@
   box-shadow: var(--shadow-md);
 }
 
-.actionRow {
-  display: flex;
-  justify-content: flex-start;
-  margin-bottom: 1rem;
-}
-
 .heading {
   color: var(--color-accent-gold);
   font-size: 2rem;

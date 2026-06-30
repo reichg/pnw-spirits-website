@@ -13,6 +13,9 @@
 # testing
 /coverage
 
+# screenshot helper output
+/.screenshots
+
 # next.js
 /.next/
 /out/
@@ -42,4 +45,9 @@ next-env.d.ts
 
 # github
 /.git
-/.github
+
+# claude
+/.claude
+
+# prisma
+/generated

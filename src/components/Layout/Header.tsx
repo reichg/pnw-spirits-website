@@ -6,47 +6,199 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import styles from "./Header.module.css";
 
-const navLinks = [
-  { href: "/", label: "Home" },
-  { href: "/blogs-landing", label: "Blogs" },
-  { href: "/recipes-landing", label: "Recipes" },
-  { href: "/videos-landing", label: "Videos" },
-  { href: "/about", label: "About" },
-  { href: "/contact", label: "Contact" },
+type NavLink = { href: string; label: string };
+type NavItem =
+  | { type: "link"; href: string; label: string }
+  | { type: "group"; label: string; children: NavLink[] };
+
+const navItems: NavItem[] = [
+  { type: "link", href: "/", label: "Home" },
+  {
+    type: "group",
+    label: "Concoctions",
+    children: [
+      { href: "/blogs-landing", label: "Blogs" },
+      { href: "/recipes-landing", label: "Recipes" },
+      { href: "/classes", label: "Classes" },
+      { href: "/videos-landing", label: "Videos" },
+    ],
+  },
+  {
+    type: "group",
+    label: "Resources",
+    children: [
+      { href: "/about", label: "About" },
+      { href: "/contact", label: "Contact" },
+    ],
+  },
 ];
+
+function useIsLinkActive(pathname: string) {
+  return (href: string) =>
+    href === "/" ? pathname === "/" : pathname.startsWith(href);
+}
 
 const Header = () => {
   const pathname = usePathname();
-  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const isLinkActive = useIsLinkActive(pathname);
+
+  const [mobileOpen, setMobileOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
-  // Set initial value before paint to avoid cascading renders
-  // No need for useLayoutEffect: isMobile is initialized in useState
+  // Which desktop dropdown is currently open (by group label), or null.
+  const [openMenu, setOpenMenu] = useState<string | null>(null);
+
+  const mobileRef = useRef<HTMLDivElement>(null);
+  const desktopNavRef = useRef<HTMLDivElement>(null);
+  // Short delay before a hover-driven close so diagonal cursor moves between
+  // the trigger and its panel are forgiven.
+  const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const cancelClose = () => {
+    if (closeTimer.current) {
+      clearTimeout(closeTimer.current);
+      closeTimer.current = null;
+    }
+  };
+
+  const openGroup = (label: string) => {
+    cancelClose();
+    setOpenMenu(label);
+  };
+
+  const scheduleClose = (label: string) => {
+    cancelClose();
+    closeTimer.current = setTimeout(() => {
+      setOpenMenu((cur) => (cur === label ? null : cur));
+      closeTimer.current = null;
+    }, 120);
+  };
+
+  // Clear any pending close timer on unmount to avoid leaks.
+  useEffect(() => cancelClose, []);
 
   useEffect(() => {
     const updateMobile = () => {
       const mobile = window.innerWidth <= 750;
       setIsMobile((prev) => (prev !== mobile ? mobile : prev));
-      if (window.innerWidth > 750) setDropdownOpen(false);
+      if (!mobile) {
+        setMobileOpen(false);
+      } else {
+        setOpenMenu(null);
+      }
     };
     updateMobile();
     window.addEventListener("resize", updateMobile);
     return () => window.removeEventListener("resize", updateMobile);
   }, []);
 
+  // Click-away closes the open mobile menu.
   useEffect(() => {
-    if (!dropdownOpen) return;
+    if (!mobileOpen) return;
     function handleClickAway(e: MouseEvent) {
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(e.target as Node)
-      ) {
-        setDropdownOpen(false);
+      if (mobileRef.current && !mobileRef.current.contains(e.target as Node)) {
+        setMobileOpen(false);
       }
     }
     document.addEventListener("mousedown", handleClickAway);
     return () => document.removeEventListener("mousedown", handleClickAway);
-  }, [dropdownOpen]);
+  }, [mobileOpen]);
+
+  // Click-away closes an open desktop dropdown.
+  useEffect(() => {
+    if (!openMenu) return;
+    function handleClickAway(e: MouseEvent) {
+      if (
+        desktopNavRef.current &&
+        !desktopNavRef.current.contains(e.target as Node)
+      ) {
+        setOpenMenu(null);
+      }
+    }
+    document.addEventListener("mousedown", handleClickAway);
+    return () => document.removeEventListener("mousedown", handleClickAway);
+  }, [openMenu]);
+
+  // Escape closes whichever surface is open.
+  useEffect(() => {
+    function handleKey(e: KeyboardEvent) {
+      if (e.key === "Escape") {
+        setOpenMenu(null);
+        setMobileOpen(false);
+      }
+    }
+    document.addEventListener("keydown", handleKey);
+    return () => document.removeEventListener("keydown", handleKey);
+  }, []);
+
+  const renderDesktopGroup = (
+    label: string,
+    children: NavLink[],
+  ) => {
+    const groupActive = children.some((c) => isLinkActive(c.href));
+    const isOpen = openMenu === label;
+    return (
+      <div
+        key={label}
+        className={styles.dropdown}
+        onMouseEnter={() => openGroup(label)}
+        onMouseLeave={() => scheduleClose(label)}
+        onBlur={(e) => {
+          // Close only when focus leaves the whole group (trigger + panel),
+          // not when moving between elements inside it.
+          if (!e.currentTarget.contains(e.relatedTarget as Node | null)) {
+            setOpenMenu((cur) => (cur === label ? null : cur));
+          }
+        }}
+      >
+        <button
+          type="button"
+          className={
+            groupActive
+              ? `${styles.trigger} ${styles.active}`
+              : styles.trigger
+          }
+          aria-haspopup="true"
+          aria-expanded={isOpen}
+          onClick={() => {
+            cancelClose();
+            setOpenMenu((cur) => (cur === label ? null : label));
+          }}
+          onFocus={() => openGroup(label)}
+        >
+          {label}
+          <span className={styles.caret} aria-hidden="true" />
+        </button>
+        <div
+          className={
+            isOpen
+              ? `${styles.dropdownPanel} ${styles.dropdownPanelOpen}`
+              : styles.dropdownPanel
+          }
+          role="menu"
+          aria-label={label}
+        >
+          {children.map((child) => (
+            <Link
+              key={child.href}
+              href={child.href}
+              role="menuitem"
+              className={
+                isLinkActive(child.href)
+                  ? `${styles.menuLink} ${styles.menuLinkActive}`
+                  : styles.menuLink
+              }
+              onClick={() => {
+                cancelClose();
+                setOpenMenu(null);
+              }}
+            >
+              {child.label}
+            </Link>
+          ))}
+        </div>
+      </div>
+    );
+  };
 
   return (
     <header className={styles.header}>
@@ -65,59 +217,83 @@ const Header = () => {
             }}
             priority
           />
-          PNW Spirits
+          The PNW Spirits
         </Link>
+
         {typeof window === "undefined" || !isMobile ? (
-          <div className={styles.links}>
-            {navLinks.map((link) => {
-              const isActive =
-                link.href === "/"
-                  ? pathname === "/"
-                  : pathname.startsWith(link.href);
-              return (
+          <div className={styles.links} ref={desktopNavRef}>
+            {navItems.map((item) =>
+              item.type === "link" ? (
                 <Link
-                  key={link.href}
-                  href={link.href}
+                  key={item.href}
+                  href={item.href}
                   className={
-                    isActive ? `${styles.link} ${styles.active}` : styles.link
+                    isLinkActive(item.href)
+                      ? `${styles.link} ${styles.active}`
+                      : styles.link
                   }
                 >
-                  {link.label}
+                  {item.label}
                 </Link>
-              );
-            })}
+              ) : (
+                renderDesktopGroup(item.label, item.children)
+              ),
+            )}
           </div>
         ) : (
-          <div className={styles.dropdownMenu} ref={dropdownRef}>
+          <div className={styles.mobileMenu} ref={mobileRef}>
             <button
-              className={styles.dropdownToggle}
+              type="button"
+              className={styles.mobileToggle}
               aria-label="Open navigation menu"
-              onClick={() => setDropdownOpen((open) => !open)}
+              aria-haspopup="true"
+              aria-expanded={mobileOpen}
+              onClick={() => setMobileOpen((open) => !open)}
             >
               ☰
             </button>
-            {dropdownOpen && (
-              <div className={styles.dropdownContent}>
-                {navLinks.map((link) => {
-                  const isActive =
-                    link.href === "/"
-                      ? pathname === "/"
-                      : pathname.startsWith(link.href);
-                  return (
+            {mobileOpen && (
+              <div className={styles.mobilePanel} role="menu">
+                {navItems.map((item) =>
+                  item.type === "link" ? (
                     <Link
-                      key={link.href}
-                      href={link.href}
+                      key={item.href}
+                      href={item.href}
+                      role="menuitem"
                       className={
-                        isActive
-                          ? `${styles.link} ${styles.active}`
-                          : styles.link
+                        isLinkActive(item.href)
+                          ? `${styles.mobileLink} ${styles.mobileLinkActive}`
+                          : styles.mobileLink
                       }
-                      onClick={() => setDropdownOpen(false)}
+                      onClick={() => setMobileOpen(false)}
                     >
-                      {link.label}
+                      {item.label}
                     </Link>
-                  );
-                })}
+                  ) : (
+                    <div key={item.label} className={styles.mobileGroup}>
+                      <span className={styles.mobileGroupLabel}>
+                        {item.label}
+                      </span>
+                      <div className={styles.mobileGroupLinks}>
+                        {item.children.map((child) => (
+                          <Link
+                            key={child.href}
+                            href={child.href}
+                            role="menuitem"
+                            className={
+                              isLinkActive(child.href)
+                                ? `${styles.mobileLink} ${styles.mobileLinkActive}`
+                                : styles.mobileLink
+                            }
+                            onClick={() => setMobileOpen(false)}
+                          >
+                            {child.label}
+                          </Link>
+                        ))}
+                      </div>
+                    </div>
+                  ),
+                )}
               </div>
             )}
           </div>

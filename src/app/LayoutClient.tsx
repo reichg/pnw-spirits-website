@@ -1,8 +1,10 @@
 "use client";
+import AdminHeader from "@/components/Layout/AdminHeader";
 import Footer from "@/components/Layout/Footer";
 import Header from "@/components/Layout/Header";
 import ScrollUpButton from "@/components/Layout/ScrollUpButton";
 import { Geist, Geist_Mono } from "next/font/google";
+import { usePathname } from "next/navigation";
 import { useEffect } from "react";
 import "./globals.css";
 
@@ -21,6 +23,8 @@ export default function LayoutClient({
 }: {
   children: React.ReactNode;
 }) {
+  const pathname = usePathname();
+  const isAdmin = pathname?.startsWith("/admin") ?? false;
   useEffect(() => {
     function setVh() {
       document.documentElement.style.setProperty(
@@ -34,10 +38,15 @@ export default function LayoutClient({
   }, []);
   return (
     <body className={`${geistSans.variable} ${geistMono.variable}`}>
-      <Header />
+      {/* Admin routes are full-bleed and use their own chrome (no public Footer/ScrollUpButton). */}
+      {isAdmin ? <AdminHeader /> : <Header />}
       {children}
-      <ScrollUpButton />
-      <Footer />
+      {!isAdmin && (
+        <>
+          <ScrollUpButton />
+          <Footer />
+        </>
+      )}
     </body>
   );
 }

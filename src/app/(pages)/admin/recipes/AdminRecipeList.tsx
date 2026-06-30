@@ -1,5 +1,4 @@
 "use client";
-import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useAdminToken } from "../AdminTokenContext";
 import AdminRecipeEditor from "./AdminRecipeEditor";
@@ -31,6 +30,9 @@ export default function AdminRecipeList() {
   // Check for recipe draft in localStorage and listen for token removal
   useEffect(() => {
     if (typeof window !== "undefined") {
+      // SSR-safe: localStorage is only available on the client, so the initial
+      // draft flag must be synced from an effect to avoid a hydration mismatch.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setHasDraft(!!localStorage.getItem("recipeDraft"));
       // Listen for changes to localStorage (e.g., draft removed after save or token removed)
       const syncDraft = () =>
@@ -70,6 +72,9 @@ export default function AdminRecipeList() {
       window.location.href = "/admin/login";
       return;
     }
+    // Data fetch when the token becomes available; the leading setLoading(true)
+    // inside fetchRecipes runs synchronously and is intended.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchRecipes();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [adminToken]);
@@ -128,9 +133,6 @@ export default function AdminRecipeList() {
     <div className={styles.adminPageBg}>
       <div className={styles.container}>
         <div className={styles.actionRow}>
-          <Link href="/admin" className={styles.adminNavBtn}>
-            <button>Back to Admin Portal</button>
-          </Link>
           <button onClick={handleCreate} disabled={loading}>
             New Recipe
           </button>

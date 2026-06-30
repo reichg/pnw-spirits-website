@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import LayoutClient from "./LayoutClient";
 
 export const metadata: Metadata = {
-  title: "PNW Spirits",
+  title: "The PNW Spirits",
 };
 
 export default function RootLayout({

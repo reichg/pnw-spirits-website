@@ -1,42 +1,9 @@
 "use client";
-import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useAdminToken } from "../AdminTokenContext";
 import AdminBlogEditor from "./AdminBlogEditor";
+import Pagination from "@/components/ui/Pagination";
 import styles from "./AdminBlogList.module.css";
-
-function Pagination({
-  page,
-  totalPages,
-  setPage,
-}: {
-  page: number;
-  totalPages: number;
-  setPage: (p: number) => void;
-}) {
-  if (totalPages <= 1) return null;
-  return (
-    <div className={styles.pagination}>
-      <button
-        className={styles.pageButton}
-        onClick={() => setPage(Math.max(1, page - 1))}
-        disabled={page === 1}
-      >
-        Previous
-      </button>
-      <span className={styles.pageInfo}>
-        Page {page} of {totalPages}
-      </span>
-      <button
-        className={styles.pageButton}
-        onClick={() => setPage(Math.min(totalPages, page + 1))}
-        disabled={page === totalPages}
-      >
-        Next
-      </button>
-    </div>
-  );
-}
 
 interface Blog {
   id: number;
@@ -63,6 +30,9 @@ export default function AdminBlogList() {
   // Check for blog draft in localStorage and listen for token removal
   useEffect(() => {
     if (typeof window !== "undefined") {
+      // SSR-safe: localStorage is only available on the client, so the initial
+      // draft flag must be synced from an effect to avoid a hydration mismatch.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setHasDraft(!!localStorage.getItem("blogDraft"));
       // Listen for changes to localStorage (e.g., draft removed after save or token removed)
       const syncDraft = () => setHasDraft(!!localStorage.getItem("blogDraft"));
@@ -100,6 +70,9 @@ export default function AdminBlogList() {
   };
 
   useEffect(() => {
+    // Data fetch on page change; the leading setLoading(true) inside fetchBlogs
+    // runs synchronously and is intended (loading state must reflect immediately).
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchBlogs();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page]);
@@ -145,9 +118,6 @@ export default function AdminBlogList() {
     <div className={styles.adminPageBg}>
       <div className={styles.container}>
         <div className={styles.actionRow}>
-          <Link href="/admin" className={styles.adminNavBtn}>
-            <button>Back to Admin Portal</button>
-          </Link>
           <button onClick={handleCreate}>New Blog</button>
           {hasDraft && (
             <button onClick={handleContinueDraft}>Continue Draft</button>
@@ -208,7 +178,7 @@ export default function AdminBlogList() {
             </div>
           ))}
         </div>
-        <Pagination page={page} totalPages={totalPages} setPage={setPage} />
+        <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
       </div>
       {showEditor && (
         <AdminBlogEditor

@@ -1,0 +1,38 @@
+.pagination {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 2rem;
+  justify-content: center;
+}
+
+/* Self-contained base: the shared pager must not rely on any ancestor button
+   styling, so the full look (formerly inherited from the global button rule on
+   the admin blog page) is reproduced here. */
+.pageButton {
+  background: var(--color-bg-overlay);
+  color: var(--color-accent-gold);
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: 0.5em 1.2em;
+  font-size: 1em;
+  font-family: var(--font-primary);
+  cursor: pointer;
+  transition: background var(--transition-fast);
+}
+
+.pageButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.pageButton:hover:not(:disabled) {
+  background: var(--color-accent-gold);
+  color: var(--color-accent-copper);
+}
+
+.pageInfo {
+  font-size: 1.1rem;
+  color: var(--color-accent-gold);
+  font-family: var(--font-primary);
+}

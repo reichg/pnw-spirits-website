@@ -18,7 +18,7 @@ export async function POST(req: NextRequest) {
       );
     }
     return NextResponse.json({ url });
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { error: "Failed to generate signed upload URL" },
       { status: 500 },
@@ -44,7 +44,7 @@ export async function GET(req: NextRequest) {
       );
     }
     return NextResponse.json({ url });
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { error: "Failed to generate signed URL" },
       { status: 500 },

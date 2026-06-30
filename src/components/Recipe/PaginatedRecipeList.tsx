@@ -44,6 +44,9 @@ export default function PaginatedRecipeList() {
   }, []);
 
   useEffect(() => {
+    // Data fetch on page change; the leading setLoading(true) inside fetchRecipes
+    // runs synchronously and is intended (loading state must reflect immediately).
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchRecipes(page);
   }, [page, fetchRecipes]);
 

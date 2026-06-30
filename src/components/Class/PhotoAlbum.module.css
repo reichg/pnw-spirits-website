@@ -1,0 +1,393 @@
+.carousel {
+  position: relative;
+  width: 100%;
+  /* Never exceed the page content box; slides span the full width, so the
+     carousel itself stays the horizontal clip boundary. */
+  max-width: 100%;
+  box-sizing: border-box;
+  /* Theme Swiper bullets to the site palette so they stay legible over the dark
+     page (navigation arrows are not used). */
+  --swiper-theme-color: var(--color-accent-gold);
+  --swiper-pagination-bullet-inactive-color: var(--color-text-inverse);
+  --swiper-pagination-bullet-inactive-opacity: 0.45;
+  /* Page-indicator reserve: each slide pads its bottom by this so Swiper's
+     pagination — rendered at the bottom of the slide track, inside the overflow-
+     hidden Swiper — sits below the photo caption instead of overlapping it. */
+  --album-pagination-space: 2.75em;
+}
+
+.carousel :global(.swiper) {
+  /* Constrain the slide track to the carousel width so nothing overflows the
+     page horizontally at any breakpoint. */
+  overflow: hidden;
+  /* Small interior buffer between the slides and the overflow clip edge. Swiper
+     sizes slides from the integer clientWidth, so against a fractional track the
+     rightmost photo can land exactly on the clip line and lose a sub-pixel of its
+     border (Firefox is strict about this). This padding keeps every photo a few
+     px inside the clip boundary at any width, browser, or DPR. */
+  padding-left: 4px;
+  padding-right: 4px;
+}
+
+.carousel :global(.swiper-pagination) {
+  bottom: 0;
+  /* Reserve a stable row height so the active dynamic bullet scaling up does
+     not shift the slides above it. */
+  height: 0.75rem;
+  line-height: 0.75rem;
+}
+
+.carousel :global(.swiper-pagination-bullet-active) {
+  background: var(--color-accent-gold);
+}
+
+.item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5em;
+  margin: 0;
+  box-sizing: border-box;
+  /* Reserve the page-indicator strip inside the slide (Swiper renders pagination at
+     the slide-track bottom) so the dots clear the caption beneath the photo. */
+  padding-bottom: var(--album-pagination-space);
+}
+
+.thumb {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  box-sizing: border-box;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background: var(--color-bg-deep);
+  border: 1px solid var(--color-border-dark);
+  box-shadow: var(--shadow-md);
+}
+
+/* The thumb doubles as the lightbox trigger when a real image is present.
+   Reset button chrome so it keeps the .thumb framing exactly. */
+.thumbButton {
+  padding: 0;
+  cursor: pointer;
+  appearance: none;
+}
+.thumbButton:focus-visible {
+  outline: 2px solid var(--color-accent-gold);
+  outline-offset: 2px;
+}
+
+.image {
+  object-fit: contain;
+  transition: transform var(--transition-medium);
+}
+.item:hover .image {
+  transform: scale(1.04);
+}
+
+.placeholder {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    100deg,
+    var(--color-bg-deep) 30%,
+    var(--color-bg-deep1) 50%,
+    var(--color-bg-deep) 70%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.4s linear infinite;
+}
+
+.previewFill {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    135deg,
+    var(--color-bg-deep1) 0%,
+    var(--color-bg-deep) 100%
+  );
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+.caption {
+  font-size: 0.95em;
+  color: var(--color-text-inverse);
+  text-align: center;
+  line-height: 1.4;
+}
+
+.empty {
+  font-size: 1.05em;
+  color: var(--color-text-inverse);
+  text-align: center;
+  padding: 1em 0;
+}
+
+/* Lightbox: enlarged image + caption inside the shared Modal panel. Widen the
+   panel by driving its --modal-max-width custom property; setting `width`
+   directly would be clamped by the panel's max-width. The property is set on the
+   same panel element (merged className), so it reads deterministically
+   regardless of CSS-file order. */
+.lightbox {
+  --modal-max-width: min(92vw, 1000px);
+}
+
+.lightboxFigure {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8em;
+  margin: 0;
+}
+
+.lightboxFrame {
+  position: relative;
+  width: 100%;
+  /* Cap height to the viewport (minus room for the close button + caption) so
+     the whole image stays visible without scrolling. */
+  height: min(72vh, 720px);
+}
+
+.lightboxImage {
+  object-fit: contain;
+}
+
+.lightboxCaption {
+  font-size: 1em;
+  color: var(--color-text-inverse);
+  text-align: center;
+  line-height: 1.5;
+}
+
+/* Decorative swipe affordance, shown at every breakpoint. The box lines up with the
+   carousel element exactly (inset: 0) so the blur/dim covers the whole carousel; a
+   matching bottom padding offsets the centered glass + label + arrow up over the
+   slide row so they sit on the photos, not the reserved pagination strip below it.
+   pointer-events: none lets every pointer fall through to Swiper, which performs the
+   drag and fires onTouchStart to dismiss. */
+.swipeHint {
+  font-size: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+  /* Cover the whole carousel element, edge to edge. */
+  inset: 0;
+  margin-bottom: 2rem;
+  /* Take the carousel's bottom padding into account so the centered hint stays over
+     the slide row instead of the pagination reserve. */
+  /* Swiper's base CSS sets .swiper { z-index: 1 }; lift the overlay above it so
+     the hint paints over the slides instead of behind the slide track. */
+  z-index: 2;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background: rgba(0, 0, 0, 0.582);
+  -webkit-backdrop-filter: blur(3px);
+  backdrop-filter: blur(3px);
+  pointer-events: none;
+  animation: hintFade var(--transition-medium) ease-out both;
+}
+
+/* Cocktail-glass affordance floating centered in the blurred overlay: a glass
+   that pours full, then slides left (the swipe direction), then loops. The whole
+   group carries the slide so the glass + liquid + label travel together. */
+.swipeHintGlass {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.15em;
+  /* One shared cycle drives every sub-animation so the pour, slide, and reset
+     stay phase-locked and the loop never visibly jumps. */
+  animation: glassSlide 2.8s ease-in-out infinite;
+}
+
+.glassSvg {
+  display: block;
+  overflow: visible;
+}
+
+/* Crisp martini bowl/rim/stem, kept above the liquid. */
+.glassBody {
+  stroke: var(--color-text-inverse);
+  stroke-width: 1.6;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+/* Foot of the stem: a thin filled ellipse so the base reads as solid glass. */
+.glassFoot {
+  fill: var(--color-text-inverse);
+}
+
+/* Garnish (pick + olive) laid across the rim, in the lighter accent so it reads
+   as a separate element from the gold liquid. Static — it rides the slide with
+   the rest of the group. */
+.glassGarnish {
+  stroke: var(--color-accent-light);
+  stroke-width: 1.3;
+  stroke-linecap: round;
+  fill: var(--color-accent-light);
+}
+
+/* Liquid rect: scaled up from the bottom by the fill keyframe, clipped to the
+   bowl interior in the SVG so it reads as filling the cone from the point up. */
+.glassLiquid {
+  fill: var(--color-accent-gold);
+  transform-box: fill-box;
+  transform-origin: bottom;
+  animation: glassFill 2.8s ease-in-out infinite;
+}
+
+/* Thin pour stream that drops in from above the rim during the fill phase. */
+.glassStream {
+  fill: var(--color-accent-light);
+  transform-box: fill-box;
+  transform-origin: top;
+  animation: glassPour 2.8s ease-in-out infinite;
+}
+
+/* Small affordance label under the glass; the glass motion carries the meaning,
+   the word confirms it. */
+.swipeHintLabel {
+  font-size: 0.72em;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--color-text-inverse);
+}
+
+/* Left-pointing chevron under the label. Its own short nudge loop drifts it
+   toward the swipe direction (left) and back, layered on top of the group's
+   glassSlide without altering it. */
+.swipeHintArrow {
+  display: block;
+  stroke: var(--color-accent-light);
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  fill: none;
+  animation: arrowNudge 1.25s ease-in-out infinite;
+}
+
+@keyframes hintFade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Whole-group cue: hold centered while the glass fills, then slide left and fade
+   (the swipe direction), then snap back invisibly during the reset window so the
+   next pour starts cleanly. */
+@keyframes glassSlide {
+  0%,
+  60% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  85% {
+    transform: translateX(-26px);
+    opacity: 0;
+  }
+  /* Reposition while fully transparent so the return is never seen. */
+  86%,
+  100% {
+    transform: translateX(0);
+    opacity: 0;
+  }
+}
+
+/* Liquid level: empty at the start of each cycle, rises to near-full during the
+   pour, holds through the slide, then resets to empty while transparent. */
+@keyframes glassFill {
+  0%,
+  6% {
+    transform: scaleY(0);
+  }
+  42%,
+  85% {
+    transform: scaleY(1);
+  }
+  86%,
+  100% {
+    transform: scaleY(0);
+  }
+}
+
+/* Pour stream: visible only while filling — drops from the rim, then vanishes
+   before the glass slides away. */
+@keyframes glassPour {
+  0% {
+    transform: scaleY(0);
+    opacity: 0;
+  }
+  6% {
+    transform: scaleY(0.2);
+    opacity: 1;
+  }
+  34% {
+    transform: scaleY(1);
+    opacity: 1;
+  }
+  44%,
+  100% {
+    transform: scaleY(1);
+    opacity: 0;
+  }
+}
+
+/* Subtle left nudge for the chevron: drift a few px toward the swipe direction
+   and back, easing both ways so the eye is drawn left without distracting. */
+@keyframes arrowNudge {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  50% {
+    transform: translateX(-4px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .image {
+    transition-duration: 0.001ms;
+  }
+  .placeholder {
+    animation-duration: 0.001ms;
+  }
+  /* Calm Swiper slide transitions rather than disabling navigation entirely. */
+  .carousel :global(.swiper-wrapper) {
+    transition-duration: 0.001ms !important;
+  }
+  /* Show the swipe hint as a static, already-full glass: no fade-in, no pour,
+     no slide. The liquid holds at full and the pour stream is hidden so the cue
+     reads without any motion. */
+  .swipeHint {
+    animation: none;
+  }
+  .swipeHintGlass {
+    animation: none;
+    transform: none;
+    opacity: 1;
+  }
+  .glassLiquid {
+    animation: none;
+    transform: scaleY(1);
+  }
+  .glassStream {
+    animation: none;
+    opacity: 0;
+  }
+  /* Freeze the chevron in place: still visible, just no nudge. */
+  .swipeHintArrow {
+    animation: none;
+    transform: none;
+  }
+}

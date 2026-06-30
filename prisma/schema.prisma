@@ -66,3 +66,38 @@ model CocktailRecipe {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }
+
+model CocktailClass {
+  id          Int            @id @default(autoincrement())
+  title       String
+  description String
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  sessions    ClassSession[]
+  photos      ClassPhoto[]
+}
+
+model ClassSession {
+  id        Int           @id @default(autoincrement())
+  class     CocktailClass @relation(fields: [classId], references: [id], onDelete: Cascade)
+  classId   Int
+  startTime DateTime
+  endTime   DateTime?
+  location  String?
+  createdAt DateTime      @default(now())
+
+  @@index([classId])
+  @@index([startTime])
+}
+
+model ClassPhoto {
+  id        Int           @id @default(autoincrement())
+  class     CocktailClass @relation(fields: [classId], references: [id], onDelete: Cascade)
+  classId   Int
+  s3Key     String
+  caption   String?
+  sortOrder Int           @default(0)
+  createdAt DateTime      @default(now())
+
+  @@index([classId])
+}

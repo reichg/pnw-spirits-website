@@ -1,127 +1,187 @@
 .page {
   display: flex;
   min-height: 100vh;
-  font-family: var(--font-geist-sans);
-  padding: clamp(32px, 6vw, 72px) clamp(12px, 4vw, 28px);
-  background: url("/images/Bottles.jpg");
-  background-size: cover;
-  background-repeat: no-repeat;
-  background-position: center;
+  font-family: var(--font-primary);
+  /* Deep speakeasy backdrop; the hero now carries the imagery, so the page
+     itself is a simple dark gradient rather than a blurred photo scrim. */
+  background: linear-gradient(
+    180deg,
+    var(--color-bg-deep1) 0%,
+    var(--color-bg-deep) 100%
+  );
   position: relative;
   overflow: hidden;
-}
-
-.page::before {
-  content: "";
-  position: absolute;
-  inset: -12px;
-  width: 103%;
-  height: 103%;
-  background: inherit;
-  filter: blur(8px) brightness(0.2) saturate(1.05);
-  box-shadow:
-    0 0 0 8px rgba(40, 20, 10, 0.18) inset,
-    0 0 32px 0 rgba(0, 0, 0, 0.22) inset;
-  z-index: 0;
-  pointer-events: none;
-}
-
-.page > * {
-  position: relative;
-  z-index: 1;
 }
 
 .main {
   min-height: 100%;
   flex: 1;
+  min-width: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  gap: clamp(20px, 3vw, 32px);
+  gap: clamp(28px, 5vw, 56px);
+  padding-bottom: clamp(32px, 6vw, 72px);
 }
 
-.contentShell {
-  width: min(1080px, 100%);
-  border-radius: var(--radius-md);
+/* ---- Full-bleed photo hero ---- */
+.hero {
+  position: relative;
+  width: 100%;
+  min-height: clamp(360px, 68vh, 640px);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.heroImage {
+  object-fit: cover;
+  object-position: center;
+  /* Slight darken/saturate keeps the warm photo from competing with text. */
+  filter: brightness(0.78) saturate(1.05);
+}
+
+/* Gradient scrim concentrates contrast toward the lower-left lockup; rgba
+   mirrors --color-bg-deep1 (26,18,13) to carry alpha consistently. */
+.heroScrim {
+  position: absolute;
+  inset: 0;
   background: linear-gradient(
     180deg,
-    rgba(90, 56, 15, 0.2) 0%,
-    rgba(187, 120, 20, 0.2) 100%
+    rgba(26, 18, 13, 0.25) 0%,
+    rgba(26, 18, 13, 0.55) 55%,
+    rgba(26, 18, 13, 0.92) 100%
   );
-  border: 1px solid rgba(190, 152, 95, 0.3);
-  box-shadow: var(--shadow-md);
-  padding: clamp(20px, 4vw, 40px);
+  pointer-events: none;
 }
 
-.hero {
+.heroContent {
+  position: relative;
+  z-index: 1;
+  width: min(1080px, 100%);
   display: grid;
-  gap: 10px;
-  justify-items: center;
+  gap: clamp(10px, 1.5vw, 16px);
   text-align: center;
-  margin-bottom: clamp(20px, 3vw, 30px);
+  padding: clamp(28px, 5vw, 56px) clamp(16px, 4vw, 28px)
+    clamp(32px, 5vw, 60px);
 }
 
 .eyebrow {
   margin: 0;
   font-size: 0.8rem;
   font-weight: 700;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: var(--color-accent-primary);
+  color: var(--color-accent-copper);
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.6);
 }
 
 .heading {
   margin: 0;
-  font-size: clamp(1.9rem, 4vw, 2.6rem);
+  font-size: clamp(2.1rem, 5.5vw, 3.4rem);
   font-weight: 700;
   color: var(--color-accent-gold);
-  line-height: 1.2;
-  text-align: center;
+  line-height: 1.12;
+  text-shadow: 0 2px 16px rgba(0, 0, 0, 0.55);
 }
 
-.sectionGrid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: clamp(12px, 2vw, 20px);
+.lead {
+  margin: 0 auto;
+  max-width: 56ch;
+  font-size: clamp(1rem, 2vw, 1.18rem);
+  line-height: 1.55;
+  color: var(--color-text-inverse);
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.6);
 }
 
-.section {
-  min-height: 100%;
+/* ---- Alternating zig-zag story rows ---- */
+.stories {
+  width: min(1180px, 100%);
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  padding: clamp(14px, 2vw, 20px);
+  gap: clamp(24px, 4vw, 48px);
+  padding: 0 clamp(12px, 4vw, 28px);
+}
+
+.storyRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  align-items: center;
+  gap: clamp(20px, 3vw, 48px);
+}
+
+/* Flip column order on odd rows for the zig-zag image-left/image-right cadence. */
+.storyRowReversed .storyMedia {
+  order: 2;
+}
+
+.storyMedia {
+  position: relative;
+  min-width: 0;
+  aspect-ratio: 4 / 5;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  border: 1px solid rgba(184, 115, 51, 0.45);
+  box-shadow: var(--shadow-lg);
+}
+
+.storyImage {
+  object-fit: cover;
+  object-position: center;
+  transition: transform var(--transition-medium);
+}
+
+.storyMedia:hover .storyImage {
+  transform: scale(1.04);
+}
+
+/* Layered dark panel with a gold hairline keeps body copy readable and echoes
+   the glassy speakeasy surfaces used across the site. */
+.storyBody {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: clamp(10px, 1.5vw, 16px);
+  padding: clamp(16px, 2.5vw, 28px);
   border-radius: var(--radius-md);
-  background: rgba(255, 250, 243, 0.9);
-  border: 1px solid rgba(190, 152, 95, 0.24);
+  background: linear-gradient(
+    180deg,
+    rgba(44, 34, 32, 0.78) 0%,
+    rgba(26, 18, 13, 0.82) 100%
+  );
+  border: 1px solid rgba(184, 115, 51, 0.45);
+  box-shadow: var(--shadow-md);
 }
 
 .subheading {
   margin: 0;
-  font-size: clamp(1.05rem, 2.4vw, 1.25rem);
-  font-weight: 600;
-  color: var(--color-text-primary);
+  font-size: clamp(1.3rem, 3vw, 1.7rem);
+  font-weight: 700;
+  color: var(--color-accent-gold);
   letter-spacing: 0.01em;
-  text-align: left;
-  font-family: var(--font-geist-sans);
+  line-height: 1.2;
+  font-family: var(--font-primary);
 }
 
 .text {
   margin: 0;
-  font-size: clamp(0.98rem, 2vw, 1.06rem);
-  color: var(--color-text-primary);
+  font-size: clamp(0.98rem, 2vw, 1.08rem);
+  color: var(--color-text-inverse);
   line-height: 1.72;
 }
 
+/* ---- Signature flourish ---- */
 .signatureBox {
-  margin-top: clamp(20px, 3vw, 30px);
-  padding: clamp(12px, 2vw, 16px) clamp(14px, 3vw, 24px);
+  width: min(1080px, 100%);
+  margin: 0 clamp(12px, 4vw, 28px);
+  padding: clamp(16px, 2.5vw, 22px) clamp(16px, 3vw, 28px);
   background: linear-gradient(
     90deg,
-    var(--color-accent-primary) 0%,
-    var(--color-bg-soft) 100%
+    rgba(184, 115, 51, 0.28) 0%,
+    rgba(226, 176, 126, 0.18) 100%
   );
+  border: 1px solid rgba(226, 176, 126, 0.45);
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-sm);
   display: flex;
@@ -129,24 +189,41 @@
   align-items: center;
 }
 
+.signature {
+  margin: 0;
+  font-family: var(--font-primary);
+  font-size: clamp(1.05rem, 2.6vw, 1.35rem);
+  font-weight: 700;
+  color: var(--color-accent-gold);
+  letter-spacing: 0.03em;
+  text-align: center;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
+}
+
+/* ---- Channels footer ---- */
 .channelsSection {
   width: min(1080px, 100%);
-  padding: clamp(14px, 2vw, 20px);
-  background: rgba(255, 248, 236, 0.9);
-  border: 1px solid rgba(190, 152, 95, 0.24);
+  margin: 0 clamp(12px, 4vw, 28px);
+  padding: clamp(16px, 2.5vw, 22px);
+  background: linear-gradient(
+    180deg,
+    rgba(44, 34, 32, 0.78) 0%,
+    rgba(26, 18, 13, 0.82) 100%
+  );
+  border: 1px solid rgba(184, 115, 51, 0.45);
   border-radius: var(--radius-md);
-  box-shadow: var(--shadow-sm);
+  box-shadow: var(--shadow-lg);
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 10px;
+  gap: 14px;
 }
 
 .channelsHeading {
   margin: 0;
-  font-size: clamp(1.05rem, 2.4vw, 1.2rem);
+  font-size: clamp(1.05rem, 2.4vw, 1.25rem);
   font-weight: 600;
-  color: var(--color-text-primary);
+  color: var(--color-accent-gold);
   text-align: center;
 }
 
@@ -160,9 +237,9 @@
   width: 44px;
   height: 44px;
   border-radius: 999px;
-  border: 1px solid rgba(190, 152, 95, 0.3);
-  background: rgba(255, 255, 255, 0.85);
-  color: var(--color-accent-primary);
+  border: 1px solid rgba(184, 115, 51, 0.55);
+  background: rgba(44, 34, 32, 0.6);
+  color: var(--color-accent-gold);
   font-size: 1.35rem;
   display: inline-flex;
   justify-content: center;
@@ -171,14 +248,16 @@
     color 0.2s ease,
     background 0.2s ease,
     transform 0.2s ease,
-    border-color 0.2s ease;
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 .socialLink:hover {
-  color: var(--color-bg-soft);
-  background: var(--color-accent-primary);
-  border-color: var(--color-accent-primary);
-  transform: translateY(-1px);
+  color: var(--color-bg-deep);
+  background: var(--color-accent-gold);
+  border-color: var(--color-accent-gold);
+  transform: translateY(-2px);
+  box-shadow: 0 0 16px rgba(226, 176, 126, 0.45);
 }
 
 .socialLink:focus-visible {
@@ -186,37 +265,50 @@
   outline-offset: 2px;
 }
 
-.signature {
-  margin: 0;
-  font-family: var(--font-geist-sans);
-  font-size: clamp(1rem, 2.3vw, 1.15rem);
-  font-weight: 700;
-  color: var(--color-text-primary);
-  letter-spacing: 0.03em;
-  text-align: center;
-}
-
+/* Rows stack on tablet/mobile: image on top, text below. */
 @media (max-width: 900px) {
-  .sectionGrid {
+  .storyRow {
     grid-template-columns: 1fr;
+    gap: clamp(14px, 3vw, 22px);
   }
 
-  .subheading {
-    text-align: center;
+  /* Keep image-on-top regardless of source order on stacked layouts. */
+  .storyRowReversed .storyMedia {
+    order: 0;
   }
 
-  .text {
-    text-align: center;
+  .storyMedia {
+    aspect-ratio: 16 / 10;
   }
 }
 
 @media (max-width: 600px) {
-  .page {
-    padding: 24px 8px;
+  .hero {
+    min-height: clamp(320px, 56vh, 440px);
   }
 
-  .contentShell,
+  .stories {
+    padding: 0 10px;
+  }
+
+  .signatureBox,
   .channelsSection {
+    margin: 0 10px;
     border-radius: var(--radius-sm);
+  }
+
+  .storyMedia {
+    border-radius: var(--radius-md);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .socialLink,
+  .storyImage {
+    transition-duration: 0.001ms;
+  }
+
+  .storyMedia:hover .storyImage {
+    transform: none;
   }
 }

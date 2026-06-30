@@ -14,10 +14,10 @@
 body::before {
   content: "";
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
+  /* Pin to all four viewport edges instead of width:100vw/height:100vh.
+     100vw includes the vertical scrollbar gutter, which forced a few-px
+     horizontal scrollbar whenever a vertical scrollbar was present. */
+  inset: 0;
   z-index: -100;
   opacity: 0.9;
   background-position: center center;
@@ -38,6 +38,13 @@ body::before {
 html,
 body {
   width: 100%;
+}
+
+/* Defensive backstop against residual horizontal overflow. `clip` avoids the
+   scroll-container side effects of `hidden` and is safe here because the header
+   is not sticky/fixed. The real fix is removing 100vw from body::before above. */
+html {
+  overflow-x: clip;
 }
 
 :root {
@@ -111,6 +118,9 @@ body {
   --transition-fast: 0.15s cubic-bezier(0.4, 0, 0.2, 1);
   --transition-medium: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   --transition-slow: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* Featured card width (shared across Blog/Recipe/Video) */
+  --featured-card-max-width: min(100%, calc(80vh * 16 / 9));
 }
 
 @media (prefers-color-scheme: dark) {
