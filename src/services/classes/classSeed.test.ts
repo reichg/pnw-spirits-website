@@ -7,7 +7,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 // vi.mock factory runs. seedClassPage intentionally uses the REAL
 // createSession/createPhoto/upsertClassContent/getSingletonClassId so their
 // Zod validation and write semantics are exercised end-to-end against the mock.
-const { prismaMock } = vi.hoisted(() => ({
+const { prismaMock, redisMock, invalidateClassCache } = vi.hoisted(() => ({
   prismaMock: {
     cocktailClass: {
       findFirst: vi.fn(),
@@ -23,6 +23,13 @@ const { prismaMock } = vi.hoisted(() => ({
       create: vi.fn(),
     },
   },
+  redisMock: {
+    get: vi.fn(),
+    set: vi.fn(),
+    del: vi.fn(),
+    keys: vi.fn(),
+  },
+  invalidateClassCache: vi.fn(),
 }));
 
 vi.mock("@/utils/prisma", () => ({
@@ -31,6 +38,15 @@ vi.mock("@/utils/prisma", () => ({
 
 vi.mock("@/utils/s3", () => ({
   deleteS3Objects: vi.fn(),
+}));
+
+// Mock the Redis client so the real service writes routed through by the seed
+// (each ends in invalidateClassPageCache -> invalidateClassCache) never touch a
+// live ioredis instance. Without this the cache-invalidation call hangs in CI
+// where no Redis is reachable, timing the tests out. Mirrors classService.test.ts.
+vi.mock("@/utils/redisClient", () => ({
+  default: redisMock,
+  invalidateClassCache,
 }));
 
 // Silence structured logging during tests.
