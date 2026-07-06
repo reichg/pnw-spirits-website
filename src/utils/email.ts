@@ -143,3 +143,79 @@ export async function sendNewsletterBatch(input: SendNewsletterBatchInput) {
 
   return failures;
 }
+
+type SendContactEmailInput = {
+  name: string;
+  email: string;
+  phone?: string | null;
+  categoryLabel: string;
+  message: string;
+};
+
+// Collapse CR/LF/tab control characters so untrusted values cannot inject
+// additional email headers (subject, replyTo) via header injection.
+function sanitizeHeader(value: string) {
+  return value.replace(/[\r\n\t]+/g, " ").trim();
+}
+
+// Escape HTML-significant characters before interpolating untrusted values
+// into the HTML body to prevent markup/script injection.
+function htmlEscape(value: string) {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+export async function sendContactEmail(input: SendContactEmailInput): Promise<void> {
+  const to =
+    process.env.CONTACT_RECIPIENT_EMAIL ||
+    process.env.EMAIL_SUBSCRIBER ||
+    process.env.EMAIL_FROM;
+
+  if (!to) {
+    throw new Error("Contact recipient email is not configured");
+  }
+
+  const transporter = createTransporter();
+
+  const safeEmail = sanitizeHeader(input.email);
+  const safeCategory = sanitizeHeader(input.categoryLabel);
+  const phoneText = input.phone && input.phone.trim() ? input.phone : "Not provided";
+
+  const text = `New contact message received.
+
+Name: ${input.name}
+Email: ${input.email}
+Phone: ${phoneText}
+Category: ${input.categoryLabel}
+
+Message:
+${input.message}`;
+
+  const html = `<p>New contact message received.</p>
+<ul>
+  <li><b>Name:</b> ${htmlEscape(input.name)}</li>
+  <li><b>Email:</b> ${htmlEscape(input.email)}</li>
+  <li><b>Phone:</b> ${htmlEscape(phoneText)}</li>
+  <li><b>Category:</b> ${htmlEscape(input.categoryLabel)}</li>
+</ul>
+<p><b>Message:</b></p>
+<p>${htmlEscape(input.message).replace(/\n/g, "<br>")}</p>`;
+
+  const from =
+    process.env.CONTACT_FROM_EMAIL ||
+    process.env.EMAIL_FROM ||
+    process.env.EMAIL_SMTP_USER;
+
+  await transporter.sendMail({
+    from,
+    to,
+    replyTo: safeEmail,
+    subject: `New contact message: ${safeCategory}`,
+    text,
+    html,
+  });
+}

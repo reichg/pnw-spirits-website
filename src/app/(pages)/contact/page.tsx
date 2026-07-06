@@ -1,4 +1,5 @@
 import { FaFacebook, FaInstagram, FaYoutube } from "react-icons/fa";
+import ContactForm from "./ContactForm";
 import styles from "./ContactPage.module.css";
 
 export default function ContactPage() {
@@ -20,6 +21,15 @@ export default function ContactPage() {
             </a>
           </p>
         </article>
+        <section
+          className={styles.formSection}
+          aria-labelledby="contact-form-heading"
+        >
+          <h2 id="contact-form-heading" className={styles.formHeading}>
+            Send a message
+          </h2>
+          <ContactForm />
+        </section>
         <div className={styles.channelsSection}>
           <h2 className={styles.channelsHeading}>Check out my channels</h2>
           <div className={styles.socialLinks}>
