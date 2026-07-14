@@ -74,11 +74,8 @@
   font-weight: 700;
   letter-spacing: 0.02em;
   color: var(--color-bg-soft);
-  background: linear-gradient(
-    135deg,
-    var(--color-accent-gold) 0%,
-    var(--color-accent-primary) 100%
-  );
+  background: 
+    var(--color-accent-secondary);
   border: 1px solid rgba(190, 152, 95, 0.5);
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-md);
