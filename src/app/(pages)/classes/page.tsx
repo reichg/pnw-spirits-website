@@ -2,6 +2,7 @@ import ClassSessions from "@/components/Class/ClassSessions";
 import PhotoAlbum from "@/components/Class/PhotoAlbum";
 import { getClassPageView } from "@/services/classes/classService";
 import type { Metadata } from "next";
+import Link from "next/link";
 import styles from "./ClassesPage.module.css";
 
 export const metadata: Metadata = {
@@ -27,6 +28,12 @@ export default async function ClassesPage() {
         {cocktailClass?.description && (
           <p className={styles.intro}>{cocktailClass.description}</p>
         )}
+
+        <div className={styles.cta}>
+          <Link className={styles.ctaButton} href="/contact">
+            Hire The PNW Spirits
+          </Link>
+        </div>
 
         <section className={styles.section} aria-labelledby="upcoming-heading">
           <h2 id="upcoming-heading" className={styles.sectionHeading}>

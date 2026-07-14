@@ -13,6 +13,7 @@
     "postinstall": "prisma generate",
     "start": "next start",
     "db:seed": "prisma db seed",
+    "db:seed:demo": "tsx prisma/seedDemo.ts",
     "lint": "eslint . --max-warnings=0",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",

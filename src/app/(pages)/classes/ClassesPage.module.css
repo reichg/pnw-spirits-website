@@ -59,6 +59,46 @@
   color: var(--color-text-inverse);
 }
 
+.cta {
+  display: flex;
+  justify-content: center;
+  margin: 0 auto 2.5em;
+}
+
+.ctaButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.85em 2.2em;
+  font-size: 1.1em;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: var(--color-bg-soft);
+  background: 
+    var(--color-accent-secondary);
+  border: 1px solid rgba(190, 152, 95, 0.5);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+  text-decoration: none;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    filter 0.2s ease;
+}
+
+.ctaButton:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.05);
+  box-shadow:
+    var(--shadow-md),
+    0 0 18px rgba(226, 176, 126, 0.45);
+}
+
+.ctaButton:focus-visible {
+  outline: 2px solid var(--color-accent-gold);
+  outline-offset: 3px;
+}
+
 .section {
   width: 100%;
   /* Allow grid/carousel children to shrink instead of dictating section width. */
@@ -83,5 +123,18 @@
   }
   .heading {
     font-size: 1.9em;
+  }
+  .ctaButton {
+    width: 100%;
+    max-width: 22rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ctaButton {
+    transition-duration: 0.001ms;
+  }
+  .ctaButton:hover {
+    transform: none;
   }
 }

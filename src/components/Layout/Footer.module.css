@@ -52,3 +52,27 @@
   font-size: 0.95em;
   margin-top: 0.5em;
 }
+
+/* Narrow viewports: shrink the six nav links so they stay on a single tidy row
+   instead of wrapping into ragged rows below ~502px. flex-wrap stays as a
+   safety net for extreme small widths. socialLinks gap tracks the same scale
+   for visual cohesion. */
+@media (max-width: 600px) {
+  .footerLinks {
+    gap: 1em;
+    font-size: 0.9em;
+  }
+  .socialLinks {
+    gap: 1.5em;
+  }
+}
+
+@media (max-width: 430px) {
+  .footerLinks {
+    gap: 0.7em;
+    font-size: 0.8em;
+  }
+  .socialLinks {
+    gap: 1.2em;
+  }
+}

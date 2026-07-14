@@ -143,3 +143,117 @@ export async function sendNewsletterBatch(input: SendNewsletterBatchInput) {
 
   return failures;
 }
+
+type SendContactEmailInput = {
+  name: string;
+  email: string;
+  phone?: string | null;
+  categoryLabel: string;
+  message: string;
+};
+
+// Collapse CR/LF/tab control characters so untrusted values cannot inject
+// additional email headers (subject, replyTo) via header injection.
+function sanitizeHeader(value: string) {
+  return value.replace(/[\r\n\t]+/g, " ").trim();
+}
+
+// Escape HTML-significant characters before interpolating untrusted values
+// into the HTML body to prevent markup/script injection.
+function htmlEscape(value: string) {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+export async function sendContactEmail(input: SendContactEmailInput): Promise<void> {
+  const to =
+    process.env.CONTACT_RECIPIENT_EMAIL ||
+    process.env.EMAIL_SUBSCRIBER ||
+    process.env.EMAIL_FROM;
+
+  if (!to) {
+    throw new Error("Contact recipient email is not configured");
+  }
+
+  const transporter = createTransporter();
+
+  const safeEmail = sanitizeHeader(input.email);
+  const safeCategory = sanitizeHeader(input.categoryLabel);
+  const phoneText = input.phone && input.phone.trim() ? input.phone : "Not provided";
+
+  const text = `New contact message
+========================================
+
+Name:      ${input.name}
+Email:     ${input.email}
+Phone:     ${phoneText}
+Category:  ${input.categoryLabel}
+
+----------------------------------------
+Message
+----------------------------------------
+${input.message}
+
+========================================
+Reply directly to this email to reach ${input.name}.`;
+
+  // Renders a single labeled field row for the HTML email body. The value is
+  // pre-escaped by the caller so this helper never receives raw untrusted input.
+  const fieldRow = (label: string, escapedValue: string) => `
+      <tr>
+        <td style="padding:6px 0;font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:1.4;font-weight:bold;text-transform:uppercase;letter-spacing:0.5px;color:#6b7280;width:110px;vertical-align:top;">${label}</td>
+        <td style="padding:6px 0;font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.5;color:#111827;vertical-align:top;">${escapedValue}</td>
+      </tr>`;
+
+  const html = `<div style="margin:0;padding:24px 0;background-color:#f3f4f6;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border-collapse:collapse;">
+    <tr>
+      <td align="center" style="padding:0 16px;">
+        <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="600" style="width:100%;max-width:600px;border-collapse:collapse;border:1px solid #e5e7eb;border-radius:10px;overflow:hidden;background-color:#ffffff;">
+          <tr>
+            <td style="padding:20px 28px;background-color:#111827;">
+              <div style="font-family:Arial,Helvetica,sans-serif;font-size:18px;font-weight:bold;color:#ffffff;">New contact message</div>
+              <div style="font-family:Arial,Helvetica,sans-serif;font-size:13px;color:#9ca3af;padding-top:4px;">PNW Spirits &mdash; website contact form</div>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:24px 28px 8px 28px;">
+              <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border-collapse:collapse;">${fieldRow("Name", htmlEscape(input.name))}${fieldRow("Email", htmlEscape(input.email))}${fieldRow("Phone", htmlEscape(phoneText))}${fieldRow("Category", htmlEscape(input.categoryLabel))}
+              </table>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:8px 28px 24px 28px;">
+              <div style="font-family:Arial,Helvetica,sans-serif;font-size:12px;font-weight:bold;text-transform:uppercase;letter-spacing:0.5px;color:#6b7280;padding-bottom:8px;">Message</div>
+              <div style="font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.6;color:#111827;padding:16px;border:1px solid #e5e7eb;border-left:3px solid #4f46e5;border-radius:6px;background-color:#f9fafb;">${htmlEscape(input.message).replace(/\n/g, "<br>")}</div>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:16px 28px;border-top:1px solid #e5e7eb;font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:1.5;color:#6b7280;">
+              Reply directly to this email to reach ${htmlEscape(input.name)}.
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</div>`;
+
+  const from =
+    process.env.CONTACT_FROM_EMAIL ||
+    process.env.EMAIL_FROM ||
+    process.env.EMAIL_SMTP_USER;
+
+  await transporter.sendMail({
+    from,
+    to,
+    replyTo: safeEmail,
+    subject: `New contact message: ${safeCategory}`,
+    text,
+    html,
+  });
+}
