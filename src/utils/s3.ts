@@ -3,6 +3,27 @@
 import { GetObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { logger } from "./logger";
+
+/**
+ * An absolute URL reduced to origin + path, for logging.
+ *
+ * A presigned S3 URL carries its signature in the query string, so the query is
+ * the part that must never be written to a log while the path is the part that
+ * says which object was involved. Used wherever this module logs a value that
+ * may already be an absolute URL rather than a bare key.
+ *
+ * Fails closed: an unparseable input yields a placeholder rather than the input
+ * echoed back, so a malformed value cannot leak a signature by falling through.
+ */
+function urlWithoutQuery(url: string): string {
+  try {
+    const { origin, pathname } = new URL(url);
+    return `${origin}${pathname}`;
+  } catch {
+    return "[unparseable url]";
+  }
+}
+
 /**
  * Returns a short-lived (15 min) signed S3 upload URL for a given key and content type.
  * Uses AWS credentials from environment variables for private uploads.
@@ -55,15 +76,21 @@ export async function getS3UploadUrl(
     const signedUrl: string = await getSignedUrl(s3, command, {
       expiresIn,
     });
+    // The URL itself is deliberately not logged. A presigned URL is a bearer
+    // credential: whoever holds it can act on the object until it expires, with
+    // no further authentication — and this one grants writes. The key beside it
+    // already carries every bit of diagnostic value the URL had, so omitting it
+    // costs nothing. Stays at `info`: an upload is a rare, privileged mutation
+    // worth an audit trail, unlike the per-render read path below.
     logger.info("S3 signed upload URL generated", {
       context: "getS3UploadUrl",
-      data: { key, signedUrl },
+      data: { key, expiresIn },
     });
     return signedUrl;
   } catch (error) {
     logger.error("Failed to generate S3 signed upload URL", {
       context: "getS3UploadUrl",
-      data: { key, error: (error as Error).message },
+      data: { key, error },
     });
     return undefined;
   }
@@ -116,16 +143,26 @@ export async function deleteS3Objects(
         if (url.hostname.includes(bucket)) {
           key = url.pathname.replace(/^\//, "");
         } else {
+          // Reached by a bucket URL in path style too (`s3.amazonaws.com/<bucket>/<key>`),
+          // whose hostname does not contain the bucket name — so this can be one
+          // of our own signed URLs. Same treatment as the passthrough branch.
           logger.info("Skipping deletion for non-bucket URL", {
             context: "deleteS3Objects",
-            data: { item },
+            data: { item: urlWithoutQuery(item) },
           });
           continue;
         }
       } catch {
+        // Redacted even though `new URL` just threw on it. A parse failure does
+        // not mean the signature is absent: the malformation can sit in the
+        // host while the query is perfectly intact, and an unencoded space is
+        // enough — `new URL("https://bad host/x?X-Amz-Signature=...")` throws
+        // with the signature still verbatim in the string. `urlWithoutQuery`
+        // fails closed to a placeholder, which is itself the diagnostic that
+        // matters here: it says the input was malformed.
         logger.error("Invalid URL format for S3 deletion", {
           context: "deleteS3Objects",
-          data: { item },
+          data: { item: urlWithoutQuery(item) },
         });
         errors.push(item);
         continue;
@@ -142,7 +179,7 @@ export async function deleteS3Objects(
     } catch (error) {
       logger.error("Failed to delete S3 object", {
         context: "deleteS3Objects",
-        data: { key, error: (error as Error).message },
+        data: { key, error },
       });
       errors.push(key);
     }
@@ -164,9 +201,15 @@ export async function getS3ImageUrl(
 ): Promise<string | undefined> {
   if (!keyOrUrl) return undefined;
   if (keyOrUrl.startsWith("http://") || keyOrUrl.startsWith("https://")) {
-    logger.info("S3 image retrieved (absolute URL)", {
+    // This branch is the one place `keyOrUrl` is itself a URL rather than a
+    // bare key, and callers do feed already-signed URLs back in — classService
+    // caches signed photo URLs and re-checks their freshness. So this line, not
+    // just the signing branches, could write a live credential. The query goes;
+    // the path stays. (It also logged the same value twice, as `image` and as
+    // `keyOrUrl`.) `debug` for the same per-render reason as the signing branch.
+    logger.debug("S3 image retrieved (absolute URL)", {
       context: "getS3ImageUrl",
-      data: { image: keyOrUrl, keyOrUrl },
+      data: { url: urlWithoutQuery(keyOrUrl) },
     });
     return keyOrUrl;
   }
@@ -212,15 +255,21 @@ export async function getS3ImageUrl(
     const signedUrl: string = await getSignedUrl(s3, command, {
       expiresIn,
     });
-    logger.info("S3 signed image URL generated", {
+    // The URL is omitted for the reason given in getS3UploadUrl, and the level
+    // is `debug` rather than `info` because this fires once per signed image —
+    // twelve per view on the archive pages, against three on the landings. It
+    // was the highest-rate log line in the app and the one carrying a
+    // credential. `logger.debug` is also a no-op when NODE_ENV is production,
+    // so the hot path writes nothing there at all.
+    logger.debug("S3 signed image URL generated", {
       context: "getS3ImageUrl",
-      data: { image: signedUrl, keyOrUrl },
+      data: { keyOrUrl, expiresIn },
     });
     return signedUrl;
   } catch (error) {
     logger.error("Failed to generate S3 signed URL", {
       context: "getS3ImageUrl",
-      data: { keyOrUrl, error: (error as Error).message },
+      data: { keyOrUrl, error },
     });
     // fallback: return as-is
     return keyOrUrl;

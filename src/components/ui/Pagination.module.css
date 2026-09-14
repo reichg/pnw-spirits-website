@@ -1,38 +1,127 @@
+/* ===========================================================================
+   Shared pager.
+
+   TWO CONSUMERS, TWO MODES, ONE STYLESHEET, and that is what every decision
+   here has to survive:
+
+     - the content archives (/blogs, /recipes, /videos), in link mode, inside
+       the editorial shell, where every token below is inherited from
+       editorialTokens.module.css;
+     - the admin blog list, in callback mode, on a blurred photographic ground
+       at brightness(0.2), where NONE of those tokens exist.
+
+   So every editorial token used here carries a fallback drawn from the global
+   palette, exactly as ContentCard.module.css does for the same reason. The
+   fallback is not a guess at the token: it is the value the admin page was
+   already using before this restyle, so that page keeps the appearance it had
+   while the archives get the one the editorial system asks for.
+
+   THE OUTLINE, NOT THE FILL. The control was a filled plate with a radius. On
+   the archives that is a surface, and this system has none - the cards have no
+   background, the kicker is a 1px outline, filter pills were rejected for being
+   filled shapes. An outlined control at zero radius is the shape this system
+   already owns, and it still reads as a button on the admin ground.
+   =========================================================================== */
+
 .pagination {
   display: flex;
   align-items: center;
-  gap: 1rem;
-  margin-top: 2rem;
-  justify-content: center;
+  gap: var(--space-s, 1rem);
+  /* Left-aligned rather than centred. On the archives every element - header,
+     rules, media, text - starts on the same left edge, and the pager is the
+     last thing a scanning eye reaches; centring it would make that eye re-aim
+     horizontally one final time. The admin list is unaffected: its container is
+     a centred column, so this nav is already shrink-to-fit there and has no
+     free space to distribute. */
+  justify-content: flex-start;
+  /* Separation from whatever closed above - the archive list's own hairline, or
+     the admin card grid. The fallback preserves the admin page's previous 2rem
+     exactly. */
+  margin-top: var(--space-l, 2rem);
 }
 
 /* Self-contained base: the shared pager must not rely on any ancestor button
-   styling, so the full look (formerly inherited from the global button rule on
-   the admin blog page) is reproduced here. */
+   styling, so every property a UA or a global `button` rule would have supplied
+   is stated here. Set in the meta register - tracked caps at --fs-meta - which
+   is the same tier as the archive bylines and the result count, so the pager
+   reads as the last line of the list rather than as a widget bolted under it. */
 .pageButton {
-  background: var(--color-bg-overlay);
-  color: var(--color-accent-gold);
-  border: none;
-  border-radius: var(--radius-sm);
-  padding: 0.5em 1.2em;
-  font-size: 1em;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75em 1.4em;
+  /* Copper, not --hairline. At 14% ink the border was weaker than the gold text
+     it encloses, so the box read as a ghost around a label rather than as a
+     deliberate frame. Copper is this system's outline colour on the one other
+     enclosed shape it has - the landing card's kicker badge is
+     `1px solid var(--rule-accent)` - so this is the existing treatment, not a
+     new one, and it does not add a rule tier because a control frame is not a
+     structural rule. */
+  border: 1px solid var(--rule-accent, var(--color-accent-gold));
+  border-radius: 0;
+  background: transparent;
   font-family: var(--font-primary);
+  font-size: var(--fs-meta, 0.875rem);
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-accent-gold);
+  text-decoration: none;
   cursor: pointer;
-  transition: background var(--transition-fast);
+  transition:
+    background-color var(--transition-fast),
+    border-color var(--transition-fast);
 }
 
-.pageButton:disabled {
+/* Both disabled spellings, because the two modes cannot share one. Callback
+   mode renders a real <button disabled>; link mode cannot, because there is no
+   such thing as a disabled anchor - a boundary renders a <span role="link"
+   aria-disabled="true">, which :disabled will never match. The class is what
+   covers both, and it must carry the full dimmed treatment rather than lean on
+   the pseudo-class. */
+.pageButton:disabled,
+.pageButtonDisabled {
+  /* 0.5, not 0.4. The boundary control is a <span role="link"
+     aria-disabled="true">, so the WCAG inactive-component exemption arguably
+     covers it, but 0.4 composited to ~2.53:1 against the ground - close enough
+     to the line that the extra step is cheaper than the argument. It still
+     reads as unmistakably inactive beside a full-strength sibling. */
   opacity: 0.5;
   cursor: not-allowed;
 }
 
-.pageButton:hover:not(:disabled) {
-  background: var(--color-accent-gold);
-  color: var(--color-accent-copper);
+/* :not on both, so a boundary control does not light up under the pointer and
+   promise a page that is not there. */
+.pageButton:hover:not(:disabled):not(.pageButtonDisabled) {
+  background: var(--surface-1, var(--color-bg-overlay));
+  border-color: var(--rule-accent, var(--color-accent-gold));
+  /* Restated because globals.css has `a:hover { color: var(--color-bg-highlight) }`
+     at (0,1,1), which outranks this rule for the link-mode control. */
+  color: var(--color-accent-gold);
 }
 
+.pageButton:focus-visible {
+  outline: 2px solid var(--color-accent-gold);
+  outline-offset: 3px;
+}
+
+/* The state read-out, in the same meta register as the controls it sits
+   between, one ink tier quieter: "PAGE 3 OF 12" is context, not a target.
+   --ink-3 does not exist on the admin page, where the fallback keeps the gold
+   it had. */
 .pageInfo {
-  font-size: 1.1rem;
-  color: var(--color-accent-gold);
   font-family: var(--font-primary);
+  font-size: var(--fs-meta, 0.875rem);
+  font-weight: 500;
+  line-height: 1.4;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-3, var(--color-accent-gold));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pageButton {
+    transition-duration: 0.001ms;
+  }
 }

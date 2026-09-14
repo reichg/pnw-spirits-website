@@ -1,5 +1,7 @@
 import { useCallback, useMemo, useState } from "react";
 
+import { totalPagesFor } from "@/utils/pagination";
+
 // Client-side pagination for an already-fetched array. Owns page state and
 // slicing so presentational pagination UI (a `Pagination` control + a list)
 // stays free of paging math. Generic over `T` so it makes no assumption about
@@ -25,8 +27,10 @@ export function usePagination<T>(
   setPage: (page: number) => void;
 } {
   // Always >= 1, so consumers never have to special-case `totalPages === 0`
-  // (an empty list still reports a single, empty page).
-  const totalPages = Math.max(1, Math.ceil(items.length / pageSize));
+  // (an empty list still reports a single, empty page). Shared with the
+  // server-rendered archives and the admin lists so the >= 1 floor cannot drift
+  // apart between them.
+  const totalPages = totalPagesFor(items.length, pageSize);
 
   const [storedPage, setStoredPage] = useState(1);
 

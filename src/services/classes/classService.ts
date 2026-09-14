@@ -156,9 +156,7 @@ export type GetClassPageOptions = {
  * `MAX_ALBUM_PHOTOS` (public contract, unchanged); pass `{ photoLimit: null }`
  * for the admin read that needs the full album.
  */
-export async function getClassPage(
-  options?: GetClassPageOptions,
-): Promise<{
+export async function getClassPage(options?: GetClassPageOptions): Promise<{
   class: CocktailClass | null;
   sessions: ClassSession[];
   photos: ClassPhoto[];
@@ -244,7 +242,9 @@ export async function getClassPageView(): Promise<ClassPageView> {
           context: CONTEXT,
         });
       } else if (parsed.photos.every((photo) => isSignedUrlFresh(photo.url))) {
-        logger.info("Class page cache hit (redis, valid)", { context: CONTEXT });
+        logger.info("Class page cache hit (redis, valid)", {
+          context: CONTEXT,
+        });
         return parsed;
       } else {
         await redis.del(CLASS_PAGE_CACHE_KEY);
@@ -273,7 +273,7 @@ export async function getClassPageView(): Promise<ClassPageView> {
     // Fail open: never let a Redis/cache fault break the page.
     logger.error("Class page cache unavailable; signing live without cache", {
       context: CONTEXT,
-      data: { error: (error as Error).message },
+      data: { error },
     });
     return {
       class: cocktailClass,
@@ -293,7 +293,7 @@ async function invalidateClassPageCache(): Promise<void> {
   } catch (error) {
     logger.error("Failed to invalidate class page cache", {
       context: CONTEXT,
-      data: { error: (error as Error).message },
+      data: { error },
     });
   }
 }
@@ -311,7 +311,10 @@ export async function upsertClassContent(
       where: { id: existing.id },
       data: { title: input.title, description: input.description },
     });
-    logger.info("Class content updated", { context: CONTEXT, data: { id: updated.id } });
+    logger.info("Class content updated", {
+      context: CONTEXT,
+      data: { id: updated.id },
+    });
     await invalidateClassPageCache();
     return updated;
   }
@@ -319,7 +322,10 @@ export async function upsertClassContent(
   const created = await prisma.cocktailClass.create({
     data: { title: input.title, description: input.description },
   });
-  logger.info("Class content created", { context: CONTEXT, data: { id: created.id } });
+  logger.info("Class content created", {
+    context: CONTEXT,
+    data: { id: created.id },
+  });
   await invalidateClassPageCache();
   return created;
 }
@@ -340,7 +346,10 @@ export async function createSession(
       location: input.location ?? null,
     },
   });
-  logger.info("Class session created", { context: CONTEXT, data: { id: session.id } });
+  logger.info("Class session created", {
+    context: CONTEXT,
+    data: { id: session.id },
+  });
   await invalidateClassPageCache();
   return session;
 }
@@ -358,7 +367,10 @@ export async function updateSession(
       location: input.location ?? null,
     },
   });
-  logger.info("Class session updated", { context: CONTEXT, data: { id: session.id } });
+  logger.info("Class session updated", {
+    context: CONTEXT,
+    data: { id: session.id },
+  });
   await invalidateClassPageCache();
   return session;
 }
@@ -366,7 +378,10 @@ export async function updateSession(
 /** Delete a session by id. */
 export async function deleteSession(id: number): Promise<ClassSession> {
   const session = await prisma.classSession.delete({ where: { id } });
-  logger.info("Class session deleted", { context: CONTEXT, data: { id: session.id } });
+  logger.info("Class session deleted", {
+    context: CONTEXT,
+    data: { id: session.id },
+  });
   await invalidateClassPageCache();
   return session;
 }
@@ -385,7 +400,10 @@ export async function createPhoto(input: PhotoInput): Promise<ClassPhoto> {
       sortOrder: input.sortOrder,
     },
   });
-  logger.info("Class photo created", { context: CONTEXT, data: { id: photo.id } });
+  logger.info("Class photo created", {
+    context: CONTEXT,
+    data: { id: photo.id },
+  });
   await invalidateClassPageCache();
   return photo;
 }
@@ -421,7 +439,10 @@ export async function updatePhoto(
     });
   }
 
-  logger.info("Class photo updated", { context: CONTEXT, data: { id: photo.id } });
+  logger.info("Class photo updated", {
+    context: CONTEXT,
+    data: { id: photo.id },
+  });
   await invalidateClassPageCache();
   return photo;
 }
@@ -477,7 +498,10 @@ export async function deletePhoto(id: number): Promise<ClassPhoto> {
 
   const photo = await prisma.classPhoto.delete({ where: { id } });
   await deleteS3Objects([existing.s3Key]);
-  logger.info("Class photo deleted", { context: CONTEXT, data: { id: photo.id } });
+  logger.info("Class photo deleted", {
+    context: CONTEXT,
+    data: { id: photo.id },
+  });
   await invalidateClassPageCache();
   return photo;
 }

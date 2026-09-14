@@ -1,6 +1,6 @@
 import Link from "next/link";
 import ContentCard from "./ContentCard";
-import type { ContentLandingLayoutProps } from "./ContentLanding.types";
+import type { ContentLandingLayoutProps } from "./content.types";
 import styles from "./ContentLandingLayout.module.css";
 
 // Shared shell for the three content-landing pages. Presentational and

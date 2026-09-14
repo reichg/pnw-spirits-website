@@ -6,7 +6,7 @@
  * render branch, which chooses between a server-rendered `<Image>` and the
  * `"use client"` fallback component per step. Keeping the shapes here lets the
  * client-capable graph name them without pulling a server module in behind
- * them. Same constraint, and same reason, as `ContentLanding.types.ts`.
+ * them. Same constraint, and same reason, as `content.types.ts`.
  *
  * The instruction union mirrors that file's `{ kind: "s3" } | { kind: "url" }`
  * media split: the page renders by `kind` and never re-parses stored text.

@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import S3CardBackgroundImage from "@/components/Media/S3CardBackgroundImage";
-import type { ContentCardProps } from "./ContentLanding.types";
+import type { ContentCardProps } from "./content.types";
 import styles from "./ContentCard.module.css";
 
 // Cover photography is the largest surface on the page and the thing that sells
@@ -68,7 +68,10 @@ export default function ContentCard({
           <span className={styles.titleText}>{item.title}</span>
         </h2>
         {item.excerpt ? <p className={styles.excerpt}>{item.excerpt}</p> : null}
-        <p className={styles.meta}>{item.meta}</p>
+        {/* One secondary line, so the date stands in for an absent byline: a
+            video carries a published date and no author. The archive row has a
+            slot for each and never takes this fallback. */}
+        <p className={styles.meta}>{item.meta ?? item.timestamp?.label}</p>
       </div>
     </>
   );

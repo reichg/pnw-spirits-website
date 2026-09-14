@@ -184,9 +184,10 @@ describe("BlogsLandingPage data fetching", () => {
 
   it("gives every blog the same card, promoting none to a hero", async () => {
     // The migration regression this file exists to pin: the newest blog used to
-    // be pulled out into a FeaturedBlog above an ">ARTICLES<" heading, leaving
-    // the row with the remaining three. Three peer cards, and no section
-    // furniture between them, is the shape that replaced it.
+    // be pulled out into a FeaturedBlog — since deleted, along with the rest of
+    // src/components/Blog — above an ">ARTICLES<" heading, leaving the row with
+    // the remaining three. Three peer cards, and no section furniture between
+    // them, is the shape that replaced it.
     stubBlogs(BLOGS);
 
     const html = await renderPage();

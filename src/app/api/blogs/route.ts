@@ -2,17 +2,23 @@
 
 import { requireAdmin } from "@/utils/auth";
 import { logger } from "@/utils/logger";
+import { paginationParams, searchParam } from "@/utils/pagination";
 import prisma from "@/utils/prisma";
 import redis from "@/utils/redisClient";
 import { NextRequest, NextResponse } from "next/server";
 import { Prisma } from "../../../../generated/prisma";
 
+/** The shared contract, with this route's own default page size. */
+const PaginationParams = paginationParams(10);
+
 export async function GET(req: NextRequest) {
   // List blogs (pagination, search)
   const { searchParams } = new URL(req.url);
-  const page = parseInt(searchParams.get("page") || "1", 10);
-  const pageSize = parseInt(searchParams.get("pageSize") || "10", 10);
-  const search = searchParams.get("search") || "";
+  const { page, pageSize } = PaginationParams.parse({
+    page: searchParams.get("page"),
+    pageSize: searchParams.get("pageSize"),
+  });
+  const search = searchParam.parse(searchParams.get("search"));
 
   const cacheKey = `blogs:page=${page}:size=${pageSize}:search=${search}`;
   const cached = await redis.get(cacheKey);

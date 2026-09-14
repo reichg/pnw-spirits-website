@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useAdminToken } from "../AdminTokenContext";
 import AdminBlogEditor from "./AdminBlogEditor";
 import Pagination from "@/components/ui/Pagination";
+import { totalPagesFor } from "@/utils/pagination";
 import styles from "./AdminBlogList.module.css";
 
 interface Blog {
@@ -25,7 +26,11 @@ export default function AdminBlogList() {
   const [total, setTotal] = useState(0);
   const [hasDraft, setHasDraft] = useState(false);
   const pageSize = 10;
-  const totalPages = Math.ceil(total / pageSize);
+  // Shared with the archives and the client paging hook. The local
+  // `Math.ceil(total / pageSize)` this replaces reported 0 pages for an empty
+  // list, which only looked correct because `Pagination` happens to render
+  // nothing below 2 pages.
+  const totalPages = totalPagesFor(total, pageSize);
 
   // Check for blog draft in localStorage and listen for token removal
   useEffect(() => {

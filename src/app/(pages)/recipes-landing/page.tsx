@@ -2,13 +2,10 @@
 import ContentLandingLayout from "@/components/ui/ContentLandingLayout";
 import { mapWithSignedImageUrl } from "@/services/media/signedImageService";
 import { SITE_ORIGIN } from "@/utils/contentDetail";
+import { toRecipeItem, type RecipeRecord } from "@/utils/contentItems";
 import styles from "./RecipesLandingPage.module.css";
-import {
-  toContentLandingItem,
-  type LandingRecipe,
-} from "./toContentLandingItem";
 
-async function fetchLandingRecipes(): Promise<LandingRecipe[]> {
+async function fetchLandingRecipes(): Promise<RecipeRecord[]> {
   // Fetch exactly the 3 newest recipes: one per card in the layout's row.
   // Both failure modes converge on the layout's empty state instead of a 500:
   // `!res.ok` catches a clean error response, the catch block catches a network
@@ -19,7 +16,7 @@ async function fetchLandingRecipes(): Promise<LandingRecipe[]> {
     });
     if (!res.ok) return [];
     const data = await res.json();
-    const recipes: LandingRecipe[] = data.recipes || [];
+    const recipes: RecipeRecord[] = data.recipes || [];
     return recipes;
   } catch {
     return [];
@@ -33,7 +30,7 @@ const RecipesLandingPage = async () => {
   const items = await mapWithSignedImageUrl(
     recipes,
     (recipe) => recipe.coverPhoto,
-    toContentLandingItem,
+    toRecipeItem,
   );
   return (
     <ContentLandingLayout

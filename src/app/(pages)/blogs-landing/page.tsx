@@ -2,10 +2,10 @@
 import ContentLandingLayout from "@/components/ui/ContentLandingLayout";
 import { mapWithSignedImageUrl } from "@/services/media/signedImageService";
 import { SITE_ORIGIN } from "@/utils/contentDetail";
+import { toBlogItem, type BlogRecord } from "@/utils/contentItems";
 import styles from "./BlogsLandingPage.module.css";
-import { toContentLandingItem, type LandingBlog } from "./toContentLandingItem";
 
-async function fetchLandingBlogs(): Promise<LandingBlog[]> {
+async function fetchLandingBlogs(): Promise<BlogRecord[]> {
   // Fetch exactly the 3 newest blogs: one per card in the layout's row.
   // Both failure modes converge on the layout's empty state instead of a 500:
   // `!res.ok` catches a clean error response, the catch block catches a network
@@ -16,7 +16,7 @@ async function fetchLandingBlogs(): Promise<LandingBlog[]> {
     });
     if (!res.ok) return [];
     const data = await res.json();
-    const blogs: LandingBlog[] = data.blogs || [];
+    const blogs: BlogRecord[] = data.blogs || [];
     return blogs;
   } catch {
     return [];
@@ -30,7 +30,7 @@ const BlogsLandingPage = async () => {
   const items = await mapWithSignedImageUrl(
     blogs,
     (blog) => blog.coverPhoto,
-    toContentLandingItem,
+    toBlogItem,
   );
   return (
     <ContentLandingLayout

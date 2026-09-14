@@ -1,0 +1,60 @@
+/*
+ * Page-specific art direction only. Structure, tokens, page ground, grain and
+ * spine live in ContentArchiveLayout.module.css and cascade onto the same
+ * element, exactly as VideoLandingPage.module.css relates to the landing shell.
+ *
+ * No .clearSearch here, unlike the other two archives: /api/videos pages a
+ * cached YouTube response and has no search capability, so this page renders no
+ * search control and therefore nothing to clear.
+ */
+.videosArchiveRoot {
+  /*
+   * Square, and this is the page that keeps attracting a 16 / 9 "correction".
+   * It is wrong, and it has now been measured three times. /api/videos requests
+   * snippet.thumbnails.high, which is 480x360 - 4:3, not 16:9 - and the channel
+   * shoots vertical, so YouTube centres a 240px portrait frame inside that
+   * 480px canvas and fills the remaining 57.5% with a blurred, zoomed copy of
+   * itself. A 16 / 9 crop trims 12.5% off the top and bottom of the real frame
+   * and leaves it holding ~42.5% of the plate, against ~56.7% at 1 / 1: it
+   * crops the glass and magnifies the filler. See the measurements in
+   * VideoLandingPage.module.css before changing it.
+   *
+   * Sharing the ratio with /blogs and /recipes also buys something a row
+   * specifically needs: all three archives land on the same left text edge at
+   * every width, so they read as one system rather than three.
+   */
+  --card-media-ratio: 1 / 1;
+}
+
+/*
+ * TWO ENTRIES PER LINE at >=900px, and this is the only page in the archive
+ * family that asks for it. NOT DECLARED HERE, deliberately, even though it is a
+ * per-page art-direction decision and would otherwise sit next to the crop
+ * above: it is `columns={2}` on this page's <ContentArchiveLayout>, because the
+ * same number also decides which rows are preloaded, and `priority` is a
+ * server-render decision that cannot read a custom property. See the
+ * --archive-columns block in ContentArchiveLayout.module.css for the full
+ * argument. This note exists so the next person looking for the two-up here
+ * finds where it went instead of adding a second declaration.
+ *
+ * WHY ONLY THIS PAGE. A video item is a title and nothing else - the API
+ * returns no description, no byline and no duration - so a single-column row
+ * spent the whole 1200px spine on 26px of text: measured at 1440, the widest
+ * content ended at x=695 against a spine ending at 1320, the row body was ~14%
+ * ink, and the category kicker sat 581px from the title with no optical
+ * relationship to it. /recipes has a dek and a byline and fills its row; it
+ * stays one per line, as does /blogs.
+ *
+ * WHAT IT IS NOT. It is not a switch to the landing page's card grid. Every
+ * device survives intact - the metadata-bearing hairline with date left and
+ * kicker right, the type roles, the hover tint, the focus ring, one anchor per
+ * entry, the real <time>. This is a row that happens to fit two per line, which
+ * is why the change is one number on the list and nothing at all in ContentRow.
+ *
+ * NOT SOLVED BY A BIGGER PHOTOGRAPH, deliberately. The channel shoots vertical,
+ * so YouTube centres a portrait frame in its 4:3 hqdefault canvas and fills
+ * ~57% of the width with a blurred, zoomed copy of itself. Scaling the plate up
+ * magnifies that blur rather than the drink - visible at the 350px stacked size
+ * on a phone. Narrowing the COLUMN is the lever that closes the void; the plate
+ * stays where it was.
+ */

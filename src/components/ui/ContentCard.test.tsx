@@ -3,7 +3,7 @@ import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 
 import ContentCard from "./ContentCard";
-import type { ContentLandingItem } from "./ContentLanding.types";
+import type { ContentItem } from "./content.types";
 
 // NOTE ON COVERAGE SCOPE
 // ----------------------
@@ -25,7 +25,7 @@ import type { ContentLandingItem } from "./ContentLanding.types";
 // Class names are hashed by the CSS-modules transform and are not a contract, so
 // elements are identified by tag and text content rather than by class.
 
-const ITEM: ContentLandingItem = {
+const ITEM: ContentItem = {
   id: "12",
   kicker: "Recipe",
   title: "Old Fashioned",
@@ -38,7 +38,7 @@ const ITEM: ContentLandingItem = {
 
 // A video-shaped item: the external-link + direct-URL media combination that has
 // no consumer in the app yet and exists for the /videos-landing migration.
-const EXTERNAL_ITEM: ContentLandingItem = {
+const EXTERNAL_ITEM: ContentItem = {
   ...ITEM,
   id: "v1",
   kicker: "Video",
@@ -48,7 +48,7 @@ const EXTERNAL_ITEM: ContentLandingItem = {
   ariaLabel: "Watch video: Shaking vs. Stirring",
 };
 
-function render(item: ContentLandingItem, priority?: boolean): string {
+function render(item: ContentItem, priority?: boolean): string {
   return renderToStaticMarkup(
     React.createElement(ContentCard, { item, priority }),
   );
@@ -168,6 +168,45 @@ describe("ContentCard optional fields", () => {
     expect(countTags(withoutExcerpt, "p")).toBe(1);
     expect(withoutExcerpt).not.toContain("<p></p>");
     expect(withoutExcerpt).toContain("By Jane Doe");
+  });
+
+  it("falls back to the timestamp label when there is no byline", () => {
+    // The card has ONE secondary line, so a video — which carries a published
+    // date and no author — would otherwise render that line blank and lose its
+    // date entirely. Covered only indirectly by the videos-landing page test
+    // until now, which meant the fallback could be dropped and the failure would
+    // surface a page away from the component that owns it.
+    const html = render({
+      ...ITEM,
+      meta: undefined,
+      timestamp: { iso: "2026-03-04T09:30:00.000Z", label: "March 4, 2026" },
+    });
+
+    expect(html).toContain(">March 4, 2026</p>");
+  });
+
+  it("prefers a byline over the timestamp when both are present", () => {
+    // The precedence, not just the fallback: a blog carries both, and the card's
+    // single line belongs to the author. The row is the surface with a slot for
+    // each, which is why this fallback lives here and not in the shared adapter.
+    const html = render({
+      ...ITEM,
+      timestamp: { iso: "2026-03-04T09:30:00.000Z", label: "March 4, 2026" },
+    });
+
+    expect(html).toContain(">By Jane Doe</p>");
+    expect(html).not.toContain("March 4, 2026");
+  });
+
+  it("keeps the secondary line's slot open when the item has neither", () => {
+    // Unlike the excerpt, the meta paragraph is unconditional: it reserves the
+    // line so cards in one grid row keep their body proportions whether or not
+    // every item has a byline. An empty <p> here is the intended shape, not a
+    // stray element — the row, which is not in a grid, omits its byline instead.
+    const html = render({ ...ITEM, meta: undefined, timestamp: undefined });
+
+    expect(countTags(html, "p")).toBe(2);
+    expect(html).toMatch(/<p class="[^"]*"><\/p>/);
   });
 
   it("puts the title before the excerpt and the excerpt before the meta", () => {

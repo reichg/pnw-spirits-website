@@ -16,15 +16,22 @@ import path from "node:path";
 import { parseArgs } from "node:util";
 import { chromium } from "playwright";
 
-/** Public pages the design work targets; admin routes are auth-gated and excluded. */
+/**
+ * Public pages the design work targets; admin routes are auth-gated and excluded.
+ * Each archive follows its landing page so the pair sorts together in the output
+ * directory, where the review loop compares a landing page against its archive.
+ */
 const DEFAULT_ROUTES = [
   "/",
   "/about",
   "/classes",
   "/contact",
   "/recipes-landing",
+  "/recipes",
   "/blogs-landing",
+  "/blogs",
   "/videos-landing",
+  "/videos",
 ];
 
 /** The two sizes this project designs against. */

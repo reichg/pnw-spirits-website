@@ -4,9 +4,9 @@ import { renderToStaticMarkup } from "react-dom/server";
 
 import ContentLandingLayout from "./ContentLandingLayout";
 import type {
-  ContentLandingItem,
+  ContentItem,
   ContentLandingLayoutProps,
-} from "./ContentLanding.types";
+} from "./content.types";
 
 // NOTE ON COVERAGE SCOPE
 // ----------------------
@@ -25,7 +25,7 @@ import type {
 // No assertion depends on a CSS-module class name: they are hashed and are not a
 // contract. Cards are counted by their <h2> titles, which only ContentCard emits.
 
-function item(id: string, title: string): ContentLandingItem {
+function item(id: string, title: string): ContentItem {
   return {
     id,
     kicker: "Recipe",

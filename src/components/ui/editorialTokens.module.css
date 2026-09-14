@@ -229,6 +229,31 @@
   --gutter: clamp(1.25rem, 5vw, 5rem);
   --col-gap: clamp(1.25rem, 2.2vw, 2.25rem);
 
+  /* Width of the media column in a media-leading index row. A geometry value
+     rather than a spacing rung, so it is named for its role and not for its
+     size - the same reason --step-marker is spelled the way it is.
+
+     The rung earns its place by the rule this file states above: "add the rung
+     when the rule that needs it is written." That rule now exists twice. The
+     landing card becomes a horizontal index row between 600 and 899px
+     (ContentCard.module.css), and the archive row is that same composition at
+     every width (ContentRow.module.css).
+
+     The value is not re-derived here, because ContentCard.module.css already
+     measured it against real copy and recorded the result: at a 899px viewport
+     34% leaves 115px of void beside the text, 30% leaves 90px and 26% leaves
+     25px - and 26% is the narrowest column at which the thumbnail still reads
+     as a photograph rather than an icon.
+
+     Deliberately the bare percentage, with no ceiling on it. A percentage
+     measured inside a container of at most ~809px does not survive a 1200px
+     one, and the archive row caps it for exactly that reason - but the cap is
+     declared in ContentRow.module.css, where it is derived and where it has one
+     consumer. Putting it here would silently re-crop the landing card the day
+     ContentCard adopted the token, which is the opposite of what a shared value
+     is for. */
+  --row-media-col: 26%;
+
   /* --- Motion -------------------------------------------------------------
      Decelerating ease-out for entrance and image motion. The global
      --transition-* tokens are a symmetric ease-in-out, which is right for a

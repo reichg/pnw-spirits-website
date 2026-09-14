@@ -159,9 +159,10 @@ describe("VideoLandingPage data fetching", () => {
 
   it("gives every video the same card, promoting none to a hero", async () => {
     // The migration regression this file exists to pin: the newest video used to
-    // be pulled out into a FeaturedVideo above a ">VIDEOS<" heading, leaving the
-    // row with the remaining three. Three peer cards, and no section furniture
-    // between them, is the shape that replaced it.
+    // be pulled out into a FeaturedVideo — since deleted, along with the rest of
+    // src/components/Video — above a ">VIDEOS<" heading, leaving the row with
+    // the remaining three. Three peer cards, and no section furniture between
+    // them, is the shape that replaced it.
     stubVideos(VIDEOS);
 
     const html = await renderPage();

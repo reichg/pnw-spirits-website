@@ -1,0 +1,415 @@
+/* ===========================================================================
+   Content-archive shell - the landing system at index density.
+
+   Characteristics: editorial, warm-dark, ruled, indexical, restrained.
+
+   The archive is not a second design. It is the same page ground, the same
+   1200px left spine and the same token set, with the HAIRLINE rather than the
+   photograph doing the structural work - because a reader who followed "View
+   All" has already been persuaded and now only needs to scan.
+
+   SHELL OWNERSHIP. .root composes ContentLandingLayout's .root rather than
+   restating it. That is deliberate and it is the whole point of this file being
+   short: the ground, the fixed grain layer, the page padding and the "every
+   direct child shares one 1200px spine" rule are ONE declaration for both page
+   families. Copying those forty lines here is exactly the per-page drift the
+   token contract was written to prevent - one page at brightness(0.2), the next
+   at (0.25) - and it would put the grain's opacity in two files that nobody
+   would ever remember to change together.
+
+   The cost of composing is the constraint stated in editorialTokens.module.css:
+   `composes` puts a second class name on the same element at the same
+   specificity, so any property declared in BOTH rules is settled by stylesheet
+   emission order, which is not guaranteed. So .root below declares nothing the
+   landing .root declares - no background, no padding, no display. Check that
+   file before adding a property here.
+
+   THREE RULE TIERS, and keeping them legible is the hardest thing on this page.
+   The landing pages have two; this one has three:
+     1. copper --rule-accent, 1px, under the page header - "the container starts
+        here", the loudest mark on the page and the only non-ink one;
+     2. --hairline, 1px, opening every row and closing the run of rows - the
+        list's own rule, at 14% ink;
+     3. --hairline again under the search field, which is a control affordance
+        rather than structure, and is separated from tier 2 by the whole header.
+   They stay apart by distance and by colour, not by weight: a second copper
+   rule anywhere below the header would flatten tier 1 into tier 2.
+   =========================================================================== */
+
+.root {
+  composes: root from "./ContentLandingLayout.module.css";
+}
+
+/* --- Page header ---------------------------------------------------------
+   The landing header is a poster: eyebrow, an 18ch heading, a 48ch lede, and a
+   deliberately empty right side. The archive header has to be recognisably its
+   sibling and unmistakably a different kind of page, so three things change and
+   nothing else does:
+
+     - the eyebrow slot carries a back-link instead of a label, because the one
+       thing a reader who arrived by "View All" may want that a landing reader
+       never does is the way back;
+     - the lede is replaced by an inventory line - a count, not a pitch;
+     - the right side is filled, and only by the control that operates the list
+       below it.
+
+   The rhythm around the copper rule is inverted against the landing's, and the
+   ratio between the two gaps is the whole point rather than either value.
+   Tighter above (--space-l) than below (--space-xl) so the rule reads as the
+   thing that CLOSES the header rather than as a mark floating between two
+   blocks - rendered first at 56px above and 64px below, the two gaps were near
+   enough to equal that the rule belonged to neither side. The landing header
+   can afford its 3rem-5rem because it is a poster; a title, a count and a
+   search field are a masthead.
+
+   The 64px below is also what keeps tier 1 and tier 2 apart: at 40px the copper
+   rule and the first row's hairline read as one doubled mark. */
+.header {
+  padding-bottom: var(--space-l);
+  margin-bottom: var(--space-xl);
+  border-bottom: 1px solid var(--rule-accent);
+}
+
+.backRow {
+  margin-bottom: var(--space-m);
+}
+
+/* Sits in the landing eyebrow's slot and takes its type role exactly - gold at
+   --fs-eyebrow, 0.14em, uppercase - so the two headers open on the same mark.
+   Gold rather than copper for the same recorded reason: at 11-12px copper is
+   ~4.6:1 on this ground and gold is ~9.1:1, so copper is the colour of rules
+   and gold is the colour of accent text.
+
+   The padding/negative-margin pair is a tap target, not spacing. At
+   line-height: 1 this link measured 79 x 11px, which clears WCAG 2.2 SC 2.5.8
+   only through the spacing exception and is poor ergonomics next to a 42px
+   input on a phone. 8px of block padding takes it to 27px of hit area; the
+   matching negative block margin removes that padding from layout again, so the
+   header's vertical rhythm is unchanged and the eyebrow still sits where the
+   landing header's eyebrow sits. Vertical margins on an atomic inline are part
+   of its margin box, which is what the line box is sized from, so the two
+   cancel exactly. */
+.backLink {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--space-2xs);
+  padding-block: var(--space-2xs);
+  margin-block: calc(-1 * var(--space-2xs));
+  font-size: var(--fs-eyebrow);
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-accent-gold);
+  text-decoration: none;
+}
+
+/* Restating the ink on hover is load-bearing, not redundant: globals.css has
+   `a:hover { color: var(--color-bg-highlight) }` at (0,1,1), which outranks
+   this rule's (0,1,0). Without it the eyebrow would swap colour on hover. The
+   affordance is the arrow's travel and the underline, not a colour change. */
+.backLink:hover {
+  color: var(--color-accent-gold);
+  text-decoration: underline;
+  text-underline-offset: 0.3em;
+}
+
+.backLink:focus-visible {
+  outline: 2px solid var(--color-accent-gold);
+  outline-offset: 3px;
+}
+
+/* The one piece of motion in the header, and it is directional rather than
+   decorative: the arrow moves the way the link goes. Transform only, on an
+   inline-block, so nothing around it reflows. */
+.backArrow {
+  display: inline-block;
+  transition: transform var(--dur-fast)
+    var(--ease-out-soft, cubic-bezier(0.22, 0.61, 0.36, 1));
+}
+
+.backLink:hover .backArrow,
+.backLink:focus-visible .backArrow {
+  transform: translateX(-0.25em);
+}
+
+/* Identical to the landing heading, including the 18ch cap. "All Recipes" and
+   "All Articles" are two words; the cap exists for the third. */
+.heading {
+  margin: 0;
+  max-width: 18ch;
+  font-family: var(--font-primary);
+  font-size: var(--fs-page);
+  font-weight: 600;
+  line-height: 1.04;
+  letter-spacing: -0.02em;
+  color: var(--ink-1);
+}
+
+/* One shared baseline for the count and the controls, read as a CAPTION to the
+   title rather than as a toolbar bolted above the content.
+
+   align-items: end, not baseline: the search field's baseline sits above its
+   own underline, so baseline alignment would hang the count a few pixels below
+   the rule it is supposed to sit level with. Ends align the count's descender
+   line with the field's rule, which is the edge the eye actually reads.
+
+   --space-m above, against --space-l before. Measured at 1440 the line sat
+   exactly 40px under the heading and exactly 40px over the copper rule, which
+   made it a third band floating between two blocks rather than a caption
+   belonging to the title above it. This is the same defect, one level up, that
+   the header itself had before its 40/64 fix - equal gaps mean the element
+   belongs to neither neighbour. 24px above and 40px below groups it with the
+   heading.
+
+   NO justify-content. The count is optional - it is absent whenever the archive
+   has nothing to count - and space-between positions children by counting them,
+   so losing the count made the controls the only child and snapped the search
+   field 828px to the left, mid-keystroke, on a no-results search. The controls
+   pin themselves right with an auto margin instead (see .controls), which is
+   the same mechanism .kicker uses in ContentRow.module.css and for the same
+   reason: an element's position must not depend on whether its neighbour
+   rendered. */
+.headerFoot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: var(--space-m);
+  margin-top: var(--space-m);
+}
+
+/* An inventory statement, in the meta register the bylines already use: this is
+   the same tier of information as "BY JANE DOE", not a lede. It replaces the
+   landing's 48ch sentence precisely because an archive does not need to be sold
+   to the reader standing in it. */
+.resultCount {
+  font-size: var(--fs-meta);
+  font-weight: 500;
+  line-height: 1.4;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+
+/* Whatever the page puts on the right of the baseline - a search field, and
+   beside it the page's own "Clear search" link.
+
+   NOTHING HERE MAY MOVE WHILE THE READER IS TYPING IN IT, and every property
+   below exists for that and nothing else. Two measured jumps had to be closed:
+
+     - the count disappears on a no-results search, and space-between on the
+       parent then slid the field from x=948 to x=120 - 828px, on the exact
+       keystroke where the reader is looking at the control and about to edit
+       what they just typed. margin-inline-start: auto pins the block right
+       whether or not the count rendered.
+     - "Clear search" appears the moment a term is committed, and with the field
+       flexing to fill it the field shrank 320px -> 233px under the cursor.
+
+   A fixed 20rem width closes the second, and it is the FIELD'S width rather
+   than a zone the field sits inside: an intermediate version reserved a 30rem
+   slot so the link had somewhere to arrive, and that left the field's underline
+   stopping 160px short of the copper rule beneath it, with nothing in the gap.
+   The right edge of the spine is where this control belongs. The link is taken
+   out of flow instead - see .clearSearch - so it costs no width at all.
+
+   position: relative is the containing block for that. */
+.controls {
+  position: relative;
+  display: flex;
+  width: min(100%, 20rem);
+  margin-inline-start: auto;
+}
+
+/* The archive pages own their "Clear search" link - it is a page concern,
+   because only the page knows how to spell its own base URL - but the LOOK of
+   it is declared once, here, and each page's stylesheet composes this class.
+   Three copies of the same six declarations in three page modules is precisely
+   the drift a shared rule exists to prevent, and the alternative (moving the
+   link into this layout) would give the shell knowledge of a control it does
+   not otherwise have.
+
+   A plain text link in the meta register, not a second button: the field above
+   it is already the only control on the baseline, and the count opposite is set
+   in the same tier. The gold arrives on hover, where the affordance belongs.
+
+   OUT OF FLOW, hung under the field's right end. Absolute positioning here is
+   not a shortcut around a layout problem, it IS the requirement: this link
+   appears and disappears in the middle of an interaction with the control next
+   to it, and an element that must never affect its neighbour's geometry has no
+   business in the flow. In flow it either resized the field or reserved a strip
+   of empty spine beside it, and both were measured and rejected. Out of flow it
+   costs nothing, and it lands where it reads best anyway - as a caption to the
+   field, which is what it is.
+
+   It sits inside the header's --space-l bottom padding (40px of clearance for a
+   26px drop), so it does not push the copper rule down either. The layout may
+   position a node the page supplied because the layout already owns this
+   class - the page composes it and adds only the href.
+
+   The padding/negative-margin pair is a tap target and not spacing, for the
+   reason recorded on .backLink: measured 107 x 18px, which clears SC 2.5.8 only
+   by the spacing exception. 8px of block padding takes the hit area to 34px and
+   the matching negative margin keeps the drop below the field at --space-2xs. */
+.clearSearch {
+  position: absolute;
+  inset-inline-end: 0;
+  /* The offset is on `top` rather than on a margin because the negative block
+     margin below is what keeps the padding out of the layout, and the two would
+     cancel each other on the same property. */
+  top: calc(100% + var(--space-2xs));
+  padding-block: var(--space-2xs);
+  margin-block: calc(-1 * var(--space-2xs));
+  font-size: var(--fs-meta);
+  font-weight: 500;
+  line-height: 1.4;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  text-decoration: underline;
+  text-underline-offset: 0.3em;
+  text-decoration-color: var(--hairline);
+  transition: color var(--dur-fast) ease;
+}
+
+/* globals.css sets `a:hover { color: var(--color-bg-highlight) }` at (0,1,1),
+   which outranks a single class, so the hover ink has to be stated. */
+.clearSearch:hover {
+  color: var(--color-accent-gold);
+  text-decoration-color: currentcolor;
+}
+
+.clearSearch:focus-visible {
+  outline: 2px solid var(--color-accent-gold);
+  outline-offset: 3px;
+}
+
+/* --- The list ------------------------------------------------------------
+   Each row draws its own opening hairline, so the run of rows is bracketed at
+   the top by the first row's rule; this closes it at the bottom. Bracketing the
+   block is what stops the last row's byline hanging in space above the pager
+   and lets the pager sit in plain whitespace instead of needing a rule of its
+   own - which would have been a fourth mark on a page that already carries
+   three tiers. The closing rule spans the whole spine, including the gutter
+   between columns when there are two, because it closes the LIST and not a
+   column of it. */
+.list {
+  border-bottom: 1px solid var(--hairline);
+}
+
+/* --- How many entries per line ------------------------------------------
+   ONE by default; a page may ask for two.
+
+   THE VALUE ARRIVES AS AN INLINE CUSTOM PROPERTY FROM ContentArchiveLayout,
+   which takes it as the `columns` prop. It is deliberately NOT a page-class
+   declaration like --card-media-ratio beside it, and the difference between the
+   two is worth stating because they look like the same pattern:
+
+     --card-media-ratio  read by exactly one CSS rule and by nothing else, so a
+                         page class is the whole story;
+     --archive-columns   read by this rule AND by the layout's `priority`
+                         decision, which is a server render and cannot see a
+                         custom property at all.
+
+   A number two systems have to agree on cannot live in a channel only one of
+   them can read. When it did, /videos went two-up in CSS while the layout went
+   on preloading a single first image, so the second row of the first line -
+   above the fold, and as likely to be the LCP element as the first - was left
+   on loading="lazy". The var() fallback below is a safety net, not the contract.
+
+   WHY THE SEAM IS ON THE LIST AND NOT IN ContentRow. A row is one entry and
+   knows nothing about the page it is on; how many entries share a line is a
+   property of the list, and so is which of them are above the fold. Teaching
+   ContentRow about it would make the "domain-agnostic, page-agnostic" claim in
+   its own header false and would put the decision one level below the element
+   that owns the horizontal space.
+
+   WHY >=900px ONLY. Below 900 the row is already the composition ContentCard
+   produces for a landing card (600-899) or a full stack (<=599), and both were
+   verified against the landing pages. Two of those side by side would leave a
+   ~170px text column. The grid is therefore only ever declared inside this
+   query; above it, `repeat(1, ...)` is the identity case for the two pages that
+   do not opt in, and a single-column grid is layout-identical to the block flow
+   it replaces because .row carries no vertical margins to collapse.
+
+   COLUMN GAP IS --space-xl, NOT --col-gap. The landing grid's ~32px gap is
+   right between three cards whose bounds are their photographs. Here each entry
+   opens on its own full-column hairline, and .row bleeds its hover tint
+   --space-s past each end; at 32px the two bleeds would meet in the middle and
+   two rules 32px apart would read as one rule with a nick in it. 64px leaves
+   32px of clear ground between the tints and makes the two hairlines read as
+   two marks. */
+@media (min-width: 900px) {
+  .list {
+    display: grid;
+    grid-template-columns: repeat(var(--archive-columns, 1), minmax(0, 1fr));
+    column-gap: var(--space-xl);
+  }
+}
+
+/* --- Empty state ---------------------------------------------------------
+   A lede on the page ground, not a panel: no radius, no shadow and no rules of
+   its own, because the header rule above already brackets it. It serves every
+   reason the list has no rows - nothing published, nothing matched the search,
+   a page number past the end - since all three are the same event for the
+   reader, and the page supplies the wording that distinguishes them.
+
+   Composed, not copied. The work order asked for this treatment "verbatim", and
+   the only spelling of verbatim that cannot drift is the same five declarations
+   at one declaration site. Copying them would put --fs-lede, 1.55 and the 48ch
+   measure in two files that nobody would remember to retune together. Nothing
+   is declared here, so there is no property for the two class names on this
+   element to contest. */
+.emptyMessage {
+  composes: emptyMessage from "./ContentLandingLayout.module.css";
+}
+
+/* --- Pager ---------------------------------------------------------------
+   No rule and no background. The list closed itself above, and the pager's own
+   margin is the separation. Left-aligned rather than centred, by
+   Pagination.module.css: every other element on this page starts on the same
+   left edge, and the pager is the last thing a scanning eye reaches - it should
+   not be the one element that makes the eye re-aim horizontally. */
+.pagerRow {
+  display: flex;
+}
+
+@media (max-width: 599px) {
+  .header {
+    padding-bottom: var(--space-l);
+    margin-bottom: var(--space-l);
+  }
+
+  .heading {
+    max-width: 14ch;
+  }
+
+  /* The count and the search field stop sharing a baseline and become two
+     stacked lines: side by side at 390px the field would be ~160px wide, which
+     is narrower than the placeholder it has to hold. */
+  .headerFoot {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--space-s);
+  }
+
+  /* Full width and back on the left spine: there is no right-hand zone to pin
+     to once the baseline has become two stacked lines, and a 320px control
+     floated right of a full-width count would be the only right-aligned thing
+     on a phone. The auto margin is released rather than overridden, so the
+     block starts where every other element on the page starts. */
+  .controls {
+    width: 100%;
+    margin-inline-start: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .backArrow {
+    transition-duration: 0.001ms;
+  }
+
+  .backLink:hover .backArrow,
+  .backLink:focus-visible .backArrow {
+    transform: none;
+  }
+}

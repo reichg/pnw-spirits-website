@@ -97,7 +97,7 @@ async function signS3ImageUrl(keyOrUrl: string): Promise<string | null> {
   } catch (error) {
     logger.error("Image signing failed", {
       context: CONTEXT,
-      data: { error: (error as Error).message },
+      data: { error },
     });
     return null;
   }
@@ -190,6 +190,6 @@ async function cacheSet(cacheKey: string, url: string): Promise<void> {
 function logCacheFault(operation: "read" | "write", error: unknown): void {
   logger.error(`Signed image cache ${operation} failed; continuing uncached`, {
     context: CONTEXT,
-    data: { error: (error as Error).message },
+    data: { error },
   });
 }

@@ -1,13 +1,10 @@
 // Server component: fetches videos only once on the server
 import ContentLandingLayout from "@/components/ui/ContentLandingLayout";
 import { SITE_ORIGIN } from "@/utils/contentDetail";
+import { toVideoItem, type VideoRecord } from "@/utils/contentItems";
 import styles from "./VideoLandingPage.module.css";
-import {
-  toContentLandingItem,
-  type LandingVideo,
-} from "./toContentLandingItem";
 
-async function fetchLandingVideos(): Promise<LandingVideo[]> {
+async function fetchLandingVideos(): Promise<VideoRecord[]> {
   // Fetch exactly the 3 newest videos: one per card in the layout's row.
   // Both failure modes converge on the layout's empty state instead of a 500:
   // `!res.ok` catches a clean error response - this route answers 400 whenever
@@ -20,7 +17,7 @@ async function fetchLandingVideos(): Promise<LandingVideo[]> {
     });
     if (!res.ok) return [];
     const data = await res.json();
-    const videos: LandingVideo[] = data.videos || [];
+    const videos: VideoRecord[] = data.videos || [];
     return videos;
   } catch {
     return [];
@@ -32,7 +29,7 @@ const VideoLandingPage = async () => {
   // Synchronous, unlike the other two landing pages: YouTube hands back
   // absolute thumbnail URLs, so there is no stored S3 key to sign and nothing
   // for mapWithSignedImageUrl to do but add a cache round-trip per card.
-  const items = videos.map(toContentLandingItem);
+  const items = videos.map(toVideoItem);
   return (
     <ContentLandingLayout
       className={styles.videoLandingRoot}

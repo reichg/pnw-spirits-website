@@ -26,7 +26,7 @@ export default function Home() {
             style={{ backgroundImage: "url('/images/Martini.jpg')" }}
             aria-label="Blogs"
           >
-            {/* Glassy overlay for cozy speakeasy effect, matches FeaturedBlog */}
+            {/* Glassy overlay: darkens the photo so the card label stays legible */}
             <div className={landingStyles.landingFourColGlassOverlay} />
             <span className={landingStyles.landingFourColCardLabel}>Blogs</span>
           </Link>
