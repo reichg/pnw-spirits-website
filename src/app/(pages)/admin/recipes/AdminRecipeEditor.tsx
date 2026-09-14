@@ -126,7 +126,10 @@ export default function AdminRecipeEditor({
       const key = `recipe-media/recipe-cover-photos/${file.name}`;
       const res = await fetch("/api/s3-signed-url", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${adminToken}`,
+        },
         body: JSON.stringify({ key, contentType: file.type }),
       });
       const data = await res.json();
@@ -168,7 +171,10 @@ export default function AdminRecipeEditor({
       const key = `recipe-media/recipe-content-media/${file.name}`;
       const res = await fetch("/api/s3-signed-url", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${adminToken}`,
+        },
         body: JSON.stringify({ key, contentType: file.type }),
       });
       const data = await res.json();
@@ -435,7 +441,10 @@ export default function AdminRecipeEditor({
                     const key = `recipe-media/${file.name}`;
                     const res = await fetch("/api/s3-signed-url", {
                       method: "POST",
-                      headers: { "Content-Type": "application/json" },
+                      headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${adminToken}`,
+                      },
                       body: JSON.stringify({ key, contentType: file.type }),
                     });
                     const data = await res.json();

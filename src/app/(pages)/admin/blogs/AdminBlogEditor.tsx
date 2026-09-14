@@ -109,7 +109,10 @@ export default function AdminBlogEditor({
       const key = `blog-media/blog-cover-photos/${file.name}`;
       const res = await fetch("/api/s3-signed-url", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${adminToken}`,
+        },
         body: JSON.stringify({ key, contentType: file.type }),
       });
       const data = await res.json();
@@ -152,7 +155,10 @@ export default function AdminBlogEditor({
       const key = `blog-media/blog-content-media/${file.name}`;
       const res = await fetch("/api/s3-signed-url", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${adminToken}`,
+        },
         body: JSON.stringify({ key, contentType: file.type }),
       });
       const data = await res.json();

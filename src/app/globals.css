@@ -106,10 +106,6 @@ html {
   --color-link: #2d2320;
   --color-link-hover: #f7e6c4;
 
-  --font-primary: "Geist", "Inter", Arial, Helvetica, sans-serif;
-  --font-secondary: "Inter", Arial, Helvetica, sans-serif;
-  --font-mono: "Fira Mono", "Menlo", "Monaco", "Consolas", monospace;
-
   --radius-xs: 2px;
   --radius-sm: 4px;
   --radius-md: 8px;
@@ -121,6 +117,19 @@ html {
 
   /* Featured card width (shared across Blog/Recipe/Video) */
   --featured-card-max-width: min(100%, calc(80vh * 16 / 9));
+}
+
+/* Declared on `body`, NOT on `:root`, and that is load-bearing. next/font
+   exposes its families through the variables it is asked to define, and
+   LayoutClient puts those variable classes on <body>. `:root` is <html>,
+   body's parent, so --font-geist-sans is out of scope there: a var() that
+   referenced it from :root would be invalid at computed-value time, blanking
+   these tokens document-wide and dropping every consumer to the UA default
+   serif. Declared here they are in scope and inherit to everything rendered. */
+body {
+  --font-primary: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+  --font-secondary: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+  --font-mono: var(--font-geist-mono), "Menlo", "Consolas", monospace;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -137,7 +146,7 @@ h4,
 h5,
 h6 {
   color: var(--color-text-primary);
-  font-family: "Geist", Arial, Helvetica, sans-serif;
+  font-family: var(--font-primary);
   margin-bottom: 0.5em;
 }
 

@@ -34,7 +34,6 @@ const RecipeCard: React.FC<{ recipe: Recipe }> = ({ recipe }) => {
       <S3CardBackgroundImage
         s3Key={recipe.coverPhoto}
         alt={`Cover image for ${recipe.title}`}
-        sizes="(max-width: 900px) 100vw, 1200px"
         className={featuredStyles.cardImage}
       />
       <div className={featuredStyles.glassOverlay} />

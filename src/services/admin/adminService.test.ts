@@ -27,7 +27,7 @@ import { authenticateAdmin, ensureDefaultAdmin } from "./adminService";
 
 // Deterministic admin credentials, injected directly into the service so the
 // suite never reads (or leaks) the real .env. JWT_SECRET is stubbed because
-// authenticateAdmin signs with process.env.JWT_SECRET internally.
+// authenticateAdmin signs through getJwtSecret(), which reads it.
 const TEST_ADMIN_USERNAME = "test-admin";
 const TEST_ADMIN_PASSWORD = "test-admin-pass";
 const TEST_JWT_SECRET = "test-jwt-secret";

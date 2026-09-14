@@ -1,191 +1,358 @@
-.section img {
-  display: block;
-  max-height: 500px;
-  max-width: 100%;
-  margin: 1.5em auto;
-  border-radius: 12px;
-  box-shadow: 0 2px 12px 0 rgba(44, 34, 32, 0.13);
-  object-fit: contain;
-}
+/* ===========================================================================
+   Article prose - /blogs/[id]
 
-/* Background container for page background */
-.page {
-  height: 100vh;
-  width: 100%;
-  max-width: 100vw;
-  display: flex;
-  flex-direction: column;
-  background: url("/images/Bottles.jpg");
-  background-size: cover;
-  background-repeat: no-repeat;
-  font-family: var(
-    --font-sans,
-    "Geist",
-    "Inter",
-    "Segoe UI",
-    Arial,
-    sans-serif
-  );
-  padding: 2rem 2rem;
-  position: relative;
-  overflow: hidden;
-}
+   Direction: the same "warm-dark editorial" system as the content landing
+   pages, read at length instead of scanned. Characteristics: editorial,
+   warm-dark, restrained, asymmetric, quiet.
 
-.page::before {
-  content: "";
-  position: absolute;
-  top: -10;
-  left: -10;
-  width: 103%;
-  height: 103%;
-  background: inherit;
-  filter: blur(10px) brightness(0.3) saturate(1.1);
-  z-index: 0;
-  pointer-events: none;
-  border-radius: inherit;
-}
+   THIS FILE OWNS ONLY WHAT IS BELOW THE COPPER RULE. The masthead skeleton
+   (page shell, header rule, eyebrow, return link, title, byline block) and the
+   closing hairline-plus-CTA row moved to ContentDetailShell.module.css, which
+   /recipes/[id] shares byte for byte. They were written twice and drifted:
+   two separator mechanisms, two half-gaps, two containers and two
+   prefers-reduced-motion policies for one byline strip. What is left here is
+   the cover photograph and the prose, which an article has and a recipe does
+   not.
 
-.page > * {
-  position: relative;
-  z-index: 1;
-}
+   WHAT IS DELIBERATELY GONE from the page this replaces: height: 100vh with
+   overflow: hidden (which made any article longer than one viewport physically
+   unscrollable), the blurred /images/Bottles.jpg backdrop, the 8px radius and
+   2px copper border on the card, the glass overlay and text-shadow that put the
+   title over a scrim, copper used as text ink, the 12px radius and drop shadow
+   on body imagery, and the <h2>Blog Content</h2> - a database column name
+   wearing a heading.
+   =========================================================================== */
 
-.featuredCard {
-  width: 100%;
-  max-width: 100vw;
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;
-  overflow: visible;
-  transition:
-    box-shadow var(--transition-medium),
-    filter var(--transition-medium);
-  box-sizing: border-box;
-  position: relative;
-  margin: 0 auto 3rem auto;
-  text-decoration: none;
-  outline: none;
-  border-radius: 8px;
-  border: 2px solid var(--color-accent-copper);
-}
+/* --- Cover photograph -----------------------------------------------------
+   Zero radius, zero border, zero shadow, no scrim, and never anything set over
+   it - verbatim from ContentCard, and a correctness requirement rather than a
+   preference: covers are uploaded through /admin at uncontrolled brightness.
 
-.cardHeader {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.1rem;
-  margin-bottom: 0.7rem;
-}
+   Square, for the same reason the cards are square: the brand library is about
+   half 2:3 portrait and half 3:2 landscape, and 1/1 is the ratio that costs the
+   worst case least (33% either way, against 56% at 3:2 and 67% at 2:1). One
+   crop site-wide means the same photograph is composed identically on the card
+   that links here and on the page it links to. --surface-1 shows through while
+   the image decodes, so the block reads as a plate rather than a collapsed box.
 
-.featuredTitle {
-  font-size: 2.2rem;
-  font-weight: 700;
-  color: var(--color-accent-copper);
-  margin-bottom: 0.1rem;
-  letter-spacing: 0.02em;
-  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.22);
-  line-height: 1.1;
-}
+   Held at the prose measure so the article keeps one right edge below the
+   copper rule. Two award-quality long-form references (Aeon, Linear) hold every
+   figure at exactly their prose column width across four figures each; it is
+   the strongest single consensus in the research.
 
-.featuredMeta {
-  font-size: 1.08rem;
-  color: var(--color-accent-gold);
-  font-style: italic;
-  opacity: 0.85;
-  margin-bottom: 0.1rem;
-  margin-left: 2px;
-}
-.glassOverlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  z-index: 0;
-  background: linear-gradient(
-    120deg,
-    var(--color-bg-overlay) 70%,
-    var(--color-accent-copper) 100%
-  );
-  border-radius: 4px;
-  opacity: 0.9;
-  backdrop-filter: blur(22px) saturate(1.18);
-  -webkit-backdrop-filter: blur(22px) saturate(1.18);
-  pointer-events: none;
-  transition: opacity var(--transition-medium);
-}
-
-.featuredContent {
-  padding: 2.2rem 2.2rem 1.7rem 2.2rem;
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  gap: 0.7rem;
-  position: relative;
-  z-index: 2;
-  color: var(--color-accent-gold);
-  text-align: left;
-  justify-content: flex-end;
-  font-family: var(--font-primary);
-}
-
+   The bottom margin is calc(--space-prose * 2), not --space-xl. They are 64.6px
+   and 64px - the same interval derived twice, which is how two pages end up
+   0.6px apart for no reason. The derived one wins everywhere, because it tracks
+   the type's own clamp instead of being a fixed rem value that happens to
+   coincide at one width. */
 .cover {
+  composes: measured from "../../../../components/ui/ContentDetailShell.module.css";
+  margin-block-end: calc(var(--space-prose) * 2);
+}
+
+.coverMedia {
+  position: relative;
   width: 100%;
-  height: 240px;
+  aspect-ratio: 1 / 1;
+  overflow: hidden;
+  background: var(--surface-1);
+}
+
+.coverImage {
   object-fit: cover;
-  border-radius: 8px 8px 0 0;
-  margin-bottom: 1rem;
 }
 
-.author {
-  font-size: 1rem;
-  color: var(--color-secondary);
-  margin-bottom: 1rem;
+/* --- Prose ----------------------------------------------------------------
+   The body arrives as HTML from the markdown renderer, so nothing in it can
+   carry a class and every rule below is a descendant selector. The set covers
+   every element `marked` can emit: an unstyled <table> or <pre> would inherit
+   nothing sensible and land on the UA defaults, which are light-mode.
+
+   One blank line between every pair of sibling blocks, expressed once as
+   --space-prose (font-size x line-height, so it tracks the type's own clamp and
+   resolves to exactly one line at every width). Headings override it. */
+.prose {
+  composes: measured from "../../../../components/ui/ContentDetailShell.module.css";
+  line-height: var(--lh-prose);
+  color: var(--ink-1);
+  /* A pasted URL is one long unbreakable token and the column is 554px. */
+  overflow-wrap: break-word;
 }
 
-.section {
-  margin-bottom: 1.5rem;
+.prose > * + * {
+  margin-block-start: var(--space-prose);
 }
 
-.section h2 {
-  color: var(--color-accent-copper);
-  font-size: 1.5rem;
-  margin-bottom: 0.75rem;
+/* Twice --space-prose above, --space-s below: a 4:1 ratio, so a head is
+   decisively closer to the section it opens than to the one it ends. Linear
+   measures 56px above and 0 below, which the browser's own paragraph margin
+   turns into roughly 2.8:1; 4:1 states it without ambiguity. */
+.prose h2,
+.prose h3 {
+  margin-block: calc(var(--space-prose) * 2) var(--space-s);
+  font-family: var(--font-primary);
+  font-weight: 600;
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+  color: var(--ink-1);
 }
 
-.loading {
-  color: var(--color-accent-primary);
-  font-size: 1.2rem;
-  text-align: center;
-  margin: 2rem 0;
+.prose h2 {
+  font-size: var(--fs-h2);
 }
 
-.error {
-  color: var(--color-error);
-  font-size: 1.1rem;
-  text-align: center;
-  margin: 2rem 0;
+.prose h3 {
+  font-size: var(--fs-h3);
 }
 
+/* h4-h6 are rare in this content but `marked` will emit them. They step down by
+   ink tier rather than by size, because --fs-h3 is already only 1.26x the prose
+   and a fourth size rung below it would be indistinguishable. */
+.prose h4,
+.prose h5,
+.prose h6 {
+  margin-block: calc(var(--space-prose) * 2) var(--space-s);
+  font-family: var(--font-primary);
+  font-size: var(--fs-prose);
+  font-weight: 600;
+  line-height: 1.4;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+}
 
-@media (max-width: 600px) {
-  .featuredTitle {
-    font-size: 1.5rem;
+/* (0,2,0), so it beats the heading rules above at (0,1,1) regardless of order:
+   an article that opens with a heading must not push itself down by 64px. */
+.prose > :first-child {
+  margin-block-start: 0;
+}
+
+/* 600 is the system's weight ceiling. The UA default for <strong> is 700, which
+   would put a bolder weight inside the prose than the <h1> uses. */
+.prose strong {
+  font-weight: 600;
+}
+
+/* globals.css resets all padding to 0, so list indentation has to be restated.
+   Gold markers are the cheapest possible tie to the accent and need no new
+   role; the text stays at the prose ink tier. */
+.prose ul,
+.prose ol {
+  padding-inline-start: var(--space-m);
+}
+
+.prose li::marker {
+  color: var(--color-accent-gold);
+}
+
+.prose li + li {
+  margin-block-start: var(--space-2xs);
+}
+
+.prose li > ul,
+.prose li > ol {
+  margin-block-start: var(--space-2xs);
+}
+
+/* Indent only: prose size, prose ink, no left rule, no italic, no oversized
+   glyph. The most restrained treatment in the reference set (Aeon's blockquote
+   measures identical to its body with a 44px indent and border-left: 0), and
+   the one that fits a system where every other element is flush left - an
+   indent is legible as emphasis precisely because nothing else is indented.
+
+   The air around it is twice the paragraph gap, not --space-l. At --space-l the
+   quote had 40px above and below against a 32.3px paragraph gap: a 7.7px
+   difference, invisible at reading distance, so the indent had nothing to work
+   against and rendered as a mis-wrapped paragraph rather than as a block.
+   Doubling the paragraph gap is 64.6px, the same 2x the headings already take,
+   tracking the same clamp. The indent is still the only device; it now has room
+   to be seen. */
+.prose blockquote {
+  margin-block: calc(var(--space-prose) * 2);
+  margin-inline-start: var(--space-l);
+}
+
+.prose blockquote > * + * {
+  margin-block-start: var(--space-prose);
+}
+
+/* Held at the prose measure, never broken out and never centred against
+   left-aligned text. Markdown supplies no intrinsic dimensions, so a breakout
+   box would letterbox unpredictably; and the column's single right edge is what
+   the composition rests on. The paragraph `marked` wraps a lone image in
+   supplies the separation, so no margin is needed here. */
+.prose img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+/* Captions are never generated from alt text - alt is written for assistive
+   technology and promoting it to visible copy breaks that contract. These two
+   rules exist only for content that arrives with a real <figure> in raw HTML.
+   --ink-2 (7.38:1) is the tier both measured references' caption ink falls in. */
+.prose figure {
+  margin-block: var(--space-l);
+}
+
+.prose figcaption {
+  margin-block-start: var(--space-s);
+  font-size: var(--fs-meta);
+  line-height: 1.4;
+  color: var(--ink-2);
+}
+
+/* Links, and the specificity here is deliberate. globals.css sets
+   `a { color: inherit }` at (0,0,1) - which a bare .prose a at (0,1,1) beats -
+   but also `a:hover { color: var(--color-bg-highlight) }` at (0,1,1), which
+   ties with it and would be settled by emission order. The hover rule below is
+   (0,2,1) and wins outright. Without both, prose links inherit the body ink and
+   are invisible as links. Gold is ~9.1:1 on this ground.
+
+   The underline rests at reduced alpha and comes to full strength on hover and
+   focus - the same reveal the card title's underline performs, expressed with
+   text-decoration so it fragments correctly across wrapped lines. */
+.prose a {
+  color: var(--color-accent-gold);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-decoration-color: color-mix(
+    in srgb,
+    var(--color-accent-gold) 45%,
+    transparent
+  );
+  text-underline-offset: 0.18em;
+  transition: text-decoration-color var(--dur-fast) ease;
+}
+
+.prose a:hover,
+.prose a:focus-visible {
+  color: var(--color-accent-gold);
+  text-decoration-color: var(--color-accent-gold);
+}
+
+.prose a:focus-visible {
+  outline: 2px solid var(--color-accent-gold);
+  outline-offset: 2px;
+}
+
+/* The --surface-1 plate alone, with no hairline around it. A border was there
+   and was removed at a render: inline code is the one bounded object in the
+   prose, and a span breaking across two lines produced two separate rectangles
+   that read as two unrelated tokens. A tinted run reads as continuous across a
+   break where a boxed one does not, and the plate is enough to mark the
+   register on its own. 0.9em rather than a token, because it has to track
+   whatever type it is set inside - a monospace face at the prose size reads
+   larger than the prose does. */
+.prose code {
+  padding: 0.15em 0.35em;
+  font-family: var(--font-mono);
+  font-size: 0.9em;
+  background: var(--surface-1);
+}
+
+/* A block keeps its hairline: it is a bounded region rather than a run of text,
+   it cannot break across lines, and the border is what separates a dark plate
+   from the dark ground. */
+.prose pre {
+  padding: var(--space-m);
+  background: var(--surface-1);
+  border: 1px solid var(--hairline);
+  overflow-x: auto;
+}
+
+/* (0,1,2), so it beats .prose code at (0,1,1): a block already has the plate
+   and the hairline, and a second inset one inside it reads as a mistake. */
+.prose pre code {
+  padding: 0;
+  font-size: var(--fs-meta);
+  line-height: 1.6;
+  background: none;
+}
+
+/* The hairline closes and brackets; copper opens. A rule inside the body is a
+   pause, so it takes the quiet one.
+
+   Held at the measure with everything else. Running it to the full spine was
+   considered as a way to put one object on the right edge the bracketing rules
+   declare, and rejected on arithmetic: `max-width: none` cannot do it, because
+   the containing block is .prose's own 554px box, and the forms that can - a
+   negative inline-end margin of (measure - spine) - need a value that varies
+   with the viewport and overflows the page horizontally the moment the spine is
+   narrower than --container. Zero horizontal overflow at every width is worth
+   more than a rule. The masthead carries the right edge instead; see .masthead
+   in ContentDetailShell.module.css. */
+.prose hr {
+  margin-block: calc(var(--space-prose) * 2);
+  border: 0;
+  border-block-start: 1px solid var(--hairline);
+}
+
+/* Rows separated by hairlines, no vertical rules, no zebra fill, and the first
+   column flush to the spine so a table keeps the column's left edge. Headers
+   are the meta register - the same tracked caps as the byline - so a table
+   reads as a small index rather than as a second document. */
+.prose table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--fs-body);
+  line-height: 1.5;
+}
+
+.prose th,
+.prose td {
+  padding: var(--space-2xs) var(--space-s);
+  text-align: start;
+  vertical-align: top;
+  border-block-end: 1px solid var(--hairline);
+}
+
+.prose th:first-child,
+.prose td:first-child {
+  padding-inline-start: 0;
+}
+
+.prose th {
+  font-size: var(--fs-meta);
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+
+/* --- Responsive -----------------------------------------------------------
+   The cover releases from the prose measure and fills the column below 600px,
+   not below 900px. At 900 the release was a 278px jump across one pixel of
+   viewport: the title, the prose and the prose images stopped at 575.9px while
+   the photograph ran to 854.1px, so the page carried two right edges through
+   the entire 600-899 band - a tablet and a small laptop window - and a 792px
+   square stood as most of a viewport of preamble before the first word. At 599
+   the measure is 512.5px against a 539.1px spine, so the release is a 27px step
+   taken at the width where the two have already converged.
+
+   The prose measure does NOT release: it is viewport-bound from about 950px
+   down and capping it is the whole point.
+
+   --measure-cap rather than a max-width override, because the max-width is
+   declared in ContentDetailShell.module.css and the emission order between two
+   module files is not guaranteed. See .measured there. */
+@media (max-width: 599px) {
+  .cover {
+    --measure-cap: none;
   }
 
-  .featuredMeta {
-    font-size: 1rem;
+  /* 40px of indent inside a ~350px column takes 11% of the measure. The indent
+     still reads at --space-m, and the quote keeps a usable line. */
+  .prose blockquote {
+    margin-inline-start: var(--space-m);
   }
 
-  .featuredContent {
-    padding: 2.5rem 1rem ;
+  .prose ul,
+  .prose ol {
+    padding-inline-start: var(--space-s);
   }
 
-  .page {
-    padding: 2rem 1rem;
-  }
-
-  .section h2 {
-    font-size: 1.1rem;
+  .prose pre {
+    padding: var(--space-s);
   }
 }

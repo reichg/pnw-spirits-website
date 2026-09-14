@@ -1,63 +1,48 @@
-// Blogs Landing Page - displays featured and recent blogs
-
-import BlogGrid from "@/components/Blog/BlogGrid";
-import FeaturedBlog, {
-  FeaturedBlogProps,
-} from "@/components/Blog/FeaturedBlog";
-import Link from "next/link";
+// Server component: fetches blogs only once on the server
+import ContentLandingLayout from "@/components/ui/ContentLandingLayout";
+import { mapWithSignedImageUrl } from "@/services/media/signedImageService";
+import { SITE_ORIGIN } from "@/utils/contentDetail";
 import styles from "./BlogsLandingPage.module.css";
+import { toContentLandingItem, type LandingBlog } from "./toContentLandingItem";
 
-type Blog = FeaturedBlogProps;
-
-async function fetchLandingBlogs(): Promise<{
-  featured: Blog | null;
-  articles: Blog[];
-}> {
-  // Fetch 4 newest blogs (1 featured, 3 for grid)
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
-  const res = await fetch(`${baseUrl}/api/blogs?page=1&pageSize=4`, {
-    cache: "no-store",
-  });
-  if (!res.ok) return { featured: null, articles: [] };
-  const data = await res.json();
-  const blogs: Blog[] = data.blogs || [];
-  return {
-    featured: blogs[0] || null,
-    articles: blogs.slice(1, 4),
-  };
+async function fetchLandingBlogs(): Promise<LandingBlog[]> {
+  // Fetch exactly the 3 newest blogs: one per card in the layout's row.
+  // Both failure modes converge on the layout's empty state instead of a 500:
+  // `!res.ok` catches a clean error response, the catch block catches a network
+  // failure or an unparseable body. Collapsing either guard reintroduces a crash.
+  try {
+    const res = await fetch(`${SITE_ORIGIN}/api/blogs?page=1&pageSize=3`, {
+      cache: "no-store",
+    });
+    if (!res.ok) return [];
+    const data = await res.json();
+    const blogs: LandingBlog[] = data.blogs || [];
+    return blogs;
+  } catch {
+    return [];
+  }
 }
 
 const BlogsLandingPage = async () => {
-  const { featured, articles } = await fetchLandingBlogs();
-
-  const noBlogs = !featured && (!articles || articles.length === 0);
+  const blogs = await fetchLandingBlogs();
+  // Cover photos are signed here, on the server, and in parallel; see
+  // mapWithSignedImageUrl for why the client path is not good enough.
+  const items = await mapWithSignedImageUrl(
+    blogs,
+    (blog) => blog.coverPhoto,
+    toContentLandingItem,
+  );
   return (
-    <main className={styles.blogsLandingRoot}>
-      {noBlogs ? (
-        <div className={styles.noBlogsMsg}>
-          <span>
-            There aren&apos;t any blogs yet. Check back soon for cozy stories
-            and updates!
-          </span>
-        </div>
-      ) : (
-        <>
-          {featured && <FeaturedBlog blog={featured} />}
-          <BlogGrid blogs={articles} />
-        </>
-      )}
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "center",
-          marginTop: "2.5rem",
-        }}
-      >
-        <Link href="/blogs">
-          <button className="articlesBtn">View All Articles</button>
-        </Link>
-      </div>
-    </main>
+    <ContentLandingLayout
+      className={styles.blogsLandingRoot}
+      eyebrow="Distillery Journal"
+      heading="Blogs"
+      intro="Longer reads on Pacific Northwest drinking — seasonal pours, local spirits, and the occasional foraging guide."
+      items={items}
+      emptyMessage="There aren't any blogs yet. Check back soon for cozy stories and updates!"
+      viewAllHref="/blogs"
+      viewAllLabel="View All Articles"
+    />
   );
 };
 

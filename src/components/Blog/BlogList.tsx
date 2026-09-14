@@ -33,7 +33,6 @@ const BlogCard: React.FC<{ blog: Blog }> = ({ blog }) => {
       <S3CardBackgroundImage
         s3Key={blog.coverPhoto}
         alt={`Cover image for ${blog.title}`}
-        sizes="(max-width: 900px) 100vw, 1200px"
         className={featuredStyles.cardImage}
       />
       <div className={featuredStyles.glassOverlay} />

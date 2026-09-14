@@ -1,66 +1,17 @@
-/* Message for when there are no blogs */
-.noBlogsMsg {
-  width: 100%;
-  max-width: 600px;
-  margin: 4rem auto 2rem auto;
-  padding: 2.5rem 1.5rem;
-  background: rgba(0, 0, 0, 0.9);
-  color: var(--color-text-secondary);
-  border-radius: 1.2rem;
-  box-shadow: var(--shadow-md);
-  font-family: var(--font-primary);
-  font-size: 1.25rem;
-  text-align: center;
-  letter-spacing: 0.01em;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 120px;
-}
-
+/*
+ * Page-specific art direction only. Structure, tokens, page ground, and grain
+ * live in ContentLandingLayout.module.css and cascade onto the same element.
+ */
 .blogsLandingRoot {
-  min-height: 100vh;
-  width: 100vw;
-  background: url("/images/Bottles.jpg");
-  background-size: cover;
-  background-repeat: no-repeat;
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;
-  justify-content: flex-start;
-  padding: 2.5rem 0;
-  position: relative;
-  overflow: hidden;
-  gap: 3rem;
-}
-
-.blogsLandingRoot::before {
-  content: "";
-  position: absolute;
-  top: -10;
-  left: -10;
-  width: 103%;
-  height: 103%;
-  background: inherit;
-  filter: blur(4px) brightness(0.2) saturate(1);
-  z-index: 0;
-  pointer-events: none;
-}
-
-.blogsLandingRoot > * {
-  position: relative;
-  z-index: 1;
-}
-
-@media (max-width: 600px) {
-  .noBlogsMsg {
-    font-size: 1.05rem;
-    padding: 1.5rem 0.7rem;
-  }
-}
-
-@media (max-width: 900px) {
-  .blogsLandingRoot {
-    min-height: 100svh;
-  }
+  /*
+   * Square, and declared here rather than left to ContentCard's fallback, so
+   * all three landing pages state their crop in the same place - a reader of
+   * this page can see its framing without first learning what the fallback is.
+   *
+   * Blog covers are uploaded through the same S3 path, and so come from the
+   * same mixed-orientation library, as recipe covers. The measured case for
+   * 1 / 1 over 4 / 5 and 5 / 4 lives in ContentLandingLayout.module.css and is
+   * deliberately not repeated here.
+   */
+  --card-media-ratio: 1 / 1;
 }

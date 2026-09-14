@@ -1,3 +1,10 @@
+import {
+  BLOG_MEDIA_PREFIX,
+  MISC_MEDIA_PREFIX,
+  RECIPE_MEDIA_PREFIX,
+  UPLOAD_IMAGE_CONTENT_TYPES,
+  type UploadKeyPrefix,
+} from "@/services/media/mediaSchemas";
 import { requireAdmin } from "@/utils/auth";
 import {
   HeadObjectCommand,
@@ -7,6 +14,15 @@ import {
 import { NextRequest, NextResponse } from "next/server";
 
 export const runtime = "nodejs";
+
+/**
+ * The image allowlist as a reader sees it, derived rather than re-typed in
+ * prose, so widening `UPLOAD_IMAGE_CONTENT_TYPES` cannot leave this message
+ * naming a set the route no longer enforces.
+ */
+const ALLOWED_IMAGE_NAMES = UPLOAD_IMAGE_CONTENT_TYPES.map((type) =>
+  type.replace(/^image\//, "").toUpperCase(),
+).join(", ");
 
 export async function POST(req: NextRequest) {
   const authResult = requireAdmin(req);
@@ -18,11 +34,13 @@ export async function POST(req: NextRequest) {
     if (!file) {
       return NextResponse.json({ error: "No file uploaded" }, { status: 400 });
     }
-    // Validate file type (only allow JPEG, PNG, GIF, WEBP)
-    const allowedTypes = ["image/jpeg", "image/png", "image/gif", "image/webp"];
-    if (!allowedTypes.includes(file.type)) {
+    // Validate file type. Shares one allowlist with the presigned-upload route
+    // so the two upload paths cannot drift on what may enter the bucket. This
+    // route stays image-only: it does not accept the video types the presigned
+    // path allows.
+    if (!UPLOAD_IMAGE_CONTENT_TYPES.includes(file.type)) {
       return NextResponse.json(
-        { error: "Only JPEG, PNG, GIF, or WEBP images are allowed." },
+        { error: `Only ${ALLOWED_IMAGE_NAMES} images are allowed.` },
         { status: 400 },
       );
     }
@@ -47,26 +65,28 @@ export async function POST(req: NextRequest) {
     });
     const bucket = process.env.AWS_S3_BUCKET!;
 
-    // Determine S3 directory based on type (blog or recipe)
-    let s3Dir;
+    // Determine S3 directory based on type (blog or recipe). Rooted in the
+    // shared namespace prefixes and typed against them, so a directory added
+    // here that the presigned route would reject cannot compile.
+    let s3Dir: `${UploadKeyPrefix}${string}`;
     if (type === "cover") {
-      s3Dir = "blog-media/blog-cover-photos";
+      s3Dir = `${BLOG_MEDIA_PREFIX}blog-cover-photos/`;
     } else if (
       type === "content" ||
       type === "blog-image" ||
       type === "blog-video" ||
       type === "blog-media"
     ) {
-      s3Dir = "blog-media/blog-content-media";
+      s3Dir = `${BLOG_MEDIA_PREFIX}blog-content-media/`;
     } else if (type === "recipe-cover") {
-      s3Dir = "recipe-media/recipe-cover-photos";
+      s3Dir = `${RECIPE_MEDIA_PREFIX}recipe-cover-photos/`;
     } else if (type === "recipe-content") {
-      s3Dir = "recipe-media/recipe-content-media";
+      s3Dir = `${RECIPE_MEDIA_PREFIX}recipe-content-media/`;
     } else {
-      s3Dir = "misc-media";
+      s3Dir = MISC_MEDIA_PREFIX;
     }
 
-    const s3Key = `${s3Dir}/${filename}`;
+    const s3Key = `${s3Dir}${filename}`;
     // Check if object already exists in S3
     try {
       await s3.send(new HeadObjectCommand({ Bucket: bucket, Key: s3Key }));

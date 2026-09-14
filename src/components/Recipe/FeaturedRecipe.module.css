@@ -1,17 +1,4 @@
 /* FeaturedBlog card, matching BlogGrid card architecture and hover */
-.featuredSection {
-  width: 100%;
-}
-
-.featuredHeading {
-  text-align: center;
-  font-family: var(--font-secondary);
-  font-size: 2.6rem;
-  color: var(--color-accent-secondary);
-  margin: 0 0 0.6rem 0;
-  letter-spacing: 0.01em;
-}
-
 .featuredCard {
   width: 100%;
   max-width: var(--featured-card-max-width);
@@ -125,9 +112,6 @@
 }
 
 @media (max-width: 900px) {
-  .featuredHeading {
-    font-size: 1.6rem;
-  }
   .featuredCard {
     max-width: 100%;
     height: min(70vh, 32rem);

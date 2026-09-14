@@ -1,68 +1,32 @@
-/* VideoLandingPage.module.css - styled to match BlogsLandingPage.module.css for a cozy, speakeasy-inspired look */
-
+/*
+ * Page-specific art direction only. Structure, tokens, page ground, and grain
+ * live in ContentLandingLayout.module.css and cascade onto the same element.
+ */
 .videoLandingRoot {
-  min-height: 100vh;
-  width: 100vw;
-  background: url("/images/Bottles.jpg");
-  background-size: cover;
-  background-repeat: no-repeat;
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;
-  justify-content: flex-start;
-  padding: 2.5rem 0;
-  position: relative;
-  overflow: hidden;
-  gap: 3rem;
-}
-
-.videoLandingRoot::before {
-  content: "";
-  position: absolute;
-  top: -10;
-  left: -10;
-  width: 103%;
-  height: 103%;
-  background: inherit;
-  filter: blur(4px) brightness(0.25) saturate(1.1);
-  z-index: 0;
-  pointer-events: none;
-}
-
-.videoLandingRoot > * {
-  position: relative;
-  z-index: 1;
-}
-
-@media (max-width: 900px) {
-  .videoLandingRoot {
-    min-height: 100svh;
-  }
-}
-
-.noVideosMsg {
-  width: 100%;
-  max-width: 600px;
-  margin: 4rem auto 2rem auto;
-  padding: 2.5rem 1.5rem;
-  background: var(--color-bg-overlay);
-  color: var(--color-text-secondary);
-  border-radius: 1.2rem;
-  box-shadow: var(--shadow-md);
-  font-family: var(--font-primary);
-  font-size: 1.25rem;
-  text-align: center;
-  letter-spacing: 0.01em;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 120px;
-}
-
-@media (max-width: 600px) {
-  .noVideosMsg {
-    font-size: 1.05rem;
-    padding: 1.5rem 0.7rem;
-    margin: 2.5rem auto 1.2rem auto;
-  }
+  /*
+   * Square, and NOT 16 / 9 - which is the correction this page will keep
+   * attracting, because video usually means widescreen. It does not here.
+   *
+   * /api/videos takes YouTube's `high` thumbnail, which is hqdefault.jpg and is
+   * always 480x360, whatever shape the video is. This channel publishes
+   * vertical: the source frames measure 2:3 (oar2.jpg 1080x1620, frame0.jpg
+   * 320x480). YouTube centres that portrait frame in the 4:3 canvas as a 240px
+   * column and fills the 120px left over on each side with a blurred, zoomed
+   * copy of itself. So the wider the box, the more of the card is filler:
+   *   16 / 9 -> cover trims 12.5% off the top and bottom of the glass, and the
+   *             real frame holds 50% of the card width
+   *   1 / 1  -> the glass keeps its full height, and the real frame holds 67%
+   * Rendered both at 1440px before choosing: at 16 / 9 the coupe lost its stem
+   * and the blur dominated the row. It also keeps one crop across all three
+   * landing pages.
+   *
+   * If the channel ever posts landscape, square still holds: a 16:9 still
+   * letterboxed into hqdefault keeps its bars inside the square, which is
+   * cosmetic, where 16 / 9 mangles every portrait upload, which is not.
+   *
+   * Declared on the page class rather than in .root because both land on the
+   * same <main> at equal specificity, so a declaration in .root would leave the
+   * winner to CSS Modules' stylesheet emission order.
+   */
+  --card-media-ratio: 1 / 1;
 }

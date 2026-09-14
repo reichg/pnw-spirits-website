@@ -1,61 +1,51 @@
 // Server component: fetches recipes only once on the server
-import FeaturedRecipe, {
-  FeaturedRecipeProps,
-} from "@/components/Recipe/FeaturedRecipe";
-import RecipeGrid from "@/components/Recipe/RecipeGrid";
-import Link from "next/link";
+import ContentLandingLayout from "@/components/ui/ContentLandingLayout";
+import { mapWithSignedImageUrl } from "@/services/media/signedImageService";
+import { SITE_ORIGIN } from "@/utils/contentDetail";
 import styles from "./RecipesLandingPage.module.css";
+import {
+  toContentLandingItem,
+  type LandingRecipe,
+} from "./toContentLandingItem";
 
-type Recipe = FeaturedRecipeProps & { createdAt?: string };
-
-async function fetchLandingRecipes(): Promise<{
-  featured: Recipe | null;
-  recipes: Recipe[];
-}> {
-  // Fetch 4 newest recipes (1 featured, 3 for grid)
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
-  const res = await fetch(`${baseUrl}/api/recipes?page=1&pageSize=4`, {
-    cache: "no-store",
-  });
-  if (!res.ok) return { featured: null, recipes: [] };
-  const data = await res.json();
-  const recipes: Recipe[] = data.recipes || [];
-  return {
-    featured: recipes[0] || null,
-    recipes: recipes.slice(1, 4),
-  };
+async function fetchLandingRecipes(): Promise<LandingRecipe[]> {
+  // Fetch exactly the 3 newest recipes: one per card in the layout's row.
+  // Both failure modes converge on the layout's empty state instead of a 500:
+  // `!res.ok` catches a clean error response, the catch block catches a network
+  // failure or an unparseable body. Collapsing either guard reintroduces a crash.
+  try {
+    const res = await fetch(`${SITE_ORIGIN}/api/recipes?page=1&pageSize=3`, {
+      cache: "no-store",
+    });
+    if (!res.ok) return [];
+    const data = await res.json();
+    const recipes: LandingRecipe[] = data.recipes || [];
+    return recipes;
+  } catch {
+    return [];
+  }
 }
 
 const RecipesLandingPage = async () => {
-  const { featured, recipes } = await fetchLandingRecipes();
-  const noRecipes = !featured && (!recipes || recipes.length === 0);
+  const recipes = await fetchLandingRecipes();
+  // Cover photos are signed here, on the server, and in parallel; see
+  // mapWithSignedImageUrl for why the client path is not good enough.
+  const items = await mapWithSignedImageUrl(
+    recipes,
+    (recipe) => recipe.coverPhoto,
+    toContentLandingItem,
+  );
   return (
-    <main className={styles.recipesLandingRoot}>
-      {noRecipes ? (
-        <div className={styles.noRecipesMsg}>
-          <span>
-            There aren&apos;t any recipes yet. Check back soon for new cocktails
-            and inspiration!
-          </span>
-        </div>
-      ) : (
-        <>
-          {featured && <FeaturedRecipe recipe={featured} />}
-          <RecipeGrid recipes={recipes} />
-        </>
-      )}
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "center",
-          marginTop: "2.5rem",
-        }}
-      >
-        <Link href="/recipes">
-          <button className={styles.recipesBtn}>View All Recipes</button>
-        </Link>
-      </div>
-    </main>
+    <ContentLandingLayout
+      className={styles.recipesLandingRoot}
+      eyebrow="Craft Cocktails"
+      heading="Recipes"
+      intro="Small-batch drinks built on Pacific Northwest ingredients — seasonal, unfussy, and made to pour at home."
+      items={items}
+      emptyMessage="There aren't any recipes yet. Check back soon for new cocktails and inspiration!"
+      viewAllHref="/recipes"
+      viewAllLabel="View All Recipes"
+    />
   );
 };
 
