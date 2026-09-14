@@ -226,11 +226,23 @@
    headroom: do not put it on anything smaller than this role.
 
    Flush right against the spine, stacked, sitting on the copper rule. Right
-   alignment appears nowhere else in this system and is confined to this one
-   block on purpose: it is what puts an object on the right edge the copper rule
-   and the closing hairline both declare, which nothing on either page did
-   before. Below 900px the block stops being a column and becomes the horizontal
-   strip it used to be - see the breakpoint. */
+   alignment is confined to METADATA BLOCKS OCCUPYING THE RIGHT EDGE THE RULES
+   DECLARE - a rule with a reason rather than a count of one. The reason is the
+   one this block was given when it was built: what earns that edge is furniture
+   that exists on every record of its kind, so it can hold the edge the copper
+   rule and the closing hairline both declare without inventing content. The
+   byline is that furniture on an article and on a recipe.
+
+   AMENDED for /classes. A session row is a date and a time with nothing else to
+   its name, and left alone it renders as the same hole this masthead was built
+   to fix: full-width rules with a 300px stack between them. A session's
+   `location` is the same kind of candidate for the same job, so the schedule
+   reuses this two-up (see ClassSessions.module.css). What the amendment does
+   NOT license is right-aligning anything that is not such a block; everything
+   else stays on the left spine.
+
+   Below 900px the block stops being a column and becomes the horizontal strip
+   it used to be - see the breakpoint. */
 .meta {
   display: flex;
   flex-direction: column;

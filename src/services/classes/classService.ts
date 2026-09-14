@@ -26,12 +26,15 @@ import type { ClassPageView, ClassPhotoView } from "./classView";
  *
  * Read paths:
  *   - getClassPage(): raw read returning unsigned s3Key values (backward-
- *     compatible /api/classes contract; no caching).
+ *     compatible /api/classes contract; no caching). Returns EVERY session by
+ *     default because the admin manager edits past sessions too; the public
+ *     page opts into upcoming-only via GetClassPageOptions.
  *   - getClassPageView(): the signed + Redis-cached read path used by the
  *     /classes page. It signs each photo's s3Key server-side and caches the
  *     signed payload, mirroring the blogs pattern. Mutations invalidate this
  *     cache via invalidateClassCache(). Redis is used fail-open: any Redis
- *     failure degrades to live signing without caching, never an outage.
+ *     failure degrades to live signing without caching, never an outage. This
+ *     is the only read that scopes sessions to upcoming ones.
  */
 
 const CONTEXT = "classService";
@@ -127,7 +130,49 @@ async function requireSingletonClassId(): Promise<number> {
 }
 
 /**
+ * Domain rule for the public "Upcoming Sessions" list: a session stays upcoming
+ * until it ENDS, so a class already in progress keeps showing its time and
+ * location; a session without an endTime falls back to its startTime. The
+ * boundary is inclusive (`>= now`) so a session exactly at its cutoff is still
+ * listed rather than flickering out.
+ *
+ * The rule has two representations that must move together: this Prisma filter
+ * (which bounds what the database returns) and {@link isSessionUpcoming} (which
+ * re-applies it to an already-cached payload). Only the shape of the check is
+ * duplicated; the definition of "upcoming" is stated once, here.
+ */
+function upcomingSessionWhere(now: Date) {
+  return {
+    OR: [{ endTime: { gte: now } }, { endTime: null, startTime: { gte: now } }],
+  };
+}
+
+/**
+ * In-memory twin of {@link upcomingSessionWhere}, used to re-scope sessions
+ * that were cached while still upcoming. Cached payloads round-trip through
+ * JSON, so these fields are ISO strings at runtime despite their Date type;
+ * `new Date` normalizes both. An unparseable value (only reachable from a
+ * poisoned cache entry) is kept rather than silently hidden, matching this
+ * module's fail-open posture.
+ */
+function isSessionUpcoming(
+  session: Pick<ClassSession, "startTime" | "endTime">,
+  now: number,
+): boolean {
+  const endsAt = new Date(session.endTime ?? session.startTime).getTime();
+  return Number.isNaN(endsAt) || endsAt >= now;
+}
+
+/**
  * Options for {@link getClassPage}.
+ *
+ * `upcomingSessionsOnly` controls which sessions the read returns:
+ *   - omitted / `false` (the default): every session for the class, soonest
+ *     first. This is the public contract — the /api/classes route and the admin
+ *     manager behind it keep seeing (and editing) past sessions.
+ *   - `true`: only sessions that have not yet ended (see
+ *     {@link upcomingSessionWhere}). Used by getClassPageView, the read behind
+ *     the public /classes "Upcoming Sessions" section.
  *
  * `photoLimit` controls how many album photos the read returns:
  *   - omitted / `undefined` (the default): cap at `MAX_ALBUM_PHOTOS`. This is the
@@ -144,6 +189,7 @@ async function requireSingletonClassId(): Promise<number> {
  */
 export type GetClassPageOptions = {
   photoLimit?: number | null;
+  upcomingSessionsOnly?: boolean;
 };
 
 /**
@@ -153,8 +199,10 @@ export type GetClassPageOptions = {
  * getClassPageView, which signs and Redis-caches these photos.
  *
  * See {@link GetClassPageOptions}: by default the photo read is capped at
- * `MAX_ALBUM_PHOTOS` (public contract, unchanged); pass `{ photoLimit: null }`
- * for the admin read that needs the full album.
+ * `MAX_ALBUM_PHOTOS` and every session is returned (public contract,
+ * unchanged); pass `{ photoLimit: null }` for the admin read that needs the
+ * full album, or `{ upcomingSessionsOnly: true }` for the public page's
+ * upcoming-only session list.
  */
 export async function getClassPage(options?: GetClassPageOptions): Promise<{
   class: CocktailClass | null;
@@ -173,9 +221,17 @@ export async function getClassPage(options?: GetClassPageOptions): Promise<{
   const take =
     options?.photoLimit === undefined ? MAX_ALBUM_PHOTOS : options.photoLimit;
 
+  // Default returns every session (unchanged contract); the public page opts in
+  // to upcoming-only so the "Upcoming Sessions" list cannot be led by history
+  // and its empty state can actually fire once the schedule is exhausted.
+  const sessionWhere = {
+    classId: cocktailClass.id,
+    ...(options?.upcomingSessionsOnly ? upcomingSessionWhere(new Date()) : {}),
+  };
+
   const [sessions, photos] = await Promise.all([
     prisma.classSession.findMany({
-      where: { classId: cocktailClass.id },
+      where: sessionWhere,
       orderBy: { startTime: "asc" },
     }),
     // Cap fetched photos to `take` (MAX_ALBUM_PHOTOS by default): the album
@@ -223,13 +279,21 @@ async function signPhotos(photos: ClassPhoto[]): Promise<ClassPhotoView[]> {
  * class and sessions unchanged from getClassPage, plus photos as ClassPhotoView
  * with server-signed URLs (raw s3Key never crosses to the client).
  *
+ * Sessions are scoped to upcoming ones here (and only here): this is the read
+ * behind the public "Upcoming Sessions" section, while getClassPage stays the
+ * everything-included source for /api/classes and the admin manager.
+ *
  * Redis is used fail-open: a cache hit is validated for signed-URL freshness
  * (re-signing on any expired URL); on miss the payload is signed and cached.
  * Any Redis failure degrades to live signing without caching so a Redis outage
  * can never break the page (Standard D resilience).
  */
 export async function getClassPageView(): Promise<ClassPageView> {
-  const { class: cocktailClass, sessions, photos } = await getClassPage();
+  const {
+    class: cocktailClass,
+    sessions,
+    photos,
+  } = await getClassPage({ upcomingSessionsOnly: true });
 
   try {
     const cached = await redis.get(CLASS_PAGE_CACHE_KEY);
@@ -245,7 +309,18 @@ export async function getClassPageView(): Promise<ClassPageView> {
         logger.info("Class page cache hit (redis, valid)", {
           context: CONTEXT,
         });
-        return parsed;
+        // Sessions were scoped to "upcoming" when this payload was cached, and
+        // the entry lives for up to CLASS_PAGE_CACHE_TTL_SECONDS — long enough
+        // for a listed session to end while the cache is still warm. Re-scoping
+        // on read costs one array pass and keeps the schedule exact, so the
+        // cache never advertises a class that is already over; the expensive
+        // part of the payload (S3 signing) still comes from the cache.
+        return {
+          ...parsed,
+          sessions: parsed.sessions.filter((session) =>
+            isSessionUpcoming(session, Date.now()),
+          ),
+        };
       } else {
         await redis.del(CLASS_PAGE_CACHE_KEY);
         logger.info("Class page cache invalidated due to expired signed URL", {

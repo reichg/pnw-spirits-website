@@ -1,7 +1,4 @@
-"use client";
-
-import { useState } from "react";
-import Modal from "@/components/ui/Modal";
+import Link from "next/link";
 import styles from "./ClassSessions.module.css";
 
 export type ClassSessionView = {
@@ -23,100 +20,82 @@ const timeFormatter = new Intl.DateTimeFormat("en-US", {
   minute: "2-digit",
 });
 
+// Dates arrive serialized across the RSC boundary, so they are normalized
+// before formatting.
 function toDate(value: Date | string): Date {
   return value instanceof Date ? value : new Date(value);
 }
 
+/**
+ * The class schedule, as a dated index list.
+ *
+ * NO CLIENT STATE, AND THAT IS THE POINT OF THE CURRENT SHAPE. Each row used to
+ * be a <button> that opened a Modal, and the Modal rendered the same three
+ * values - date, time, location - the row already showed. Removing it deletes a
+ * dialog, a focus trap, a piece of state and a click, and turns this component
+ * back into plain server markup. A session dialog only earns its place if a
+ * session gains content of its own (a price, a capacity, a booking link), which
+ * is a schema change rather than a design one.
+ *
+ * The props contract is unchanged: this still takes `sessions` and nothing else,
+ * and ClassSessionView is still the type the page reads.
+ */
 export default function ClassSessions({
   sessions,
 }: {
   sessions: ClassSessionView[];
 }) {
-  // A single Modal instance is driven by the selected session; clicking a card
-  // sets it, closing clears it. Dates arrive serialized across the RSC boundary,
-  // so toDate normalizes them before formatting.
-  const [selected, setSelected] = useState<ClassSessionView | null>(null);
-
+  // Absence of dates is information the reader came for, so the section
+  // delivers it and hands over the alternative path in the same sentence. An
+  // inline link rather than a second button: the page has exactly one filled
+  // CTA and it closes the page.
   if (sessions.length === 0) {
     return (
       <p className={styles.empty}>
-        No sessions are scheduled right now. Check back soon for new dates.
+        <span>
+          No dates are on the calendar right now &mdash;{" "}
+          <Link className={styles.emptyLink} href="/contact">
+            tell us what you have in mind
+          </Link>{" "}
+          and we&rsquo;ll build one around it.
+        </span>
       </p>
     );
   }
 
-  const selectedStart = selected ? toDate(selected.startTime) : null;
-  const selectedEnd = selected?.endTime ? toDate(selected.endTime) : null;
-
   return (
-    <>
-      <ul className={styles.list}>
-        {sessions.map((session) => {
-          const start = toDate(session.startTime);
-          const end = session.endTime ? toDate(session.endTime) : null;
-          return (
-            <li key={session.id} className={styles.card}>
-              <button
-                type="button"
-                className={styles.trigger}
-                onClick={() => setSelected(session)}
-              >
-                <span className={styles.dateBlock}>
-                  <span className={styles.date}>
-                    {dateFormatter.format(start)}
-                  </span>
-                  <span className={styles.time}>
-                    <time dateTime={start.toISOString()}>
-                      {timeFormatter.format(start)}
+    <ul className={styles.list}>
+      {sessions.map((session) => {
+        const start = toDate(session.startTime);
+        const end = session.endTime ? toDate(session.endTime) : null;
+        return (
+          <li key={session.id} className={styles.row}>
+            <p className={styles.date}>{dateFormatter.format(start)}</p>
+            {/* The wrapper is load-bearing at two widths in opposite ways: it
+                dissolves (display: contents) on the two-up so the time and the
+                location can take different tracks, and it comes back below
+                900px to carry them as one separated strip. */}
+            <div className={styles.meta}>
+              <p className={styles.time}>
+                <time dateTime={start.toISOString()}>
+                  {timeFormatter.format(start)}
+                </time>
+                {end && (
+                  <>
+                    {" – "}
+                    <time dateTime={end.toISOString()}>
+                      {timeFormatter.format(end)}
                     </time>
-                    {end && (
-                      <>
-                        {" – "}
-                        <time dateTime={end.toISOString()}>
-                          {timeFormatter.format(end)}
-                        </time>
-                      </>
-                    )}
-                  </span>
-                </span>
-                {session.location && (
-                  <span className={styles.location}>{session.location}</span>
+                  </>
                 )}
-              </button>
-            </li>
-          );
-        })}
-      </ul>
-
-      <Modal
-        isOpen={selected !== null}
-        onClose={() => setSelected(null)}
-        label="Session details"
-      >
-        {selected && selectedStart && (
-          <div className={styles.modalBody}>
-            <p className={styles.modalDate}>
-              {dateFormatter.format(selectedStart)}
-            </p>
-            <p className={styles.modalTime}>
-              <time dateTime={selectedStart.toISOString()}>
-                {timeFormatter.format(selectedStart)}
-              </time>
-              {selectedEnd && (
-                <>
-                  {" – "}
-                  <time dateTime={selectedEnd.toISOString()}>
-                    {timeFormatter.format(selectedEnd)}
-                  </time>
-                </>
+              </p>
+              {session.location && (
+                <p className={styles.location}>{session.location}</p>
               )}
-            </p>
-            {selected.location && (
-              <p className={styles.modalLocation}>{selected.location}</p>
-            )}
-          </div>
-        )}
-      </Modal>
-    </>
+            </div>
+          </li>
+        );
+      })}
+    </ul>
   );
 }

@@ -58,6 +58,61 @@
      1440px, where it has to carry 1200px of width. */
   --rule-accent: rgb(184 115 51 / 0.8);
 
+  /* --- Status ink ---------------------------------------------------------
+     THE RULE: --danger marks a destructive commitment or a FAILED WRITE, and
+     nothing else in the system is --danger. It appears at most once on a
+     screen at a time, which is what keeps it an alarm rather than a fourth
+     accent. A destructive control is --ink-2 AT REST, one tier under its
+     neighbour - eight rows of red Delete is eight alarms, and this system's
+     founding mechanism is that hierarchy is carried by opacity, not by weight
+     - so the alarm arrives at the moment of commitment. A failed READ is not
+     --danger either: nothing was lost, so that is --ink-2 prose in the empty
+     slot. The admin readers are enumerated where they are consumed
+     (AdminButton, AdminStatus, AdminField, AdminCardGrid); the public reader
+     is the failed-write line on the /contact form.
+
+     PROMOTED OUT OF adminTokens.module.css, WHERE IT WAS DERIVED, AND IT IS A
+     MOVE RATHER THAN A COPY. That file argued against putting it in the public
+     contract by name, on the ground that it would "hand every public surface
+     two tokens nothing there may use" - an argument whose premise is "nothing
+     there may use", and that premise expired the moment a public page acquired
+     a failed-write state. Because .adminSurface composes this rule, every
+     existing admin reader resolves the token unchanged, and there is still
+     exactly one declaration site. The alternatives were both the drift this
+     file exists to prevent: declaring #e2645f a second time in
+     ContactForm.module.css is a derived colour in two files, and picking some
+     other red is a second unmeasured signal colour on a palette that is one
+     hue plus ink.
+
+     #e2645f, and the derivation is carried across rather than restated from
+     memory. Hue 2.3 degrees; 5.60:1 on --surface-0 and 5.30:1 on --surface-1,
+     so it clears AA for normal text on either ground a message can land on.
+     That is 20 degrees off the ground and 27 off copper - the separation the
+     signal needs - while staying at the red end of the SAME warm family, so it
+     reads as a member of this palette that has gone hot rather than as an
+     import from a generic SaaS error state. Rejected on measurement: #d9635e
+     (5.30 / 5.02 - clears AA by too little on --surface-1, where a dialog may
+     sit), #ef7a72 (6.92:1, ample, but at that lightness it reads as salmon and
+     an alarm that reads as decoration has failed), the global --color-error
+     #c1440e (3.69:1, below AA for normal text outright, and hue 18 against a
+     ground at 22.5 - five degrees from the surface it would be painted on),
+     and any blue or magenta signal, which would open a second hue family.
+
+     NO SUCCESS COUNTERPART, DELIBERATELY. The affirmative end of a status line
+     is --color-accent-gold, which is already this system's one accent and
+     already measured at about 9.1:1 on this ground. A green would be a third
+     hue on a one-hue-plus-ink palette, introduced to distinguish two states
+     that their own wording distinguishes anyway - and the wording is what
+     satisfies SC 1.4.1 here, with colour second. The global --color-success
+     #4e944f was the obvious candidate and is declined on that ground, not on a
+     contrast one.
+
+     NOT USED AS A FILL. This system has one filled surface in total (the gold
+     CTA, a documented exception). --danger appears as a rule and as text on a
+     control whose neighbour is neutral, which is unmistakable without
+     inventing a second button anatomy. */
+  --danger: #e2645f;
+
   /* --- Type scale ---------------------------------------------------------
      ~1.22 ratio at text sizes widening to ~1.6 at display. Display-to-body at
      1440px is 64:17, about 3.8:1. */

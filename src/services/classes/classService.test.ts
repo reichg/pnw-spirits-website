@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 // Mock the Prisma singleton so the service never touches a real client/DB.
 // The default export is the prisma instance; each model gets vi.fn() methods.
@@ -171,6 +171,57 @@ describe("getClassPage", () => {
       );
     });
   });
+
+  describe("upcomingSessionsOnly option", () => {
+    // Pin the clock so the `now` the service builds into its filter is
+    // deterministic and can be asserted exactly.
+    const NOW = new Date("2026-06-01T12:00:00.000Z");
+
+    beforeEach(() => {
+      vi.useFakeTimers();
+      vi.setSystemTime(NOW);
+      prismaMock.cocktailClass.findFirst.mockResolvedValue(SINGLETON);
+      prismaMock.classSession.findMany.mockResolvedValue([]);
+      prismaMock.classPhoto.findMany.mockResolvedValue([]);
+    });
+
+    afterEach(() => {
+      vi.useRealTimers();
+    });
+
+    it("default (no args) applies no time filter - every session is returned", async () => {
+      await getClassPage();
+
+      expect(prismaMock.classSession.findMany).toHaveBeenCalledWith({
+        where: { classId: SINGLETON.id },
+        orderBy: { startTime: "asc" },
+      });
+    });
+
+    it("the admin read (photoLimit: null) still returns every session", async () => {
+      await getClassPage({ photoLimit: null });
+
+      const [args] = prismaMock.classSession.findMany.mock.calls[0];
+      expect(args.where).toEqual({ classId: SINGLETON.id });
+    });
+
+    it("upcomingSessionsOnly: true scopes to sessions that have not ended", async () => {
+      await getClassPage({ upcomingSessionsOnly: true });
+
+      // A session stays upcoming until its endTime (inclusive at `now`);
+      // sessions without an endTime fall back to their startTime.
+      expect(prismaMock.classSession.findMany).toHaveBeenCalledWith({
+        where: {
+          classId: SINGLETON.id,
+          OR: [
+            { endTime: { gte: NOW } },
+            { endTime: null, startTime: { gte: NOW } },
+          ],
+        },
+        orderBy: { startTime: "asc" },
+      });
+    });
+  });
 });
 
 describe("getClassPageView", () => {
@@ -304,6 +355,112 @@ describe("getClassPageView", () => {
     const result = await getClassPageView();
 
     expect(result.photos.every((p) => p.url === null)).toBe(true);
+  });
+
+  describe("upcoming session scoping", () => {
+    const NOW = new Date("2026-06-01T12:00:00.000Z");
+
+    // Cached payloads round-trip through JSON, so session times arrive back as
+    // ISO strings - these fixtures mirror that on purpose.
+    const PAST = {
+      id: 1,
+      startTime: "2026-05-01T18:00:00.000Z",
+      endTime: "2026-05-01T20:00:00.000Z",
+      location: "Past",
+    };
+    const IN_PROGRESS = {
+      id: 2,
+      startTime: "2026-06-01T11:00:00.000Z",
+      endTime: "2026-06-01T13:00:00.000Z",
+      location: "In progress",
+    };
+    const ENDS_EXACTLY_NOW = {
+      id: 3,
+      startTime: "2026-06-01T10:00:00.000Z",
+      endTime: NOW.toISOString(),
+      location: "Boundary",
+    };
+    const FUTURE = {
+      id: 4,
+      startTime: "2026-06-08T18:00:00.000Z",
+      endTime: null,
+      location: "Future",
+    };
+
+    /** A cached payload whose photo URLs are fresh, so the hit path is taken. */
+    function cacheHitWith(sessions: unknown[]): void {
+      redisMock.get.mockResolvedValue(
+        JSON.stringify({
+          class: SINGLETON,
+          sessions,
+          photos: [
+            { id: 20, url: signedUrlIssuedSecondsAgo(60, 3600), caption: "A" },
+            { id: 21, url: signedUrlIssuedSecondsAgo(60, 3600), caption: null },
+          ],
+        }),
+      );
+    }
+
+    beforeEach(() => {
+      vi.useFakeTimers();
+      vi.setSystemTime(NOW);
+      mockRawPage();
+    });
+
+    afterEach(() => {
+      vi.useRealTimers();
+    });
+
+    it("queries only upcoming sessions (past sessions never reach the page)", async () => {
+      redisMock.get.mockResolvedValue(null);
+      prismaMock.classSession.findMany.mockResolvedValue([FUTURE]);
+      getS3ImageUrl.mockImplementation(async (key: string) => `signed:${key}`);
+
+      const result = await getClassPageView();
+
+      expect(prismaMock.classSession.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: {
+            classId: SINGLETON.id,
+            OR: [
+              { endTime: { gte: NOW } },
+              { endTime: null, startTime: { gte: NOW } },
+            ],
+          },
+        }),
+      );
+      expect(result.sessions).toEqual([FUTURE]);
+    });
+
+    it("cache hit: drops a session that ended while the payload was cached", async () => {
+      cacheHitWith([PAST, FUTURE]);
+
+      const result = await getClassPageView();
+
+      expect(result.sessions).toEqual([FUTURE]);
+      // The cached (expensive) signed photo payload is still served as-is.
+      expect(getS3ImageUrl).not.toHaveBeenCalled();
+    });
+
+    it("cache hit: keeps an in-progress session and one ending exactly now", async () => {
+      cacheHitWith([ENDS_EXACTLY_NOW, IN_PROGRESS, FUTURE]);
+
+      const result = await getClassPageView();
+
+      // The boundary is inclusive: a session is past only once `now` is beyond
+      // its end, and a class already underway keeps showing its location.
+      expect(result.sessions).toEqual([ENDS_EXACTLY_NOW, IN_PROGRESS, FUTURE]);
+    });
+
+    it("cache hit: returns no sessions once every cached session has ended", async () => {
+      cacheHitWith([PAST]);
+
+      const result = await getClassPageView();
+
+      // Lets the page's "no sessions scheduled" empty state fire even on a warm
+      // cache, which the unfiltered read could never do.
+      expect(result.sessions).toEqual([]);
+    });
   });
 });
 

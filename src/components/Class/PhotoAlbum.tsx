@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useState } from "react";
 import {
   ALBUM_BREAKPOINTS,
   MAX_ALBUM_PHOTOS,
@@ -16,6 +16,22 @@ import styles from "./PhotoAlbum.module.css";
 
 import "swiper/css";
 import "swiper/css/pagination";
+
+// Declared once and used by both thumbnail branches, so the two cannot drift.
+//
+// The breakpoints mirror ALBUM_BREAKPOINTS exactly (1 / 2 / 3 / 4 slides at
+// 0 / 600 / 900 / 1200), and the widths are the slide's real share of the
+// 1200px spine rather than a round guess: at 375px one slide is ~89vw of the
+// viewport, at 768px two are ~44vw each, at 1024px three are ~29vw each, and
+// from 1200px up the spine caps so four slides are ~288px each however wide the
+// display gets. Each figure is rounded up a little for margin.
+//
+// Understating a width here costs more than it used to: the plate is now
+// object-fit: cover at 1/1, so a portrait source fills the plate's full width,
+// where `contain` used to render it at two-thirds of that and hide the
+// shortfall.
+const PHOTO_SIZES =
+  "(max-width: 599px) 92vw, (max-width: 899px) 47vw, (max-width: 1199px) 32vw, 300px";
 
 // Consumes the server-signed `photo.url` directly; no client-side signing.
 // next/image lazy-loads off-screen slides by default, so only visible images
@@ -52,7 +68,7 @@ function AlbumPhoto({
           src={photo.url}
           alt={alt}
           fill
-          sizes="(max-width: 600px) 80vw, (max-width: 900px) 50vw, (max-width: 1200px) 33vw, 25vw"
+          sizes={PHOTO_SIZES}
           className={styles.image}
           priority={priority}
         />
@@ -64,13 +80,17 @@ function AlbumPhoto({
             src={photo.url}
             alt={alt}
             fill
-            sizes="(max-width: 600px) 80vw, (max-width: 900px) 50vw, (max-width: 1200px) 33vw, 25vw"
+            sizes={PHOTO_SIZES}
             className={styles.image}
             priority={priority}
           />
         ) : (
+          // role="img" is what makes the label announce. As a bare <div> the
+          // aria-label was dropped by assistive tech, so a tile whose signed url
+          // failed was silent as well as blank.
           <div
             className={styles.placeholder}
+            role="img"
             aria-label="Photo unavailable"
           />
         )}
@@ -87,103 +107,6 @@ function AlbumPhoto({
   );
 }
 
-// Decorative-only swipe affordance shown at every breakpoint. The overlay
-// blurs/dims the slide row behind it while a sharp, cocktail-themed glass
-// animation floats centered on top; pointer-events: none lets pointers pass
-// through to Swiper, which performs the drag and fires onTouchStart to dismiss.
-// Marked aria-hidden because Swiper A11y + clickable pagination already announce
-// navigation to assistive tech; this is a purely visual nudge.
-//
-// The glass pours full, then slides left (the direction the user swipes to
-// advance), then loops — tying the affordance to the site's cocktail theme.
-// All motion lives in CSS so the SVG stays static markup; the unique clipPath
-// id keeps the liquid clip scoped to this instance.
-function SwipeHint() {
-  return (
-    <div className={styles.swipeHint} aria-hidden="true">
-      <span className={styles.swipeHintGlass}>
-        <svg
-          className={styles.glassSvg}
-          viewBox="0 0 40 60"
-          width="34"
-          height="51"
-          role="presentation"
-        >
-          <defs>
-            {/* Interior of the martini bowl: the V cone, inset from the walls so
-                the stroke stays visible. The liquid rect is clipped to this so it
-                reads as filling the cone from the point up, not a floating block. */}
-            <clipPath id="swipeGlassInterior">
-              <path d="M9.5 17.2 L30.5 17.2 L20 33 Z" />
-            </clipPath>
-          </defs>
-
-          {/* Pour stream dropping in from above the rim during the fill phase. */}
-          <rect
-            className={styles.glassStream}
-            x="19.1"
-            y="1"
-            width="1.8"
-            height="15"
-            rx="0.9"
-          />
-
-          {/* Liquid: a rect bounding the bowl interior, scaled up from the bottom
-              (the cone's point) by the fill keyframe and clipped to the V above. */}
-          <g clipPath="url(#swipeGlassInterior)">
-            <rect
-              className={styles.glassLiquid}
-              x="9"
-              y="17"
-              width="22"
-              height="16"
-            />
-          </g>
-
-          {/* Martini glass: V bowl with rim line, thin stem, and a foot ellipse.
-              Drawn over the liquid so the rim/walls stay crisp. */}
-          <path
-            className={styles.glassBody}
-            d="M7.5 16 L32.5 16 L20 35 Z M20 35 V49 M13 50.5 H27"
-            fill="none"
-          />
-          <ellipse
-            className={styles.glassFoot}
-            cx="20"
-            cy="50.5"
-            rx="7"
-            ry="1.6"
-          />
-
-          {/* Garnish: an olive resting on a cocktail pick laid across the rim. The
-              pick crosses the rim line; the olive sits at its upper end. Static —
-              it rides the slide with the rest of the group. */}
-          <g className={styles.glassGarnish}>
-            <line x1="14" y1="18.5" x2="27" y2="12.5" />
-            <circle cx="27.6" cy="12.2" r="2" />
-          </g>
-        </svg>
-        <span className={styles.swipeHintLabel}>Swipe</span>
-        {/* Left-pointing chevron arrow reinforcing the swipe-left direction. Its
-            own nudge loop (arrowNudge) plays on top of the group's glassSlide; the
-            slender double-chevron reads as a refined arrow rather than a triangle. */}
-        <svg
-          className={styles.swipeHintArrow}
-          viewBox="0 0 28 12"
-          width="26"
-          height="11"
-          role="presentation"
-        >
-          <path
-            d="M11.5 1.5 L6 6 L11.5 10.5 M21.5 1.5 L16 6 L21.5 10.5"
-            fill="none"
-          />
-        </svg>
-      </span>
-    </div>
-  );
-}
-
 // Base (mobile) tier and the per-breakpoint Swiper config are derived from the
 // shared ALBUM_BREAKPOINTS so Swiper owns all responsive sizing from album.ts.
 const [BASE_TIER, ...RESPONSIVE_TIERS] = ALBUM_BREAKPOINTS;
@@ -195,27 +118,24 @@ const SWIPER_BREAKPOINTS: SwiperOptions["breakpoints"] = Object.fromEntries(
   ]),
 );
 
+/**
+ * Photographs from past classes, as square plates on the page ground.
+ *
+ * THE ANIMATED SWIPE OVERLAY IS GONE, and it is the reason this component has
+ * so little state left. It painted a 0.58 scrim plus a 3px blur over the
+ * photographs - the one asset this system says must never be permanently
+ * dimmed - and put content on top of that scrim, which the card's own rules
+ * forbid; it rendered at every breakpoint including 1440px, where "Swipe" is
+ * not the interaction available; and under prefers-reduced-motion it degraded
+ * into a static blurred veil, the worst of both outcomes. Swiper's gold
+ * dynamicBullets pagination already carries the affordance.
+ *
+ * Removing it took with it the `interacted` and `locked` state, the `readyRef`
+ * and `lastRealIndexRef` guards, and the six Swiper handlers (onAfterInit,
+ * onTouchStart, onSlideChange, onSwiper, onLock, onUnlock) that existed only to
+ * feed them. The lightbox is untouched.
+ */
 export default function PhotoAlbum({ photos }: { photos: ClassPhotoView[] }) {
-  // Dismissed the moment the user touches or advances the carousel; gates the
-  // decorative swipe hint. Declared before any early return per rules-of-hooks.
-  const [interacted, setInteracted] = useState(false);
-
-  // True once Swiper has finished initializing. Loop setup can emit a synthetic
-  // slideChange before the user acts; this guard ignores those so the hint is
-  // not dismissed before a real navigation.
-  const readyRef = useRef(false);
-
-  // Last logical slide index seen. Swiper repositioning (e.g. loop setup or
-  // layout updates) can shift the raw activeIndex and emit slideChange while
-  // realIndex stays put. Dismiss only when realIndex actually changes so those
-  // reposition events don't hide the hint before a genuine navigation.
-  const lastRealIndexRef = useRef<number | null>(null);
-
-  // Mirrors Swiper's watchOverflow lock: when every photo already fits a
-  // breakpoint the carousel can't scroll (and its pagination hides), so the
-  // swipe hint should hide too.
-  const [locked, setLocked] = useState(false);
-
   // Selected photo drives a single lightbox Modal. Only photos with a signed url
   // ever populate this, so the lightbox never opens on a broken/missing tile.
   const [lightbox, setLightbox] = useState<ClassPhotoView | null>(null);
@@ -227,7 +147,9 @@ export default function PhotoAlbum({ photos }: { photos: ClassPhotoView[] }) {
   if (visible.length === 0) {
     return (
       <p className={styles.empty}>
-        Photos from past classes will appear here after our next session.
+        <span>
+          Photos from past classes will appear here after our next session.
+        </span>
       </p>
     );
   }
@@ -235,10 +157,6 @@ export default function PhotoAlbum({ photos }: { photos: ClassPhotoView[] }) {
   // Decided once from the fixed set against the widest possible view, so loop
   // never toggles during resize (Swiper owns the per-breakpoint sizing itself).
   const canLoop = visible.length > MAX_ALBUM_SLIDES_PER_VIEW;
-
-  // Show only when there is more than one slide, the user hasn't acted yet, and
-  // the carousel can actually scroll (not locked by watchOverflow at this width).
-  const showSwipeHint = visible.length > 1 && !interacted && !locked;
 
   return (
     <div className={styles.carousel}>
@@ -252,21 +170,6 @@ export default function PhotoAlbum({ photos }: { photos: ClassPhotoView[] }) {
         slidesPerView={BASE_TIER.slidesPerView}
         slidesPerGroup={BASE_TIER.slidesPerGroup}
         breakpoints={SWIPER_BREAKPOINTS}
-        onAfterInit={(s) => {
-          readyRef.current = true;
-          lastRealIndexRef.current = s.realIndex;
-        }}
-        onTouchStart={() => setInteracted(true)}
-        onSlideChange={(s) => {
-          if (!readyRef.current) return;
-          if (s.realIndex !== lastRealIndexRef.current) {
-            lastRealIndexRef.current = s.realIndex;
-            setInteracted(true);
-          }
-        }}
-        onSwiper={(s) => setLocked(s.isLocked)}
-        onLock={() => setLocked(true)}
-        onUnlock={() => setLocked(false)}
       >
         {visible.map((photo, index) => (
           <SwiperSlide key={photo.id}>
@@ -278,7 +181,6 @@ export default function PhotoAlbum({ photos }: { photos: ClassPhotoView[] }) {
           </SwiperSlide>
         ))}
       </Swiper>
-      {showSwipeHint && <SwipeHint />}
 
       <Modal
         isOpen={lightbox !== null}
@@ -289,7 +191,9 @@ export default function PhotoAlbum({ photos }: { photos: ClassPhotoView[] }) {
         {lightbox?.url && (
           <figure className={styles.lightboxFigure}>
             {/* Dimensions are unknown, so fill within a viewport-capped frame;
-                object-fit keeps the whole image visible without cropping. */}
+                object-fit keeps the whole image visible without cropping. The
+                plate crops, the lightbox is where the uncropped photograph
+                lives. */}
             <div className={styles.lightboxFrame}>
               <Image
                 src={lightbox.url}

@@ -1,121 +1,204 @@
+/* ===========================================================================
+   The class schedule - a dated index list, not a card grid.
+
+   There is ONE offering and N dates, so a session is not an object with its own
+   identity and its own destination; it is an entry in an index. A card asserts
+   the opposite, and building one here would have meant authoring a second card
+   vocabulary - background, border, radius, shadow - inside a system whose
+   thesis is that there is no card surface. So the row has none of the four and
+   the separator does all of the structural work: every row opens on its own
+   hairline and the list closes on one, which is the mechanism
+   ContentArchiveLayout's .list and ContentRow already ship.
+
+   NOTHING IN HERE IS INTERACTIVE. The row used to be a <button> opening a
+   dialog that repeated the three values the row already shows; the dialog is
+   gone. So there is no hover state, no focus state and no motion to declare on
+   a row - and consequently no prefers-reduced-motion block in this file, which
+   is an absence with a reason rather than an omission. The only control left is
+   the inline link in the empty state, whose colour fade is sub-200ms with no
+   displacement - the case editorialTokens.module.css records as NOT what the
+   preference asks to have removed.
+
+   Tokens are inherited. This component renders inside <main>, which carries the
+   token set, so every --ink-*, --space-*, --fs-* and --hairline below is in
+   scope; nothing here composes .editorialSurface and nothing here declares a
+   token.
+   =========================================================================== */
+
 .list {
   list-style: none;
+  /* Each row draws its own opening hairline, so the run is bracketed at the top
+     by the first row's rule; this closes it at the bottom. Bracketing the block
+     is what stops the last row's time hanging in space above whatever follows.
+     Byte-identical to ContentArchiveLayout .list, for the same reason. */
+  border-bottom: 1px solid var(--hairline);
+}
+
+/* --- The row -------------------------------------------------------------
+   The masthead's two-up, reused: minmax(0, 1fr) for the date/time stack and
+   fit-content(14rem) for the location.
+
+   WHY A RIGHT TRACK AT ALL. Two short lines in the left 300px of a 1200px spine
+   is the failure ContentDetailShell.module.css records verbatim - "two
+   full-width rules 250px apart with a half-width paragraph between them, and
+   read as a hole rather than as asymmetry." The location is the only furniture
+   a session carries that can occupy the right edge its own hairlines declare
+   without inventing content, which is the same argument that file makes for the
+   byline. 14rem is that file's derived ceiling for a right-track metadata block
+   (224px, measured at 21 characters of tracked caps) and is deliberately not
+   re-derived here; a longer venue name wraps inside it and the right edge does
+   not move.
+
+   PADDING IS --space-m, NOT THE ARCHIVE ROW'S --space-l. This row is two short
+   lines, not a 160px plate. */
+.row {
   display: grid;
-  /* min(100%, 280px) lets the track collapse to the container width on screens
-     narrower than 280px (no overflow) while keeping the 280px multi-column floor
-     on wider screens. A bare 280px floor overflows containers under ~280px. */
-  grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr));
-  gap: 1em;
-  width: 100%;
+  grid-template-columns: minmax(0, 1fr) fit-content(14rem);
+  gap: var(--space-2xs) var(--col-gap);
+  /* Baselines rather than box tops: the date and the location are one line of
+     information read across the spine, and they are set at different sizes. */
+  align-items: baseline;
+  padding-block: var(--space-m);
+  border-top: 1px solid var(--hairline);
 }
 
-.card {
-  display: flex;
-  justify-content: center;
-  background: var(--color-bg-deep);
-  border: 1px solid var(--color-border-dark);
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-md);
-  transition:
-    transform var(--transition-fast),
-    box-shadow var(--transition-fast),
-    border-color var(--transition-fast);
-}
-.card:hover {
-  transform: translateY(-3px);
-  border-color: var(--color-accent-gold);
-  box-shadow: var(--shadow-lg);
-}
-
-/* The whole card is one clickable trigger. The button carries the inner layout
-   and padding; the <li> keeps the visual card surface and hover lift. */
-.trigger {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5em;
-  width: 100%;
-  padding: 1.1em 1.3em;
-  text-align: left;
-  font: inherit;
-  color: inherit;
-  background: none;
-  border: none;
-  border-radius: inherit;
-  cursor: pointer;
-}
-.trigger:focus-visible {
-  outline: 2px solid var(--color-accent-gold);
-  outline-offset: 2px;
-}
-
-.dateBlock {
-  display: flex;
-  flex-direction: column;
-  gap: 0.2em;
-}
-
+/* The card-title rank, and the same four type properties ContentCard gives its
+   own title. The date takes that rank because there is no named event for it to
+   be subordinate to: it is the only thing the reader is here for. */
 .date {
-  font-size: 1.15em;
-  font-weight: 700;
-  color: var(--color-accent-light);
+  grid-column: 1;
+  grid-row: 1;
+  margin: 0;
+  font-size: var(--fs-card);
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: -0.005em;
+  color: var(--ink-1);
+}
+
+/* Dissolves on the two-up so .time and .location become grid items of .row
+   itself and can be placed in two different tracks. The box comes back below
+   900px and carries them as one strip - see the breakpoint. */
+.meta {
+  display: contents;
+}
+
+/* The meta register: ContentDetailShell's .meta role exactly, at the same size,
+   weight, tracking and ink tier, because it is the same kind of text. */
+.time,
+.location {
+  margin: 0;
+  font-size: var(--fs-meta);
+  font-weight: 500;
+  line-height: 1.4;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-3);
 }
 
 .time {
-  font-size: 1em;
-  color: var(--color-text-inverse);
+  grid-column: 1;
+  grid-row: 2;
 }
 
+/* `location` is nullable, so this element is often absent entirely. The track
+   then resolves to zero width and the row reads as a left-aligned index entry -
+   the same composition with one block missing rather than a broken one. */
 .location {
-  display: inline-flex;
-  align-items: center;
-  align-self: flex-start;
-  padding: 0.25em 0.7em;
-  border-radius: var(--radius-sm);
-  background: var(--color-bg-overlay);
-  color: var(--color-accent-gold);
-  font-size: 0.92em;
-  font-weight: 500;
+  grid-column: 2;
+  grid-row: 1;
+  text-align: right;
 }
 
-.empty {
-  font-size: 1.05em;
-  color: var(--color-text-inverse);
-  text-align: center;
-  padding: 1em 0;
-}
+/* --- Responsive ----------------------------------------------------------
+   One structural change, at the 900px every other composition in this system
+   collapses at. A right-aligned track in a 375px viewport would be a second
+   alignment in a space too small to read it as a decision, so the two meta
+   blocks become one left-aligned strip.
 
-.modalBody {
-  display: flex;
-  flex-direction: column;
-  gap: 0.6em;
-}
-
-.modalDate {
-  margin: 0;
-  font-size: 1.3em;
-  font-weight: 700;
-  color: var(--color-accent-light);
-}
-
-.modalTime {
-  margin: 0;
-  font-size: 1.05em;
-  color: var(--color-text-inverse);
-}
-
-.modalLocation {
-  margin: 0;
-  align-self: flex-start;
-  padding: 0.3em 0.8em;
-  border-radius: var(--radius-sm);
-  background: var(--color-bg-overlay);
-  color: var(--color-accent-gold);
-  font-size: 0.95em;
-  font-weight: 500;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .card {
-    transition-duration: 0.001ms;
+   The separator is the positioned-rule device ContentDetailShell derives at its
+   own 900px breakpoint, reproduced rather than reinvented: a border-inline-start
+   travels with its item, so the first item on a wrapped line carries a rule with
+   nothing to its left - a stray 1px tick - while a rule drawn half a gap to the
+   item's left lands outside the container whenever its item starts a line, and
+   the overflow clip removes it. Half-gap is --space-m / 2 = 12px each side, the
+   value that file settled on after 8px read as attached to its neighbour. */
+@media (max-width: 899px) {
+  .row {
+    grid-template-columns: minmax(0, 1fr);
   }
+
+  .meta {
+    grid-column: 1;
+    grid-row: 2;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: var(--space-2xs) var(--space-m);
+    /* Clips the separator of whichever item happens to start a wrapped line.
+       Nothing else in this strip can overflow. */
+    overflow: hidden;
+  }
+
+  .meta > * {
+    position: relative;
+  }
+
+  /* The location is no longer in a right track, so its own right alignment has
+     to be unwound; it is a flex item here and text-align still applies. */
+  .location {
+    text-align: start;
+  }
+
+  .meta > * + *::before {
+    content: "";
+    position: absolute;
+    inset-block: 0;
+    inset-inline-start: calc(var(--space-m) / -2);
+    border-inline-start: 1px solid var(--hairline);
+  }
+}
+
+/* --- Empty state ---------------------------------------------------------
+   Composed, not copied. The only spelling of "the same treatment" that cannot
+   drift is the same declarations at one declaration site, and --fs-lede, 1.55,
+   --ink-2 and the 48ch measure are all declared in ContentLandingLayout. The
+   composed rule caps the measure on a CHILD, which is why the component renders
+   a <span> inside this element: capping the block itself would either centre
+   the measure or pull it into the gutter.
+
+   The section heading above this stays. Absence of dates is information the
+   reader came for, so the section has to exist in order to deliver it. */
+.empty {
+  composes: emptyMessage from "../ui/ContentLandingLayout.module.css";
+}
+
+/* The alternative path, carried inline inside the sentence rather than as a
+   second button: this page has exactly one filled CTA and it closes the page.
+   Gold is the one accent in this palette and measures about 9.1:1 on
+   --surface-0; the underline is what keeps the link from depending on colour
+   alone. */
+.emptyLink {
+  color: var(--color-accent-gold);
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+  /* Copper at rest, brightening to the link's own gold on hover - the state
+     change, since the ink is already the accent and has nowhere brighter to
+     go. Same device as ContentArchiveLayout .clearSearch. */
+  text-decoration-color: var(--rule-accent);
+  transition: text-decoration-color var(--dur-fast) ease;
+}
+
+/* Restating the resting ink is load-bearing, not redundant: globals.css has
+   `a:hover { color: var(--color-bg-highlight) }` at (0,1,1), which outranks
+   this rule's (0,1,0) and would swap the link's colour under the pointer.
+   (0,2,0) settles it. */
+.emptyLink:hover {
+  color: var(--color-accent-gold);
+  text-decoration-color: currentcolor;
+}
+
+.emptyLink:focus-visible {
+  outline: 2px solid var(--color-accent-gold);
+  outline-offset: 3px;
 }

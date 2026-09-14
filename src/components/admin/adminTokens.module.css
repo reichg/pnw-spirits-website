@@ -11,7 +11,7 @@
    suppressed) and an admin page is a WORKING surface (the records are the
    subject and the controls are why the admin opened the page). Every ground,
    ink tier, type step, spacing rung, container and motion token comes from
-   editorialTokens.module.css unchanged; this file adds four rungs that a
+   editorialTokens.module.css unchanged; this file adds three rungs that a
    reading surface has no rule for.
 
    CUSTOM PROPERTIES ONLY, AND THAT IS LOAD-BEARING - the same constraint
@@ -24,15 +24,28 @@
    which is the worst failure mode a stylesheet has. Ground, type and spacing
    are therefore consumed from the composed rule and never restated here.
 
-   WHY A SECOND TOKEN FILE RATHER THAN FOUR MORE RUNGS IN editorialTokens.
+   WHY A SECOND TOKEN FILE RATHER THAN THREE MORE RUNGS IN editorialTokens.
    Dependency direction. `src/components/ui/` is the domain-agnostic public set
    that any page may read; `src/components/admin/` assumes an authenticated
    operator and must never be imported by a public page (admin.types.ts argues
-   this at length). Putting --danger and --control-min in the public contract
-   would hand every public surface two tokens nothing there may use, and the
-   next person retuning the public scale would have to reason about an admin
-   dialog. The admin composes down into the shared contract; the shared contract
-   never reaches up.
+   this at length). Putting --control-min in the public contract would hand
+   every public surface a token nothing there may use, and the next person
+   retuning the public scale would have to reason about an admin dialog. The
+   admin composes down into the shared contract; the shared contract never
+   reaches up.
+
+   --danger WAS ON THAT LIST AND HAS BEEN MOVED OUT, down into
+   editorialTokens.module.css, where the full derivation now lives. The
+   argument above was explicitly premised on "nothing there may use", and that
+   premise expired when /contact became the first public surface with a
+   failed-write state. It is a MOVE and not a copy: .adminSurface composes
+   .editorialSurface, so every admin reader below - AdminButton, AdminStatus,
+   AdminField, AdminCard, AdminCardGrid - resolves --danger unchanged, and
+   there is still exactly one declaration site, which is the point. The
+   dependency direction is untouched by it: the token went DOWN into the
+   shared contract, not up out of it, and no admin module is imported by
+   anything public as a result. --control-min stays here because no public
+   surface has yet written the rule that would read it.
 
    WHY THE RUNGS ARE NOT PREFIXED --admin-*. editorialTokens states its naming
    doctrine twice (--step-marker, --row-media-col): a geometry value is "named
@@ -149,58 +162,4 @@
      for the neutral controls (inputs, secondary buttons, row actions) that
      should not all be copper. */
   --hairline-strong: rgb(var(--ink) / 0.38);
-
-  /* THE RULE: --danger marks a destructive commitment or a failed write, and
-     nothing else in the system is --danger. It appears at most once on a screen
-     at a time, which is what keeps it an alarm rather than a fourth accent.
-
-     Exactly three readers, and the list is closed on purpose:
-       1. the confirming control of a destructive dialog ("Delete recipe") -
-          AdminButton with tone="danger";
-       2. a failed WRITE, at either scope: the tone rule on an AdminStatus with
-          tone="error" (the screen's message) and the error caption on an
-          AdminField (one control's). Both mean the admin has lost work; they
-          differ in what they are anchored to, not in severity;
-       3. a Delete IN A REPEATED CONTEXT, at :hover / :focus-visible only -
-          the card's own Delete action and, equally, a standalone AdminButton
-          tone="danger" inside a list (the photo album's per-tile Delete).
-     Note what is NOT on it. Delete AT REST is --ink-2, one tier under Edit,
-     because eight rows of red Delete is eight alarms and this system's founding
-     mechanism is that "hierarchy is carried by opacity, not by weight". The
-     alarm arrives at the moment of commitment. Readers 1 and 3 are the same
-     control under two conditions, and the condition is REPETITION, not
-     severity: AdminCardGrid neutralises the resting alarm for everything inside
-     a list of records (see its .grid rule), which is why the same component
-     with the same tone is red in a dialog and neutral on a tile. Nor is a failed READ on the
-     list - nothing was lost, so that is --ink-2 prose in the empty slot. Nor is
-     the album's "not shown publicly" chip, which reports a fact and destroys
-     nothing.
-
-     #e2645f. Hue 2.3 degrees; 5.60:1 on --surface-0 and 5.30:1 on --surface-1,
-     both re-derived here, so it clears AA for normal text on either ground a
-     message can land on.
-
-     WHY --color-error (#c1440e) IS RETIRED FROM THE ADMIN, measured rather than
-     asserted: it is 3.69:1 on --surface-0 - below AA for normal text outright -
-     and it sits at hue 18 degrees against a page ground at 22.5 and copper at
-     28.9. Five degrees of hue from the ground it is painted on. It cannot read
-     as an alarm in this palette; it reads as a third accent that happens to be
-     hotter. It is currently used as a danger signal in five places across the
-     admin and every one of them is wrong for the same reason.
-
-     WHY THIS HUE AND NOT FURTHER AWAY. 2.3 degrees is 20 off the ground and 27
-     off copper, which is the separation the signal needs, while staying at the
-     red end of the SAME warm family - so it reads as a member of this palette
-     that has gone hot, not as an import from a generic SaaS error state.
-     Rejected on measurement: #d9635e (5.30 / 5.02 - clears AA by too little on
-     --surface-1, where a dialog may sit), #ef7a72 (6.92:1, ample, but at that
-     lightness it reads as salmon and an alarm that reads as decoration has
-     failed), and any blue/magenta signal, which would open a second hue family
-     on a palette that is one hue plus ink.
-
-     NOT USED AS A FILL. This system has one filled surface in total (the gold
-     CTA, a documented exception). --danger appears as a rule and as text on a
-     control whose neighbour is neutral, which is unmistakable without inventing
-     a second button anatomy. */
-  --danger: #e2645f;
 }

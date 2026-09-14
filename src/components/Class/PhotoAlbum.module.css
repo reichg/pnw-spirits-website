@@ -1,3 +1,24 @@
+/* ===========================================================================
+   The past-class gallery - square plates on the page ground.
+
+   Its job is to be EVIDENCE, and it used to read as a photo dump because it was
+   dressed as a widget: every tile carried a radius, a border and a shadow, and
+   a blurred overlay sat across the whole strip. All four are gone. What is left
+   is the system's own answer - "there is no card surface: no background, no
+   border, no radius and no shadow" - applied to a photograph that is already
+   the thing being sold.
+
+   TOKENS ARE INHERITED. This component renders inside <main>, which carries the
+   token set, so every --ink-*, --surface-*, --space-* and --fs-* below is in
+   scope and nothing here composes .editorialSurface. The one exception is the
+   lightbox at the bottom of this file, which leaves the subtree through a
+   portal and therefore has to carry the tokens itself.
+
+   The --swiper-* custom properties are knobs for a third-party stylesheet, not
+   token declarations; their values are pointed at this system's tokens so the
+   carousel cannot drift away from the page it sits on.
+   =========================================================================== */
+
 .carousel {
   position: relative;
   width: 100%;
@@ -5,15 +26,19 @@
      carousel itself stays the horizontal clip boundary. */
   max-width: 100%;
   box-sizing: border-box;
-  /* Theme Swiper bullets to the site palette so they stay legible over the dark
-     page (navigation arrows are not used). */
+  /* Theme Swiper bullets to the editorial palette (navigation arrows are not
+     used). The bullets are now the carousel's ONLY affordance, since the
+     animated swipe overlay is gone, so they are deliberately the system accent
+     rather than a neutral dot. */
   --swiper-theme-color: var(--color-accent-gold);
-  --swiper-pagination-bullet-inactive-color: var(--color-text-inverse);
+  --swiper-pagination-bullet-inactive-color: var(--ink-1);
   --swiper-pagination-bullet-inactive-opacity: 0.45;
   /* Page-indicator reserve: each slide pads its bottom by this so Swiper's
      pagination — rendered at the bottom of the slide track, inside the overflow-
-     hidden Swiper — sits below the photo caption instead of overlapping it. */
-  --album-pagination-space: 2.75em;
+     hidden Swiper — sits below the photo caption instead of overlapping it.
+     --space-l (40px) against a 12px bullet row leaves 28px of clearance, which
+     is the rung the rest of this system already spaces blocks by. */
+  --album-pagination-space: var(--space-l);
 }
 
 .carousel :global(.swiper) {
@@ -23,7 +48,7 @@
   /* Small interior buffer between the slides and the overflow clip edge. Swiper
      sizes slides from the integer clientWidth, so against a fractional track the
      rightmost photo can land exactly on the clip line and lose a sub-pixel of its
-     border (Firefox is strict about this). This padding keeps every photo a few
+     edge (Firefox is strict about this). This padding keeps every photo a few
      px inside the clip boundary at any width, browser, or DPR. */
   padding-left: 4px;
   padding-right: 4px;
@@ -44,7 +69,7 @@
 .item {
   display: flex;
   flex-direction: column;
-  gap: 0.5em;
+  gap: var(--space-2xs);
   margin: 0;
   box-sizing: border-box;
   /* Reserve the page-indicator strip inside the slide (Swiper renders pagination at
@@ -52,87 +77,197 @@
   padding-bottom: var(--album-pagination-space);
 }
 
+/* The reserve is for an indicator that is not always there. Swiper stamps
+   .swiper-pagination-lock and hides the dots whenever every photo already fits
+   the current breakpoint (watchOverflow) - measured on the live page at 1024
+   and 1440 with a three-photo album, where the dots were display: none and
+   every slide still held 40px of empty strip under its caption. The reserve is
+   therefore withdrawn under exactly the condition that removes the thing it
+   reserves for.
+
+   :has() is load-bearing rather than fashionable here: the class is stamped on
+   the pagination element, which is the slide's parent's SIBLING, and no other
+   selector in CSS can see it from inside a slide. (AdminClassManager.module.css
+   records the opposite case - where a sibling combinator sufficed and :has() was
+   declined.) */
+.carousel:has(:global(.swiper-pagination-lock)) .item {
+  padding-bottom: 0;
+}
+
+/* --- The plate -----------------------------------------------------------
+   SQUARE, AND THE DERIVATION IS NOT REPEATED HERE. ContentLandingLayout.module.css
+   owns it: the source library is roughly half 2:3 portrait and half 3:2
+   landscape, and 1/1 minimises the worst-case crop (33% either way, against 47%
+   at 4:5 or 5:4). This replaces `object-fit: contain` at 4/3, which never
+   cropped but letterboxed instead - and a strip of letterboxed photos renders
+   at visibly different apparent scales, the "three different apparent focal
+   distances" defect that file records. Equal square plates are what stop a
+   strip reading as a dump.
+
+   NO RADIUS, NO BORDER, NO SHADOW. border-radius is stated as 0 rather than
+   simply deleted because globals.css `button { border-radius: 4px }` would
+   otherwise round the interactive branch of this element while the
+   non-interactive branch stayed square.
+
+   --surface-1 is the empty plate: it shows through while an image is still
+   downloading and stays visible when a record has no usable photo, so a missing
+   cover reads as an empty plate rather than as a collapsed box. */
 .thumb {
   position: relative;
   width: 100%;
-  aspect-ratio: 4 / 3;
+  aspect-ratio: 1 / 1;
   box-sizing: border-box;
-  border-radius: var(--radius-md);
+  border-radius: 0;
   overflow: hidden;
-  background: var(--color-bg-deep);
-  border: 1px solid var(--color-border-dark);
-  box-shadow: var(--shadow-md);
+  background: var(--surface-1);
 }
 
-/* The thumb doubles as the lightbox trigger when a real image is present.
-   Reset button chrome so it keeps the .thumb framing exactly. */
+/* The plate doubles as the lightbox trigger when a real image is present. Reset
+   the button chrome globals.css paints on every <button> so it keeps the plate
+   framing exactly. */
 .thumbButton {
   padding: 0;
   cursor: pointer;
   appearance: none;
 }
+
+/* globals.css `button:hover { background: var(--color-accent-dark) }` is
+   (0,1,1) and outranks .thumb's (0,1,0), so it repaints the plate brown under
+   the pointer - invisible behind a loaded photograph and plainly wrong for the
+   moments it is not. Restating the resting ground at (0,2,0) settles it.
+   Unconditional on purpose: this control is never disabled, and gating a paint
+   rule on :not(:disabled) is how Modal.module.css ended up needing a
+   :disabled:hover restatement. */
+.thumbButton:hover {
+  background: var(--surface-1);
+}
+
 .thumbButton:focus-visible {
   outline: 2px solid var(--color-accent-gold);
   outline-offset: 2px;
 }
 
 .image {
-  object-fit: contain;
-  transition: transform var(--transition-medium);
-}
-.item:hover .image {
-  transform: scale(1.04);
+  object-fit: cover;
 }
 
-.placeholder {
+/* --- The resting veil ----------------------------------------------------
+   The landing card's veil, on a plate that meets both conditions
+   ContentCard.module.css derives it under. It seats uncontrolled,
+   admin-uploaded photography into the warm-dark ground - the album and the card
+   grid draw from the same library, so an undimmed strip beside a dimmed grid
+   would read as two different photo sets - and it gives the pointer something
+   to reveal on a control that carries no other affordance: this plate has no
+   title, no kicker and no arrow, so without it a clickable photograph has no
+   hover state at all. Its precondition holds too: the caption sits BELOW the
+   plate and never on it, so nothing here is legible only while the veil is
+   drawn. That is the whole difference between this and the blurred swipe
+   overlay that was removed.
+
+   The gradient and the 0.38 are NOT re-derived; ContentCard.module.css records
+   the measurement (a highlight at 230 taken down to 159 - unmistakably dimmed
+   and still plainly a photograph) and the reason the veil colour is kept
+   lighter than --surface-1. Composing that rule is not available: its lift
+   selector is `.card:hover .media::after`, and there is no .card ancestor here.
+
+   Scoped to .thumbButton rather than to .thumb, because a veil that can never
+   lift is the thing this system refuses. The non-interactive branch of the
+   plate is the failed-signing case, which has no photograph to seat. */
+.thumbButton::after {
+  content: "";
   position: absolute;
   inset: 0;
   background: linear-gradient(
-    100deg,
-    var(--color-bg-deep) 30%,
-    var(--color-bg-deep1) 50%,
-    var(--color-bg-deep) 70%
+    120deg,
+    var(--color-bg-overlay) 70%,
+    var(--color-accent-copper) 100%
   );
-  background-size: 200% 100%;
-  animation: shimmer 1.4s linear infinite;
+  opacity: 0.38;
+  pointer-events: none;
+  transition: opacity var(--dur-medium, 320ms)
+    var(--ease-out-soft, cubic-bezier(0.22, 0.61, 0.36, 1));
 }
 
-@keyframes shimmer {
-  0% {
-    background-position: 200% 0;
-  }
-  100% {
-    background-position: -200% 0;
-  }
+.thumbButton:hover::after,
+.thumbButton:focus-visible::after {
+  opacity: 0;
 }
 
+/* A tile whose signed url never arrived. It paints nothing - the plate's own
+   --surface-1 is the empty plate, which is this system's recorded answer for a
+   missing photograph - and exists only to carry the role and label that make
+   the failure announce. The shimmer gradient that used to run here was an
+   infinite animation promising a load that is never coming. */
+.placeholder {
+  position: absolute;
+  inset: 0;
+}
+
+/* Left, at the meta register. editorialTokens.module.css declines a caption
+   token in as many words - "a figure caption or a photo credit is meta-register
+   text at 13-14px, which is exactly --fs-meta" - so this is that role and not a
+   second one. Left-aligned so the caption starts on its own plate's left edge;
+   centred captions under square plates produce a second, ragged vertical axis
+   down the strip. */
 .caption {
-  font-size: 0.95em;
-  color: var(--color-text-inverse);
-  text-align: center;
+  font-size: var(--fs-meta);
   line-height: 1.4;
+  color: var(--ink-3);
 }
 
+/* Composed, not copied - see the same rule in ClassSessions.module.css. The
+   composed rule caps the measure on a CHILD, which is why the component renders
+   a <span> inside this element. */
 .empty {
-  font-size: 1.05em;
-  color: var(--color-text-inverse);
-  text-align: center;
-  padding: 1em 0;
+  composes: emptyMessage from "../ui/ContentLandingLayout.module.css";
 }
 
-/* Lightbox: enlarged image + caption inside the shared Modal panel. Widen the
-   panel by driving its --modal-max-width custom property; setting `width`
-   directly would be clamped by the panel's max-width. The property is set on the
-   same panel element (merged className), so it reads deterministically
-   regardless of CSS-file order. */
+/* --- Lightbox ------------------------------------------------------------
+   Modal renders through createPortal into document.body, so this panel is NOT a
+   descendant of <main> and inherits none of the shell's custom properties -
+   every var(--ink-1), var(--surface-0) and var(--space-m) below would otherwise
+   resolve to nothing. Composing the token contract onto the class Modal merges
+   into its panel is what carries the set across the portal.
+
+   THE COMPOSE RULE AND THE DOUBLED RULE ARE TWO RULES ON PURPOSE. `composes`
+   has to sit in a plain single-class rule, and custom properties are safe
+   alongside it because Modal declares none of them. Real declarations are not:
+   Modal.module.css `.panel` lands on this same element via the merged className
+   at the same (0,1,0), where the winner is decided by stylesheet emission order.
+   `.lightbox.lightbox` is (0,2,0) and settles it in the source. This is
+   AdminDialog.module.css's split, verbatim, for the same reason.
+
+   Everything Modal exposes as a knob is set as a knob, because a knob has no
+   specificity contest to win at all. Its default padding is already 1.5rem =
+   --space-m, so no padding is declared here. */
 .lightbox {
+  composes: editorialSurface from "../ui/editorialTokens.module.css";
+
   --modal-max-width: min(92vw, 1000px);
+  /* Square, ruled, unfilled - the vocabulary of every other control in this
+     system. Copper at 0.8 alpha measures 3.60:1 on --surface-0, the one
+     pre-existing token that can legally bound an interactive control. */
+  --modal-close-bg: none;
+  --modal-close-rule: var(--rule-accent);
+  --modal-close-radius: 0;
+  --modal-close-ink: var(--ink-2);
+  --modal-close-ink-hover: var(--ink-1);
+  --modal-close-rule-hover: var(--color-accent-gold);
+}
+
+.lightbox.lightbox {
+  background: var(--surface-0);
+  border: 1px solid var(--rule-accent);
+  border-radius: 0;
+  box-shadow: none;
+  font-family: var(--font-primary);
+  color: var(--ink-1);
 }
 
 .lightboxFigure {
   display: flex;
   flex-direction: column;
-  gap: 0.8em;
+  gap: var(--space-xs);
   margin: 0;
 }
 
@@ -144,240 +279,31 @@
   height: min(72vh, 720px);
 }
 
+/* contain, not cover: the plate crops, and this is where the uncropped
+   photograph lives. */
 .lightboxImage {
   object-fit: contain;
 }
 
+/* Same role and same tier as the plate caption, so enlarging a photo does not
+   also re-rank its caption. */
 .lightboxCaption {
-  font-size: 1em;
-  color: var(--color-text-inverse);
-  text-align: center;
+  font-size: var(--fs-meta);
   line-height: 1.5;
-}
-
-/* Decorative swipe affordance, shown at every breakpoint. The box lines up with the
-   carousel element exactly (inset: 0) so the blur/dim covers the whole carousel; a
-   matching bottom padding offsets the centered glass + label + arrow up over the
-   slide row so they sit on the photos, not the reserved pagination strip below it.
-   pointer-events: none lets every pointer fall through to Swiper, which performs the
-   drag and fires onTouchStart to dismiss. */
-.swipeHint {
-  font-size: 2rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: absolute;
-  /* Cover the whole carousel element, edge to edge. */
-  inset: 0;
-  margin-bottom: 2rem;
-  /* Take the carousel's bottom padding into account so the centered hint stays over
-     the slide row instead of the pagination reserve. */
-  /* Swiper's base CSS sets .swiper { z-index: 1 }; lift the overlay above it so
-     the hint paints over the slides instead of behind the slide track. */
-  z-index: 2;
-  border-radius: var(--radius-md);
-  overflow: hidden;
-  background: rgba(0, 0, 0, 0.582);
-  -webkit-backdrop-filter: blur(3px);
-  backdrop-filter: blur(3px);
-  pointer-events: none;
-  animation: hintFade var(--transition-medium) ease-out both;
-}
-
-/* Cocktail-glass affordance floating centered in the blurred overlay: a glass
-   that pours full, then slides left (the swipe direction), then loops. The whole
-   group carries the slide so the glass + liquid + label travel together. */
-.swipeHintGlass {
-  display: inline-flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.15em;
-  /* One shared cycle drives every sub-animation so the pour, slide, and reset
-     stay phase-locked and the loop never visibly jumps. */
-  animation: glassSlide 2.8s ease-in-out infinite;
-}
-
-.glassSvg {
-  display: block;
-  overflow: visible;
-}
-
-/* Crisp martini bowl/rim/stem, kept above the liquid. */
-.glassBody {
-  stroke: var(--color-text-inverse);
-  stroke-width: 1.6;
-  stroke-linejoin: round;
-  stroke-linecap: round;
-}
-
-/* Foot of the stem: a thin filled ellipse so the base reads as solid glass. */
-.glassFoot {
-  fill: var(--color-text-inverse);
-}
-
-/* Garnish (pick + olive) laid across the rim, in the lighter accent so it reads
-   as a separate element from the gold liquid. Static — it rides the slide with
-   the rest of the group. */
-.glassGarnish {
-  stroke: var(--color-accent-light);
-  stroke-width: 1.3;
-  stroke-linecap: round;
-  fill: var(--color-accent-light);
-}
-
-/* Liquid rect: scaled up from the bottom by the fill keyframe, clipped to the
-   bowl interior in the SVG so it reads as filling the cone from the point up. */
-.glassLiquid {
-  fill: var(--color-accent-gold);
-  transform-box: fill-box;
-  transform-origin: bottom;
-  animation: glassFill 2.8s ease-in-out infinite;
-}
-
-/* Thin pour stream that drops in from above the rim during the fill phase. */
-.glassStream {
-  fill: var(--color-accent-light);
-  transform-box: fill-box;
-  transform-origin: top;
-  animation: glassPour 2.8s ease-in-out infinite;
-}
-
-/* Small affordance label under the glass; the glass motion carries the meaning,
-   the word confirms it. */
-.swipeHintLabel {
-  font-size: 0.72em;
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  color: var(--color-text-inverse);
-}
-
-/* Left-pointing chevron under the label. Its own short nudge loop drifts it
-   toward the swipe direction (left) and back, layered on top of the group's
-   glassSlide without altering it. */
-.swipeHintArrow {
-  display: block;
-  stroke: var(--color-accent-light);
-  stroke-width: 1.8;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  fill: none;
-  animation: arrowNudge 1.25s ease-in-out infinite;
-}
-
-@keyframes hintFade {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-/* Whole-group cue: hold centered while the glass fills, then slide left and fade
-   (the swipe direction), then snap back invisibly during the reset window so the
-   next pour starts cleanly. */
-@keyframes glassSlide {
-  0%,
-  60% {
-    transform: translateX(0);
-    opacity: 1;
-  }
-  85% {
-    transform: translateX(-26px);
-    opacity: 0;
-  }
-  /* Reposition while fully transparent so the return is never seen. */
-  86%,
-  100% {
-    transform: translateX(0);
-    opacity: 0;
-  }
-}
-
-/* Liquid level: empty at the start of each cycle, rises to near-full during the
-   pour, holds through the slide, then resets to empty while transparent. */
-@keyframes glassFill {
-  0%,
-  6% {
-    transform: scaleY(0);
-  }
-  42%,
-  85% {
-    transform: scaleY(1);
-  }
-  86%,
-  100% {
-    transform: scaleY(0);
-  }
-}
-
-/* Pour stream: visible only while filling — drops from the rim, then vanishes
-   before the glass slides away. */
-@keyframes glassPour {
-  0% {
-    transform: scaleY(0);
-    opacity: 0;
-  }
-  6% {
-    transform: scaleY(0.2);
-    opacity: 1;
-  }
-  34% {
-    transform: scaleY(1);
-    opacity: 1;
-  }
-  44%,
-  100% {
-    transform: scaleY(1);
-    opacity: 0;
-  }
-}
-
-/* Subtle left nudge for the chevron: drift a few px toward the swipe direction
-   and back, easing both ways so the eye is drawn left without distracting. */
-@keyframes arrowNudge {
-  0%,
-  100% {
-    transform: translateX(0);
-  }
-  50% {
-    transform: translateX(-4px);
-  }
+  color: var(--ink-3);
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .image {
+  /* The veil still lifts on hover and focus - it is an affordance, not
+     decoration - it just stops animating across. Identical to the treatment
+     ContentCard.module.css gives the same veil. */
+  .thumbButton::after {
     transition-duration: 0.001ms;
   }
-  .placeholder {
-    animation-duration: 0.001ms;
-  }
-  /* Calm Swiper slide transitions rather than disabling navigation entirely. */
+
+  /* Calm Swiper's slide translation rather than disabling navigation entirely.
+     This is the one piece of real displacement left in the component. */
   .carousel :global(.swiper-wrapper) {
     transition-duration: 0.001ms !important;
-  }
-  /* Show the swipe hint as a static, already-full glass: no fade-in, no pour,
-     no slide. The liquid holds at full and the pour stream is hidden so the cue
-     reads without any motion. */
-  .swipeHint {
-    animation: none;
-  }
-  .swipeHintGlass {
-    animation: none;
-    transform: none;
-    opacity: 1;
-  }
-  .glassLiquid {
-    animation: none;
-    transform: scaleY(1);
-  }
-  .glassStream {
-    animation: none;
-    opacity: 0;
-  }
-  /* Freeze the chevron in place: still visible, just no nudge. */
-  .swipeHintArrow {
-    animation: none;
-    transform: none;
   }
 }

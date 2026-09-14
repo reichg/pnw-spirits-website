@@ -28,6 +28,17 @@ import PhotoAlbum from "./PhotoAlbum";
 // initial server render is which tiles are interactive: a photo with a signed
 // url renders an enlarge <button> (the lightbox trigger), while a photo missing
 // its url renders no such button, so a broken tile can never open the lightbox.
+//
+// The decorative swipe overlay is asserted ABSENT below, as a regression marker.
+// It was ~120 lines of inline SVG and six keyframe animations painting a scrim
+// and a blur over the photographs at every breakpoint; the carousel's
+// affordance is now Swiper's own pagination. Nothing but that overlay ever put
+// an <svg> or the word "Swipe" in this component's markup, so both are precise
+// tests for its return.
+//
+// Class names are never asserted: under Vitest a CSS-module import is a Proxy
+// that echoes any key back, so a class assertion proves nothing (the canonical
+// note is in Pagination.test.tsx).
 
 const REAL_PHOTO: ClassPhotoView = {
   id: 1,
@@ -44,6 +55,8 @@ describe("PhotoAlbum", () => {
     expect(html).toContain(
       "Photos from past classes will appear here after our next session.",
     );
+    // The composed empty-state treatment caps its measure on a child <span>.
+    expect(html).toContain("<span>");
   });
 
   it("real photos render an interactive enlarge button (the lightbox trigger)", () => {
@@ -70,7 +83,7 @@ describe("PhotoAlbum", () => {
     );
   });
 
-  it("a photo missing a url is shown but not interactive", () => {
+  it("a photo missing a url is shown, announced, and not interactive", () => {
     // Guards the AlbumPhoto branch: url must be present for the button to render,
     // so a signing failure (url === null) never produces a lightbox trigger.
     const html = renderToStaticMarkup(
@@ -81,6 +94,32 @@ describe("PhotoAlbum", () => {
 
     expect(html).not.toContain("<button");
     expect(html).not.toContain("Enlarge");
+    // role="img" is what makes the label announce; as a bare <div> the
+    // aria-label was dropped by assistive tech.
+    expect(html).toContain('role="img"');
+    expect(html).toContain('aria-label="Photo unavailable"');
+  });
+
+  it("serves one sizes contract to both thumbnail branches", () => {
+    // The two branches of AlbumPhoto used to spell the same `sizes` string
+    // twice. One constant, so a retune cannot reach only one of them.
+    const interactive = renderToStaticMarkup(
+      React.createElement(PhotoAlbum, { photos: [REAL_PHOTO] }),
+    );
+
+    expect(interactive).toContain("(max-width: 599px) 92vw");
+    expect(interactive).toContain("(max-width: 1199px) 32vw");
+  });
+
+  it("emits no decorative swipe overlay", () => {
+    const html = renderToStaticMarkup(
+      React.createElement(PhotoAlbum, {
+        photos: [REAL_PHOTO, { ...REAL_PHOTO, id: 2 }],
+      }),
+    );
+
+    expect(html).not.toContain("Swipe");
+    expect(html).not.toContain("<svg");
   });
 
   it("starts with the lightbox closed (no dialog in the initial markup)", () => {

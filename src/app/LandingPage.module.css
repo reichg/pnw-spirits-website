@@ -69,16 +69,14 @@
   align-items: center;
 }
 .landingFourColRow {
-  display: flex;
-  flex-direction: row;
-  /* Tightened gap + wider track keep five 4/5 cards from getting too narrow
-     while still fitting the row without overflow. */
+  display: grid;
+  /* Six destinations over two rows of three. One row of six would leave each
+     card ~184px wide - narrower than the ~224px they had at five-across -
+     whereas 3x2 gives each about 390px on the full track. */
+  grid-template-columns: repeat(3, 1fr);
   gap: 1.1em;
   width: 100%;
   max-width: 1240px;
-  justify-content: center;
-  align-items: stretch;
-  flex-wrap: nowrap;
   padding: 0 1.5em;
 }
 
@@ -88,8 +86,6 @@
   background-repeat: no-repeat;
   border-radius: 18px;
   min-width: 0;
-  max-width: 1fr;
-  flex: 1 1 0;
   aspect-ratio: 4/5;
   display: block;
   text-align: center;
@@ -194,8 +190,27 @@
   justify-content: center;
 }
 
+/* Two-across between the desktop grid and the stacked layout. The track is
+   capped so two cards stay about the size they are at three-across instead of
+   stretching to fill the viewport. The lower bound negates the stacked query
+   below rather than pairing 900px with a 901px twin, so the two are exhaustive
+   at any precision: a fractional width (900.5px, reachable at non-100% zoom)
+   cannot fall between them onto the three-across desktop grid. */
+@media (max-width: 1024px) and (not (max-width: 900px)) {
+  .landingFourColRow {
+    grid-template-columns: repeat(2, 1fr);
+    max-width: 820px;
+  }
+}
+
 @media (max-width: 900px) {
-  .landingFourColRow,
+  .landingFourColRow {
+    /* justify-items replaces the flex row's align-items: center now that the
+       card's max-width leaves slack in the track. */
+    grid-template-columns: 1fr;
+    justify-items: center;
+    gap: 1.5em;
+  }
   .landingTwoColRow {
     flex-direction: column;
     flex-wrap: wrap;
@@ -208,6 +223,14 @@
     max-width: 90%;
     width: 100%;
     min-height: 300px;
+  }
+  .landingFourColCard {
+    /* Stacked cards are full-width banners, not 4/5 portraits - at 768px a 4/5
+       card would stand ~810px tall and six of them would bury the rest of the
+       page. min-height above then decides the height. The old flex row got this
+       for free (a column flex item's `flex: 1 1 0` zeroed the height basis, so
+       aspect-ratio never applied); the grid needs it said out loud. */
+    aspect-ratio: auto;
   }
   .landingTwoColForm {
     margin-top: 1.5em;
