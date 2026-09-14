@@ -15,6 +15,7 @@ import {
   stableMediaUrl,
 } from "@/utils/contentDetail";
 import prisma from "@/utils/prisma";
+import { rowIdParamSchema } from "@/utils/rowId";
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
@@ -65,11 +66,20 @@ const STEP_IMAGE_HEIGHT = 314;
 /**
  * Cached per request so `generateMetadata` and the page body share one query
  * rather than reading the same row twice.
+ *
+ * The parse is `rowIdParamSchema`, the same contract the API routes hold the
+ * `[id]` segment to. `Number.parseInt` stood here behind an
+ * `isSafeInteger && > 0` guard, which is the lenient shape: `parseInt` reads a
+ * leading integer and discards the rest, so `/recipes/7.9` and `/recipes/7abc`
+ * both rendered recipe 7, and `isSafeInteger` is nine orders of magnitude above
+ * what the Int column holds, so a large id reached Prisma as a driver error. A
+ * null return becomes `notFound()` at both call sites below, so an unparseable
+ * id costs no query.
  */
 const getRecipe = cache(async (idParam: string) => {
-  const id = Number.parseInt(idParam, 10);
-  if (!Number.isSafeInteger(id) || id <= 0) return null;
-  return prisma.cocktailRecipe.findUnique({ where: { id } });
+  const parsed = rowIdParamSchema.safeParse(idParam);
+  if (!parsed.success) return null;
+  return prisma.cocktailRecipe.findUnique({ where: { id: parsed.data } });
 });
 
 function pluralize(count: number, noun: string): string {

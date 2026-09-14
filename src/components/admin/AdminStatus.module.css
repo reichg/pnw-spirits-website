@@ -1,0 +1,66 @@
+/* ===========================================================================
+   A status message: what just happened.
+
+   THE DISTINCTION THAT SHAPES THIS FILE IS BY CONSEQUENCE, NOT BY SEVERITY.
+   The public archive's rule is that a list with nothing in it is plain muted
+   prose with no error colour, and that rule holds here unchanged for a failed
+   READ - a list that did not load costs the admin a refresh. It does not hold
+   for a failed WRITE. An admin whose save, delete or send silently failed has
+   lost work, and the message has to be assertive, has to be anchored to the
+   control that failed, and must not vanish on the next render.
+
+   So: a failed read is an AdminEmptyState, and a failed write is this, with
+   tone="error".
+
+   THE TONE IS CARRIED BY A RULE, NEVER BY A FILL. Three tones differing only by
+   background colour would be three filled surfaces in a system whose founding
+   decision is that it has none, and the admin already carries the evidence of
+   where that leads: a --color-error-filled .dangerButton, a --color-error
+   .limitBadge, and an .error that paints rgba(255,220,220,0.85) - a LIGHT
+   panel - on the login page of a warm-dark site.
+
+   COLOUR IS NEVER THE SOLE CARRIER (WCAG 1.4.1). The wording states the
+   outcome, and the announcement differs - error interrupts, success and info
+   wait - so the rule's colour is reinforcement on a third channel rather than
+   the only channel.
+
+   Only the tone classes are composed alongside .status, and each sets nothing
+   but custom properties, so the two class names on this element have no real
+   declaration to contest.
+   =========================================================================== */
+
+.status {
+  display: block;
+  margin: 0;
+  padding-block: var(--space-2xs);
+  padding-inline-start: var(--space-s);
+  border-inline-start: var(--admin-status-rule-width, 2px) solid
+    var(--admin-status-rule, var(--hairline-strong));
+  max-width: 64ch;
+  font-family: var(--font-primary);
+  font-size: var(--fs-body);
+  line-height: 1.5;
+  /* Full ink, at every tone. The message is the thing that has to be read, and
+     a --danger-coloured sentence would be 5.60:1 where --ink-1 is 13.57:1 -
+     paying legibility for emphasis the rule beside it already supplies. */
+  color: var(--ink-1);
+}
+
+/* 3px, not 2. The one width difference in the set, and it is what makes a
+   failed write legible as a failed write from across the page rather than only
+   once the eye has resolved a 2px mark's hue. */
+.error {
+  --admin-status-rule: var(--danger);
+  --admin-status-rule-width: 3px;
+}
+
+/* Gold: the colour of accent text and marks in this system, already carrying
+   the kicker, the eyebrow and the focus ring. A success needs to be noticed
+   once and then forgotten; it does not need a colour of its own. */
+.success {
+  --admin-status-rule: var(--color-accent-gold);
+}
+
+.info {
+  --admin-status-rule: var(--hairline-strong);
+}

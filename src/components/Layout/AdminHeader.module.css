@@ -1,103 +1,265 @@
-/* Dedicated ADMIN navbar. Visually distinct from the public Header: a warmer
-   dark base with a copper accent strip and copper active state, so the bar
-   clearly reads as the admin portal rather than the public site nav. */
+/* ===========================================================================
+   The admin chrome.
+
+   HOW A BRANDED ADMIN SIGNALS IT IS THE ADMIN, and the answer here is the
+   opposite of the one every measured reference gives. Statamic wraps near-black
+   chrome around a white content card; WordPress puts a black bar and a black
+   rail around a light workspace; Ghost switches the whole admin to dark mode
+   while its marketing site stays light. All three separate the admin by
+   CHANGING THE CHROME AND KEEPING THE BRAND - and all three do it by inverting
+   toward light content.
+
+   That trick does not transfer, because this site is already dark. Inverting
+   would mean a light admin: abandoning --surface-0, all three ink tiers and the
+   copper rule across six pages for a second design system. So the distinction
+   is carried by structure and vocabulary instead, and by exactly three things.
+
+   1. THE COPPER RULE UNDER THE BAR, at 2px. The public header has no such rule.
+      One continuous copper line under the admin bar is a strong, cheap, wordless
+      signal, and this is the one element in the system licensed to be copper.
+
+      TWO WEIGHTS OF COPPER, AND THE DIFFERENCE IS LOAD-BEARING. The page header
+      below also closes on --rule-accent, and ContentArchiveLayout.module.css
+      warns in as many words that a second copper rule near the first flattens
+      the two into one mark. They are kept apart here by weight and by ~200px of
+      distance: 2px copper BOUNDS THE TOOL, 1px copper CLOSES A PAGE INSIDE IT.
+      Do not equalise them.
+
+   2. THE BADGE BECOMES A MARK. It was a copper FILL with inverse text - a
+      filled radiused surface in a system whose founding decision is that it has
+      none. It is now the eyebrow register inside a copper OUTLINE. Copper as a
+      rule around it is the doctrine; copper as a ground behind it is not.
+
+   3. THE ACTIVE LINK LOSES ITS PILL. .linkActive was the same filled-surface
+      problem: a copper background with a gold border. Ghost's admin navigates
+      on plain text with no pills, no boxes and no active fill; Linear marks its
+      active item with a low-contrast change of GROUND rather than of hue. This
+      system owns both mechanisms already - full ink against dim ink, and the
+      gold underline - and uses them here.
+
+   WHY THIS RULE COMPOSES THE TOKEN CONTRACT ITSELF. The header renders as a
+   SIBLING of the page inside AdminAuthGate, not inside it, so it cannot inherit
+   --surface-0, --ink-2 or --fs-meta from the page shell that composes them. It
+   has to pull the set in on its own, and it can only do that safely because
+   .adminSurface declares nothing but custom properties.
+
+   ALSO DELETED: --shadow-md under the bar, --radius-md on four controls, and
+   the --color-bg-deep1 ground, which is the green-black the token contract
+   explicitly moved away from because it fights copper.
+   =========================================================================== */
+
 .header {
-  width: 100%;
-  background: var(--color-bg-deep1);
-  color: var(--color-bg-primary);
-  /* Thin luminous copper rule signals the admin context. */
-  border-bottom: 2px solid var(--color-accent-copper);
-  box-shadow: var(--shadow-md);
-  top: 0;
-  left: 0;
+  composes: adminSurface from "../admin/adminTokens.module.css";
+
+  position: relative;
   z-index: 200;
+  width: 100%;
+  /* Stated on the bar so the whole chrome inherits it, and it is a FIX rather
+     than boilerplate. globals.css declares the --font-* custom properties on
+     <body> but never declares `font-family` on it, so the inherited default
+     across this entire document is the UA serif and every element that looks
+     right does so because it set the family itself. The old bar set it on
+     .brand only, which is why "Admin Portal" was Geist and the four nav links
+     beside it were rendering in Times New Roman - measured in the browser, not
+     assumed. Setting it here covers the nav, the links, the toggle and the
+     mobile panel with one declaration. */
+  font-family: var(--font-primary);
+  background: var(--surface-0);
+  border-bottom: 2px solid var(--rule-accent);
 }
 
+/* The same 1200px spine the pages below stand on, with the same gutter. The old
+   bar used `max-width: 95%`, which put the brand at a different x-offset on
+   every viewport and never aligned with anything on the page under it. */
 .nav {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 1em;
-  max-width: 95%;
-  margin: 0 auto;
-  padding: 0.55em 2em;
+  gap: var(--space-m);
+  max-width: var(--container);
+  margin-inline: auto;
+  padding: var(--space-2xs) var(--gutter);
 }
 
 .brand {
   display: inline-flex;
   align-items: center;
-  gap: 0.6em;
-  text-decoration: none;
-  color: var(--color-accent-copper);
+  gap: var(--space-2xs);
+  min-block-size: var(--control-min);
   font-family: var(--font-primary);
-  font-size: 1.35em;
-  font-weight: 700;
-  letter-spacing: 0.04em;
+  /* --fs-body, not the old 1.35em. The chrome is not a masthead - the page
+     heading below it is the largest thing on the screen and has to stay that
+     way, or the admin reads the bar before it reads the page it is on. */
+  font-size: var(--fs-body);
+  font-weight: 600;
+  letter-spacing: 0.01em;
   white-space: nowrap;
-  border-radius: var(--radius-md);
-  transition: color var(--transition-fast);
+  color: var(--ink-1);
+  text-decoration: none;
 }
-.brand:hover {
+
+/* globals.css sets `a:hover { color: var(--color-bg-highlight) }` at (0,1,1),
+   which outranks a single class - so the hover ink has to be stated or the
+   brand would swap to an unrelated colour. Same reason the archive header
+   states it on .backLink. */
+.brand.brand:hover {
   color: var(--color-accent-gold);
 }
 
-/* Small pill marking this as the admin area. */
 .brandBadge {
   display: inline-flex;
   align-items: center;
-  padding: 0.15em 0.6em;
-  border-radius: var(--radius-sm);
-  background: var(--color-accent-copper);
-  color: var(--color-text-inverse);
-  font-size: 0.6em;
-  font-weight: 700;
+  padding: 0.25em 0.5em;
+  border: 1px solid var(--rule-accent);
+  border-radius: 0;
+  font-size: var(--fs-eyebrow);
+  font-weight: 600;
+  line-height: 1;
   letter-spacing: 0.12em;
   text-transform: uppercase;
+  color: var(--ink-2);
 }
 
 .brandLabel {
   white-space: nowrap;
 }
 
-/* ---- Desktop links ---- */
+/* --- Desktop links ------------------------------------------------------- */
 .links {
   display: flex;
   align-items: center;
-  gap: 0.4em;
+  gap: var(--space-2xs);
 }
 
+/* A transparent bottom border of the same weight the active state uses, so
+   marking a link active adds a colour and never a pixel of height. Without it
+   every other link would shift 2px the moment one became current. */
 .link {
-  color: var(--color-bg-primary);
-  font-size: 1.05em;
+  display: inline-flex;
+  align-items: center;
+  min-block-size: var(--control-min);
+  padding-inline: var(--space-2xs);
+  border-bottom: 2px solid transparent;
+  font-size: var(--fs-meta);
   font-weight: 500;
+  letter-spacing: 0.04em;
+  color: var(--ink-2);
   text-decoration: none;
-  padding: 0.35em 0.8em;
-  border-radius: var(--radius-md);
-  border: 1px solid transparent;
-  transition:
-    background var(--transition-fast),
-    color var(--transition-fast),
-    border-color var(--transition-fast);
+  transition: color var(--dur-fast, 200ms) ease;
 }
-.link:hover {
-  background: var(--color-accent-dark);
-  color: var(--color-text-inverse);
+
+/* THE DOUBLED CLASS IS DELIBERATE AND IT APPEARS ON EVERY HOVER RULE IN THIS
+   DESIGN LAYER. globals.css declares
+
+     a:hover      { color: var(--color-bg-highlight) }        (0,1,1)
+     button:hover { background: var(--color-accent-dark) }    (0,1,1)
+
+   and a single class is (0,1,0), which LOSES to both. A rule at (0,1,1) only
+   ties, and a tie between two stylesheets is settled by emission order - which
+   for a CSS Module against globals.css is exactly the not-guaranteed ordering
+   this whole system is written to avoid depending on. Repeating the class
+   reaches (0,2,1) and wins deterministically.
+
+   It is not hypothetical: rendered without it, hovering any admin button
+   painted it rgb(116,86,52), a brown fill, on a surface whose founding rule is
+   that it has no fills. Measured in the browser. */
+.link.link:hover {
+  color: var(--ink-1);
 }
+
+/* Full ink plus a gold rule. Ink alone - --ink-1 against --ink-2 at 14px - is
+   the system's hierarchy mechanism and is right for prose, but it is too quiet
+   to answer "which section am I in" from across a bar of four similar words.
+   Gold because it is already this system's marker: the kicker, the eyebrow, the
+   focus ring and the title underline wipe are all gold, and copper is reserved
+   for structural rules - of which this bar already carries one. */
 .linkActive {
-  background: var(--color-accent-copper);
-  color: var(--color-text-inverse);
-  border-color: var(--color-accent-gold);
+  color: var(--ink-1);
+  border-bottom-color: var(--color-accent-gold);
+}
+
+/* --- Sign out ------------------------------------------------------------
+   A real <button>, at both breakpoints, and it is new: until now an admin had
+   no way to end their own session short of clearing storage by hand.
+
+   SET APART FROM THE NAV, NOT IN IT. --space-m of clearance and a neutral
+   control boundary, so it reads as an action on the session rather than as a
+   fifth destination. --hairline-strong is what a control's edge is drawn at
+   here (3.20:1 against the ground; --hairline at 1.42:1 could not legally bound
+   it), and --ink-2 keeps it one tier under the section the admin is actually
+   working in. */
+.signOut {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-block-size: var(--control-min);
+  min-inline-size: var(--control-min);
+  /* Read through a custom property rather than declared outright, so the mobile
+     spelling below can change it by SETTING A DIFFERENT PROPERTY instead of
+     re-declaring this one. `composes` puts both class names on the element at
+     equal specificity, and two rules declaring margin-inline-start would be
+     settled by stylesheet emission order - the hazard editorialTokens.module.css
+     documents, and the reason composing is only ever safe when the composing
+     rule overrides nothing. */
+  margin-inline-start: var(--admin-signout-offset, var(--space-m));
+  padding-inline: var(--space-s);
+  border: 1px solid var(--hairline-strong);
+  border-radius: 0;
+  background: none;
+  font-family: var(--font-primary);
+  font-size: var(--fs-meta);
+  font-weight: 500;
+  line-height: 1.2;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+  cursor: pointer;
+  transition:
+    color var(--dur-fast, 200ms) ease,
+    border-color var(--dur-fast, 200ms) ease;
+}
+
+.signOut.signOut:hover {
+  /* globals.css paints button:hover with --color-accent-dark; see the note on
+     .link.link:hover for why the class is doubled rather than stated once. */
+  background: none;
+  border-color: var(--color-accent-copper);
+  color: var(--ink-1);
+}
+
+/* NOT --danger, at either breakpoint. Signing out destroys nothing and is
+   reversible by signing back in; reddening it would spend the admin's one alarm
+   colour on the safest control in the bar. */
+.signOutMobile {
+  composes: signOut;
+  --admin-signout-offset: 0;
+  width: 100%;
+}
+
+/* The separation is drawn on a WRAPPER, not on the button, and that is not
+   fussiness: .signOut sets `border` as a shorthand, so a border-block-start on
+   the composed class would contest border-top-color at equal specificity and be
+   settled by emission order. A sibling element has nothing to contest.
+
+   The device is Statamic's: one hairline splitting its row menu's "go look at
+   it" group from its "change it" group. Here it splits the four destinations
+   from the one control that is not a destination. */
+.mobileSignOutRow {
+  margin-block-start: var(--space-2xs);
+  padding-block-start: var(--space-s);
+  border-block-start: 1px solid var(--hairline);
 }
 
 .brand:focus-visible,
 .link:focus-visible,
+.signOut:focus-visible,
 .mobileToggle:focus-visible,
 .mobileLink:focus-visible {
   outline: 2px solid var(--color-accent-gold);
   outline-offset: 2px;
 }
 
-/* ---- Mobile menu ---- */
+/* --- Mobile menu --------------------------------------------------------- */
 .mobileMenu {
   position: relative;
   display: flex;
@@ -105,58 +267,69 @@
   align-items: flex-end;
 }
 
-.mobileToggle {
+.mobileToggle.mobileToggle:hover {
   background: none;
-  color: var(--color-accent-copper);
-  border: none;
-  border-radius: var(--radius-md);
-  padding: 0.4em 0.9em;
-  font-size: 1.3em;
-  font-weight: 600;
-  cursor: pointer;
-  transition:
-    background var(--transition-fast),
-    color var(--transition-fast);
-}
-.mobileToggle:hover {
-  background: var(--color-accent-dark);
-  color: var(--color-bg-primary);
+  border-color: var(--color-accent-copper);
 }
 
+.mobileToggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-block-size: var(--control-min);
+  min-inline-size: var(--control-min);
+  border: 1px solid var(--hairline-strong);
+  border-radius: 0;
+  background: none;
+  font-size: var(--fs-body);
+  line-height: 1;
+  color: var(--ink-1);
+  cursor: pointer;
+}
+
+/* Opaque --surface-0 rather than a translucent ground: the panel overlays the
+   page's own records and a scrim would let 80px rows read through the nav. The
+   copper outline is the same mark the bar itself carries, so the panel reads as
+   part of the chrome and not as a page element. No radius, no shadow - the two
+   the old panel used to separate itself from the page, both replaced by the
+   rule. */
 .mobilePanel {
   position: absolute;
-  top: 2.8em;
+  top: calc(100% + var(--space-2xs));
   right: 0;
-  min-width: 220px;
-  background: var(--color-bg-deep);
-  border: 1px solid var(--color-accent-copper);
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-lg);
-  padding: 0.7em;
   z-index: 210;
   display: flex;
   flex-direction: column;
-  gap: 0.3em;
+  gap: var(--space-2xs);
+  min-width: 14rem;
+  padding: var(--space-s);
+  background: var(--surface-0);
+  border: 1px solid var(--rule-accent);
+  border-radius: 0;
 }
 
 .mobileLink {
-  color: var(--color-bg-primary);
-  font-size: 1.05em;
+  display: flex;
+  align-items: center;
+  min-block-size: var(--control-min);
+  padding-inline: var(--space-2xs);
+  border-inline-start: 2px solid transparent;
+  font-size: var(--fs-body);
   font-weight: 500;
+  color: var(--ink-2);
   text-decoration: none;
-  padding: 0.55em 0.8em;
-  border-radius: var(--radius-sm);
-  transition:
-    background var(--transition-fast),
-    color var(--transition-fast);
 }
-.mobileLink:hover {
-  background: var(--color-accent-dark);
-  color: var(--color-text-inverse);
+
+.mobileLink.mobileLink:hover {
+  color: var(--ink-1);
 }
+
+/* The active mark rotates from the bottom edge to the leading edge, because the
+   panel is a column: an underline in a stack of links reads as a separator
+   between two of them rather than as a mark on one. */
 .mobileLinkActive {
-  background: var(--color-accent-copper);
-  color: var(--color-text-inverse);
+  color: var(--ink-1);
+  border-inline-start-color: var(--color-accent-gold);
 }
 
 @media (max-width: 750px) {
@@ -165,21 +338,22 @@
   }
 }
 
-@media (max-width: 600px) {
+@media (max-width: 599px) {
   .nav {
-    max-width: 100%;
-    padding: 0.5em 1em;
-  }
-  .brand {
-    font-size: 1.15em;
+    gap: var(--space-s);
   }
 }
 
+/* Sub-200ms colour fades with no displacement are not what the preference asks
+   to have removed, and the recorded decision on both public surfaces is to
+   leave them alone. They are collapsed here anyway for one reason the public
+   pages do not have: this bar is on screen for the whole session, on every
+   screen, and it is the one element an admin passes the pointer over dozens of
+   times an hour. Nothing here transforms, so there is no displacement left to
+   neutralise. */
 @media (prefers-reduced-motion: reduce) {
-  .brand,
   .link,
-  .mobileLink,
-  .mobileToggle {
+  .signOut {
     transition-duration: 0.001ms;
   }
 }

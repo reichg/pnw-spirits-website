@@ -22,8 +22,11 @@ import type {
 // owns - the index-0-only `priority` - is only observable on the direct-URL
 // branch.
 //
-// No assertion depends on a CSS-module class name: they are hashed and are not a
-// contract. Cards are counted by their <h2> titles, which only ContentCard emits.
+// No assertion keys off a CSS-module class name. Under Vitest the import is a
+// Proxy that echoes ANY key back as `_<key>_<hash>`, so a class assertion could
+// never prove a rule exists anyway - see the canonical note in
+// Pagination.test.tsx.
+// Cards are counted by their <h2> titles, which only ContentCard emits.
 
 function item(id: string, title: string): ContentItem {
   return {

@@ -1,0 +1,206 @@
+/* ===========================================================================
+   Admin token contract - visual direction: "the same voice, spoken as an
+   instrument."
+
+   Characteristics: instrumental, dense-but-ruled, unambiguous, recoverable,
+   same-voice-different-register.
+
+   The admin is not a second design system. It is the editorial contract with
+   the hairline and a fixed action column doing the structural work, because a
+   public page is a READING surface (the photograph is the subject, chrome is
+   suppressed) and an admin page is a WORKING surface (the records are the
+   subject and the controls are why the admin opened the page). Every ground,
+   ink tier, type step, spacing rung, container and motion token comes from
+   editorialTokens.module.css unchanged; this file adds four rungs that a
+   reading surface has no rule for.
+
+   CUSTOM PROPERTIES ONLY, AND THAT IS LOAD-BEARING - the same constraint
+   editorialTokens.module.css states about itself, inherited here for the same
+   reason and now one level deeper. `composes` puts a second class name on the
+   element at equal specificity, so a property declared in BOTH .adminSurface
+   and .editorialSurface would be settled by CSS Modules' stylesheet emission
+   order, which is not guaranteed. A colour or a padding added below would be a
+   bug that presents intermittently - visible on one build, gone on the next -
+   which is the worst failure mode a stylesheet has. Ground, type and spacing
+   are therefore consumed from the composed rule and never restated here.
+
+   WHY A SECOND TOKEN FILE RATHER THAN FOUR MORE RUNGS IN editorialTokens.
+   Dependency direction. `src/components/ui/` is the domain-agnostic public set
+   that any page may read; `src/components/admin/` assumes an authenticated
+   operator and must never be imported by a public page (admin.types.ts argues
+   this at length). Putting --danger and --control-min in the public contract
+   would hand every public surface two tokens nothing there may use, and the
+   next person retuning the public scale would have to reason about an admin
+   dialog. The admin composes down into the shared contract; the shared contract
+   never reaches up.
+
+   WHY THE RUNGS ARE NOT PREFIXED --admin-*. editorialTokens states its naming
+   doctrine twice (--step-marker, --row-media-col): a geometry value is "named
+   for its role and not for its size". A prefix names the FILE, not the role,
+   and inside this rule every token is admin-scoped by construction - the class
+   is the boundary. So the names below say what each value does.
+
+   THREE SURFACES COMPOSE THIS RULE, AND THAT IS WHY IT IS PROPERTIES-ONLY:
+   the page shell (AdminPageLayout.module.css), the admin chrome
+   (Layout/AdminHeader.module.css) and the auth gate
+   (app/(pages)/admin/AdminAuthGate.module.css). The chrome and the gate render
+   OUTSIDE the page <main>, so they cannot inherit the token set from it and
+   have to compose it themselves. A rule carrying real declarations could not
+   have served three unrelated shells.
+
+   CONTRAST ARITHMETIC BELOW WAS RE-DERIVED, NOT INHERITED. Relative luminance
+   is computed by compositing each alpha against the ground and measuring the
+   result, the method editorialTokens.module.css records for its own ink tiers.
+   The method reproduces that file's figures (ink-1 13.57, ink-3 5.43 exactly;
+   ink-2 7.35 against its recorded 7.38, a rounding difference in whether the
+   composite is quantised to 8 bits before measuring). One published figure did
+   not survive the re-derivation; see --hairline-strong.
+   =========================================================================== */
+
+.adminSurface {
+  composes: editorialSurface from "../ui/editorialTokens.module.css";
+
+  /* THE RULE: every interactive control on an admin surface has a hit area of
+     at least --control-min in both axes.
+
+     40px, and it is the same number editorialTokens derives for --step-marker
+     with the reasoning recorded verbatim there: it "clears the WCAG 2.2 minimum
+     target size (24x24) with room to spare", and "a target size that shrank
+     with the viewport would shrink on exactly the device being held one-handed"
+     - hence rem, never the fluid scale. Measured corroboration: Statamic's
+     primary control is 40px tall, and it drops to 32px only inside a popup menu
+     where the pointer is already committed and SC 2.5.8's spacing exception
+     applies. This admin has no popup menus, so it has one tier.
+
+     WHY NOT REUSE --step-marker, which is already 2.5rem and already justified
+     on target-size grounds. Because that token is named for the recipe method
+     disc and means "the diameter at which a numeral is legible at arm's length
+     over a shaker". One name serving two unrelated decisions is how a system
+     grows a value nobody dares change: the next person retuning the disc would
+     silently resize every button in the admin. Two names, one number, two
+     reasons - and if either reason changes, only one moves. */
+  --control-min: 2.5rem;
+
+  /* THE RULE: a record's cover image is rendered at --record-thumb square, and
+     that size is derived from the text block beside it rather than chosen.
+
+       title  --fs-card 22px x 1.2 line-height = 26.4px
+       gap    --space-2xs                      =  8.0px
+       meta   --fs-meta 14px x 1.3             = 18.2px
+                                         block = 52.6px
+
+     3.5rem (56px) is the smallest round rem step that covers that block. With
+     --space-xs (12px) of block padding the row resolves to exactly 80px, so
+     thumb/row = 0.70 - above Statamic's measured 32/57 = 0.56 and far below the
+     public archive row's 0.36-0.41. That is the correct place to land: the
+     public row sells a click with a photograph, Statamic's row identifies a
+     filename, and this row identifies a RECORD. The image is a recognition
+     token, not the subject; at 140px (the public row's floor) it would be 2.6x
+     the height of the title-and-meta it accompanies and would win a contest it
+     has no business entering, because an admin hunting "the old fashioned post
+     I wrote Tuesday" reads the title and the date, not the glass.
+
+     WHY NOT --row-media-col. That token is 26% - a percentage declared with no
+     ceiling for a media-leading READING row, and editorialTokens explicitly
+     warns that a percentage measured inside a ~809px container does not survive
+     a 1200px one. 26% of the admin spine is 312px. An 80px row needs a fixed
+     small square. */
+  --record-thumb: 3.5rem;
+
+  /* THE RULE: a line that BOUNDS AN INTERACTIVE CONTROL uses --hairline-strong;
+     a line that SEPARATES CONTENT uses --hairline. They are not the same line
+     and a dark ground is where the difference becomes legible.
+
+     --hairline is 14% ink, which measures 1.42:1 against --surface-0. That is
+     right for a separator - a rule between records should be felt, not read -
+     and far below the 3:1 WCAG 1.4.11 asks of a boundary that makes a control
+     perceivable. Grafana, the only live dark-ground list available to measure,
+     draws its input borders at 20% ink against far fainter content separators:
+     the same two-tier distinction, on a ground lighter than this one.
+
+     0.38 AND NOT THE 0.36 THE RESEARCH PROPOSED, and the difference is the one
+     value in this file that changed under re-derivation. The ramp, composited
+     and measured on both grounds:
+
+       alpha   vs --surface-0   vs --surface-1
+       0.34        2.80             2.82
+       0.36        2.993            3.012      <- 0.36 does NOT clear 3:1 on the
+       0.38        3.20             3.21          page ground
+       0.40        3.42             3.42
+
+     0.36 reaches 3.00 on --surface-0 only if the composite is quantised to 8
+     bits before measuring (3.002); measured continuously it is 2.993. A token
+     whose entire justification is "it clears 3:1" must not sit on the step
+     where the answer depends on the arithmetic you happen to use. 0.38 is the
+     first rung on this file's own 0.02 ladder that clears the threshold on both
+     grounds under either method, with margin - and the margin matters here
+     because a control keeps its boundary when its row is hovered onto
+     --surface-1, where the ground moves under it.
+
+     2.25x --hairline, which is also what makes the two tiers read as two tiers
+     rather than as one rule drawn twice.
+
+     A NOTE ON --rule-accent, which already clears this bar: copper at its
+     declared 0.8 alpha composites to 3.60:1 on --surface-0 and 3.47:1 on
+     --surface-1. It is the only pre-existing token that can legally bound an
+     interactive control, which is why the admin's primary button is
+     copper-ruled and needs no new colour at all - a pleasing confirmation of
+     the "structural rules only, never text" doctrine. --hairline-strong exists
+     for the neutral controls (inputs, secondary buttons, row actions) that
+     should not all be copper. */
+  --hairline-strong: rgb(var(--ink) / 0.38);
+
+  /* THE RULE: --danger marks a destructive commitment or a failed write, and
+     nothing else in the system is --danger. It appears at most once on a screen
+     at a time, which is what keeps it an alarm rather than a fourth accent.
+
+     Exactly three readers, and the list is closed on purpose:
+       1. the confirming control of a destructive dialog ("Delete recipe") -
+          AdminButton with tone="danger";
+       2. a failed WRITE, at either scope: the tone rule on an AdminStatus with
+          tone="error" (the screen's message) and the error caption on an
+          AdminField (one control's). Both mean the admin has lost work; they
+          differ in what they are anchored to, not in severity;
+       3. a Delete IN A REPEATED CONTEXT, at :hover / :focus-visible only -
+          the card's own Delete action and, equally, a standalone AdminButton
+          tone="danger" inside a list (the photo album's per-tile Delete).
+     Note what is NOT on it. Delete AT REST is --ink-2, one tier under Edit,
+     because eight rows of red Delete is eight alarms and this system's founding
+     mechanism is that "hierarchy is carried by opacity, not by weight". The
+     alarm arrives at the moment of commitment. Readers 1 and 3 are the same
+     control under two conditions, and the condition is REPETITION, not
+     severity: AdminCardGrid neutralises the resting alarm for everything inside
+     a list of records (see its .grid rule), which is why the same component
+     with the same tone is red in a dialog and neutral on a tile. Nor is a failed READ on the
+     list - nothing was lost, so that is --ink-2 prose in the empty slot. Nor is
+     the album's "not shown publicly" chip, which reports a fact and destroys
+     nothing.
+
+     #e2645f. Hue 2.3 degrees; 5.60:1 on --surface-0 and 5.30:1 on --surface-1,
+     both re-derived here, so it clears AA for normal text on either ground a
+     message can land on.
+
+     WHY --color-error (#c1440e) IS RETIRED FROM THE ADMIN, measured rather than
+     asserted: it is 3.69:1 on --surface-0 - below AA for normal text outright -
+     and it sits at hue 18 degrees against a page ground at 22.5 and copper at
+     28.9. Five degrees of hue from the ground it is painted on. It cannot read
+     as an alarm in this palette; it reads as a third accent that happens to be
+     hotter. It is currently used as a danger signal in five places across the
+     admin and every one of them is wrong for the same reason.
+
+     WHY THIS HUE AND NOT FURTHER AWAY. 2.3 degrees is 20 off the ground and 27
+     off copper, which is the separation the signal needs, while staying at the
+     red end of the SAME warm family - so it reads as a member of this palette
+     that has gone hot, not as an import from a generic SaaS error state.
+     Rejected on measurement: #d9635e (5.30 / 5.02 - clears AA by too little on
+     --surface-1, where a dialog may sit), #ef7a72 (6.92:1, ample, but at that
+     lightness it reads as salmon and an alarm that reads as decoration has
+     failed), and any blue/magenta signal, which would open a second hue family
+     on a palette that is one hue plus ink.
+
+     NOT USED AS A FILL. This system has one filled surface in total (the gold
+     CTA, a documented exception). --danger appears as a rule and as text on a
+     control whose neighbour is neutral, which is unmistakable without inventing
+     a second button anatomy. */
+  --danger: #e2645f;
+}

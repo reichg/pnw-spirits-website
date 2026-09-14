@@ -74,26 +74,51 @@
     border-color var(--transition-fast);
 }
 
-/* Both disabled spellings, because the two modes cannot share one. Callback
-   mode renders a real <button disabled>; link mode cannot, because there is no
-   such thing as a disabled anchor - a boundary renders a <span role="link"
-   aria-disabled="true">, which :disabled will never match. The class is what
-   covers both, and it must carry the full dimmed treatment rather than lean on
-   the pseudo-class. */
-.pageButton:disabled,
+/* ONE spelling of "unavailable", for both modes.
+
+   It used to be two. Link mode has never been able to use :disabled - there is
+   no such thing as a disabled anchor, so its boundary is a <span role="link"
+   aria-disabled="true"> - while callback mode rendered a real <button
+   disabled>. Callback mode now uses aria-disabled as well, so that a boundary
+   control the admin just pressed keeps the focus it is holding instead of
+   having it dropped to <body> by the browser; see Pagination.tsx. The
+   pseudo-class selector is gone rather than kept as a fallback, because no
+   consumer renders a disabled pager control any more and a selector that
+   cannot match is a rule the next reader has to disprove. This class is the
+   single spelling, and it carries the full dimmed treatment. */
 .pageButtonDisabled {
-  /* 0.5, not 0.4. The boundary control is a <span role="link"
-     aria-disabled="true">, so the WCAG inactive-component exemption arguably
-     covers it, but 0.4 composited to ~2.53:1 against the ground - close enough
+  /* 50%, not 40%. 0.4 composited to ~2.53:1 against the ground - close enough
      to the line that the extra step is cheaper than the argument. It still
-     reads as unmistakably inactive beside a full-strength sibling. */
-  opacity: 0.5;
+     reads as unmistakably inactive beside a full-strength sibling.
+
+     DIMMED PER PROPERTY RATHER THAN WITH opacity, which is what this used to
+     be. opacity dims everything the element paints, and since callback
+     mode's boundary control became focusable (aria-disabled, not disabled -
+     see Pagination.tsx) that now includes its focus ring. Measured on
+     /admin/blogs: the ring on a focused boundary control composited to
+     rgb(126, 98, 72) - 1.25:1 against the ground, against 3.60:1 for the
+     same ring on its enabled sibling. That is a WCAG 1.4.11 failure on
+     precisely the control the keyboard admin is left standing on, and it was
+     unreachable only while the control could not take focus at all.
+
+     Mixing the alpha into the two colours the control actually paints leaves
+     outline at full strength and is otherwise identical: the background is
+     transparent, and the text and border never overlap, so 50% alpha on each
+     paints the pixels opacity 0.5 did. Both modes sampled at rest to confirm
+     that. */
+  color: color-mix(in srgb, var(--color-accent-gold) 50%, transparent);
+  border-color: color-mix(
+    in srgb,
+    var(--rule-accent, var(--color-accent-gold)) 50%,
+    transparent
+  );
   cursor: not-allowed;
 }
 
-/* :not on both, so a boundary control does not light up under the pointer and
-   promise a page that is not there. */
-.pageButton:hover:not(:disabled):not(.pageButtonDisabled) {
+/* :not, so a boundary control does not light up under the pointer and promise
+   a page that is not there. One guard rather than the two this used to carry,
+   because .pageButtonDisabled is now the only spelling of the state. */
+.pageButton:hover:not(.pageButtonDisabled) {
   background: var(--surface-1, var(--color-bg-overlay));
   border-color: var(--rule-accent, var(--color-accent-gold));
   /* Restated because globals.css has `a:hover { color: var(--color-bg-highlight) }`

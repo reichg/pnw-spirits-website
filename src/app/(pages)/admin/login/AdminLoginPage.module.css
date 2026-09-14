@@ -1,19 +1,89 @@
-.loginPageContainer {
-  min-height: calc(100vh - 56px - 105px);
+/* ===========================================================================
+   The /admin/login shell - the one admin surface with no chrome above it and
+   no list inside it.
+
+   WHAT IT REPLACES: `min-height: calc(100vh - 56px - 105px)`, which subtracted
+   a public header and footer that LayoutClient stopped rendering on /admin
+   routes; and, one level down, a 103%-wide ::before at
+   blur(18px) brightness(0.85) over Bottles.jpg with `top: -10` and `left: -10` -
+   unitless non-zero lengths, invalid CSS, silently dropped, so the layer this
+   page has shipped for months was never offset the way it was written to be.
+
+   TWO COLUMNS AT 900px, AND WHY THE SEAM IS THERE. It is the same seam the
+   shared card grid draws, and for the same reason restated in this page's
+   terms: below it a half viewport is under ~450px, which is not enough for a
+   form and not enough for a photograph, so the honest answer is one of them and
+   the form is not optional. Above it the split gives the form a column it can
+   sit centred in, which is what a sign-in page wants, while the photograph
+   carries the brand the missing chrome bar would have.
+   =========================================================================== */
+
+.page {
+  /* Relative, matching every other composes in this tree - it is resolved by
+     the CSS toolchain, not by TypeScript, so the "@/" alias is not its
+     spelling. */
+  composes: adminSurface from "../../../../components/admin/adminTokens.module.css";
+
+  display: grid;
+  min-block-size: 100vh;
+  font-family: var(--font-primary);
+  background: var(--surface-0);
+  color: var(--ink-1);
+}
+
+/* The form's column. Centred in both axes, which is the composition this page
+   is the only admin surface entitled to - everywhere else the content starts on
+   a left spine because there is a list under it that has to line up. */
+.formColumn {
   display: flex;
   flex-direction: column;
-  background: var(--background);
-}
-
-.loginPageContent {
-  flex: 1;
-  display: flex;
-  align-items: center;
   justify-content: center;
+  padding: var(--space-xl) var(--gutter);
 }
 
-@media (max-width: 900px) {
-  .loginPageContainer {
-    min-height: calc(100vh - 98px - 110px);
-  }   
+/* --- The photographic plate ----------------------------------------------
+   display: none below the seam, and that alone would not be enough: a hidden
+   <img> is still a resource the browser may decide to fetch, and Bottles.jpg is
+   a 14MB source. Two mechanisms, so the phone downloads nothing worth counting
+   even if one of them does not hold.
+
+     1. next/image is lazy by default (no `priority` here, deliberately - the
+        form is what this page is for, and the plate must not compete with it
+        for the first bytes). A lazy image inside a display:none subtree never
+        intersects the viewport, so the load never starts.
+     2. `sizes="(min-width: 900px) 50vw, 1px"` on the element. If some browser
+        does fetch it anyway, the narrow arm resolves to the smallest candidate
+        in the generated srcset rather than to a full-width source.
+
+   Belt and braces, because the failure mode of getting this wrong is invisible
+   in a screenshot and only shows up on somebody's phone plan. */
+.plate {
+  display: none;
+}
+
+@media (min-width: 900px) {
+  /* 1fr / 1fr. A narrower form column would read as a sidebar bolted to a hero
+     photograph, and this is a tool's front door rather than a landing page: the
+     door and the window are the same size. */
+  .page {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+
+  .plate {
+    display: block;
+    position: relative;
+    /* The plate is a fixed half of a 100vh grid; the image covers it and the
+       overflow is cropped rather than scrolled. */
+    overflow: hidden;
+  }
+}
+
+/* object-fit on the fill image. next/image's `fill` gives it
+   position:absolute/inset:0, so this is the only declaration it needs, and
+   there is no filter on it: unblurred is the decision, not an omission.
+   `center` rather than a hand-tuned focal point, because the source is a wall
+   of bottles with no subject to keep in frame. */
+.plateImage {
+  object-fit: cover;
+  object-position: center;
 }

@@ -36,8 +36,11 @@ import BlogPostPage, { generateMetadata } from "./page";
 // server and the prose is a finished HTML string, so static render observes the
 // whole shipped contract.
 //
-// Class names are hashed by the CSS-modules transform and are not a contract:
-// elements are identified by tag, text and attribute.
+// No assertion keys off a CSS-module class name. Under Vitest the import is a
+// Proxy that echoes ANY key back as `_<key>_<hash>`, so a class assertion could
+// never prove a rule exists anyway - see the canonical note in
+// Pagination.test.tsx.
+// Elements are identified by tag, text and attribute.
 
 type BlogRow = {
   id: number;
@@ -140,6 +143,24 @@ describe("BlogPostPage routing", () => {
     expect(prismaMock.blog.findUnique).not.toHaveBeenCalled();
   });
 
+  // The guard here was `Number.parseInt` behind `isSafeInteger && > 0`, which is
+  // the lenient shape the API routes were hardened away from: parseInt reads a
+  // leading integer and discards the rest, so `/blogs/31.5` and `/blogs/1abc`
+  // rendered post 31 and post 1 under a URL naming neither, and isSafeInteger
+  // sits nine orders of magnitude above what the Int column holds. It is
+  // `rowIdParamSchema` now - the sample is behavioural; the rule is asserted
+  // exhaustively in src/utils/rowId.test.ts.
+  it.each(["31.5", "1abc", "0x1f", "004", "3000000000"])(
+    "404s on the non-canonical id %s without querying the database",
+    async (id) => {
+      await expect(renderPage(id)).rejects.toThrow(
+        "NEXT_HTTP_ERROR_FALLBACK;404",
+      );
+
+      expect(prismaMock.blog.findUnique).not.toHaveBeenCalled();
+    },
+  );
+
   it("404s when the id parses but no row exists", async () => {
     prismaMock.blog.findUnique.mockResolvedValue(null);
 
@@ -153,16 +174,15 @@ describe("BlogPostPage routing", () => {
   });
 
   it("builds canonical URLs from the row id, not from the request param", async () => {
-    // The id parse is lenient, so more than one path can reach the same row:
-    // "/blogs/004", "/blogs/4.9" and "/blogs/4abc" all return 200 rendering
-    // row 4. Every self-referential URL the page emits — the canonical link,
-    // og:url and the JSON-LD mainEntityOfPage — must name the row's own id and
-    // must agree with each other, or each variant declares itself a distinct
-    // page for the same post.
+    // Only one path reaches a row now that the parser is canonical — "/blogs/004"
+    // and "/blogs/4abc" 404 rather than rendering row 4 — so this no longer
+    // guards against duplicate URLs for one post. It still guards the half that
+    // outlives the parser: the canonical link, og:url and the JSON-LD
+    // mainEntityOfPage are each built from the row's own id and must agree.
     stubBlog();
 
-    const html = await renderPage("004");
-    const metadata = await metadataFor("004");
+    const html = await renderPage("4");
+    const metadata = await metadataFor("4");
 
     expect(metadata.alternates?.canonical).toBe(
       "https://spirits.example/blogs/4",

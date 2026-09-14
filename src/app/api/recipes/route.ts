@@ -3,6 +3,7 @@ import { logger } from "@/utils/logger";
 import { paginationParams, searchParam } from "@/utils/pagination";
 import prisma from "@/utils/prisma";
 import redis, { invalidateRecipeCache } from "@/utils/redisClient";
+import { rowIdSchema } from "@/utils/rowId";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
@@ -51,8 +52,14 @@ export async function POST(req: NextRequest) {
     );
   }
 }
+/**
+ * The body id gets the same parser every path and query id already uses.
+ * `z.number()` accepted `59.5`, which Prisma truncated onto recipe 59 - a
+ * request aimed at a row that does not exist editing one that does - and it had
+ * no Int ceiling, so an oversized id reached the driver as a 500.
+ */
 const RecipeUpdateSchema = RecipeSchema.extend({
-  id: z.number(),
+  id: rowIdSchema,
 });
 
 /**
@@ -64,8 +71,9 @@ export async function PATCH(req: NextRequest) {
   const authResult = requireAdmin(req);
   if (authResult) return authResult;
   const body = await req.json();
-  // Convert id to number for Prisma
-  const parsed = RecipeUpdateSchema.safeParse({ ...body, id: Number(body.id) });
+  // The body goes in unconverted: the `Number(body.id)` that used to stand here
+  // is what defeated the check, exactly as `Number(idRaw)` did on the path routes.
+  const parsed = RecipeUpdateSchema.safeParse(body);
   if (!parsed.success) {
     return NextResponse.json(
       { error: "Invalid input", details: parsed.error.issues },
@@ -93,7 +101,8 @@ export async function PATCH(req: NextRequest) {
   }
 }
 
-const RecipeDeleteSchema = z.object({ id: z.number() });
+/** Same body id, same parser as the PATCH above. */
+const RecipeDeleteSchema = z.object({ id: rowIdSchema });
 /**
  * DELETE /api/recipes
  * Delete a recipe by id. Requires admin.
@@ -103,10 +112,7 @@ export async function DELETE(req: NextRequest) {
   const authResult = requireAdmin(req);
   if (authResult) return authResult;
   const body = await req.json();
-  // Convert id to number for Prisma
-  const parsed = RecipeDeleteSchema.safeParse({
-    id: typeof body.id === "number" ? body.id : Number(body.id),
-  });
+  const parsed = RecipeDeleteSchema.safeParse(body);
   if (!parsed.success) {
     return NextResponse.json(
       { error: "Invalid input", details: parsed.error.issues },

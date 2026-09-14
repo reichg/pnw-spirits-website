@@ -1,0 +1,86 @@
+/* ===========================================================================
+   The text controls - one anatomy, two tag names.
+
+   A WELL, NOT A CARD, AND THAT DISTINCTION IS WHY THIS SURFACE IS FILLED AT ALL
+   IN A SYSTEM WITH NO FILLED SURFACES. The rule the public work established is
+   that CONTENT does not sit in boxes: a record is not a card, a byline is not a
+   chip, a category is not a pill. An input is not content. It is a place the
+   admin is invited to put something, and on a dark ground an unfilled one is a
+   rectangle of the same ground with a line around it - it reads as an outlined
+   label, not as somewhere to type. --surface-1 is already this system's
+   whisper-fill (a measured 1.056:1 against the page ground); this is the second
+   thing it does, and the two never meet, because a form is not a list.
+
+   THE BOUNDARY IS --hairline-strong AND IT HAD TO BE. --hairline is 14% ink,
+   1.42:1 against the ground - below the 3:1 WCAG 1.4.11 asks of the line that
+   makes a control perceivable - and at --surface-1's 1.056:1 the fill alone
+   does not identify the control either. Grafana, the only live dark-ground
+   reference available to measure, draws its input borders at 20% ink against
+   far fainter content separators: the same two-tier distinction, on a lighter
+   ground than this one.
+
+   NO RADIUS AND NO SHADOW, against four existing admin controls at 8-18px
+   radius with box-shadows, one of them behind a backdrop-filter.
+   =========================================================================== */
+
+.control {
+  inline-size: 100%;
+  min-block-size: var(--control-min);
+  padding: var(--space-2xs) var(--space-s);
+  border: 1px solid var(--hairline-strong);
+  border-radius: 0;
+  background: var(--surface-1);
+  font-family: var(--font-primary);
+  font-size: var(--fs-body);
+  line-height: 1.5;
+  color: var(--ink-1);
+  transition: border-color var(--dur-fast, 200ms) ease;
+}
+
+/* --ink-3, the tier this system already proved reads on this ground at 13-14px
+   (5.43:1, the byline tier). Placeholder text is normal-size text and the AA
+   floor applies to it like anything else - which is why it is not dimmed
+   further to "look like a placeholder". */
+.control::placeholder {
+  color: var(--ink-3);
+}
+
+@media (hover: hover) {
+  .control:hover {
+    border-color: var(--color-accent-copper);
+  }
+}
+
+/* Both the outline AND the border move. The gold outline is the system's focus
+   ring and is what carries the 3:1 focus-indicator requirement; the copper
+   border is what stops the field looking identical to its neighbours in a
+   screenshot taken mid-form, which matters on the newsletter composer where
+   three fields stack. */
+.control:focus-visible {
+  border-color: var(--color-accent-copper);
+  outline: 2px solid var(--color-accent-gold);
+  outline-offset: 2px;
+}
+
+/* Driven off the ARIA state rather than a class, so the visual and the
+   announced state cannot disagree. AdminField sets aria-invalid from the same
+   `error` prop that renders the message beneath. */
+.control[aria-invalid="true"] {
+  border-color: var(--danger);
+}
+
+.control:disabled {
+  border-color: var(--hairline);
+  color: var(--ink-3);
+  cursor: not-allowed;
+}
+
+/* 10rem is about six lines at --fs-body, which is the point where a session
+   description or a newsletter paragraph is being composed rather than glimpsed.
+   resize: vertical and not `both`: horizontal resize would let the admin drag a
+   control off the 1200px spine, and there is no width at which a wider textarea
+   helps - the measure is already the form's. */
+.textarea {
+  min-block-size: 10rem;
+  resize: vertical;
+}

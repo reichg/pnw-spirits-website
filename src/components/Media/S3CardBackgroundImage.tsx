@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { useS3ImageUrl } from "@/utils/useS3ImageUrl";
 import Image from "next/image";
 
@@ -37,7 +38,32 @@ export default function S3CardBackgroundImage({
 }: S3CardBackgroundImageProps) {
   const { url } = useS3ImageUrl(s3Key);
 
-  if (!url) return null;
+  /**
+   * THE URL THAT FAILED TO LOAD, not a boolean "it failed".
+   *
+   * The state this guards: a key whose object is no longer in the bucket -
+   * deleted out of band, or a demo row seeded against an empty bucket - still
+   * signs successfully, so `url` is a perfectly good URL that 404s. The browser
+   * then paints its broken-image glyph, which in a list of photographs reads as
+   * "this tool is broken" rather than the true and much quieter "this
+   * photograph is gone".
+   *
+   * Holding the URL rather than a flag is what makes the retry free.
+   * `useS3ImageUrl` re-signs every nine minutes and hands back a NEW url, so
+   * the comparison below stops matching on its own and the image gets another
+   * attempt - no effect to reset a flag, and no way for a stale flag to outlive
+   * the key it was about. A boolean would need `useEffect(() => setFailed(false),
+   * [url])`, which is a second source of truth for the same fact.
+   */
+  const [failedUrl, setFailedUrl] = useState<string | null>(null);
+
+  // One return for both no-image states. There is no second "failed" rendering
+  // to design: every call site already draws its own plate behind this image
+  // for the case where the record has no cover at all, and a record whose cover
+  // is GONE wants that same plate, not a different one. See AdminCard's
+  // .mediaImage::after for the CSS half of this, which covers Chromium and
+  // Firefox only and which this supersedes on every browser.
+  if (!url || url === failedUrl) return null;
 
   return (
     <Image
@@ -49,6 +75,7 @@ export default function S3CardBackgroundImage({
       className={className}
       priority={priority}
       loading={priority ? undefined : "lazy"}
+      onError={() => setFailedUrl(url)}
     />
   );
 }

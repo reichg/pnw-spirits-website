@@ -1,61 +1,82 @@
+/* ===========================================================================
+   The "Checking access" state.
+
+   IT IS THE WHOLE SCREEN NOW. AdminHeader moved inside this gate so the Sign
+   out control could reach the session context, which means nothing renders
+   above this panel any more - no chrome, no rule, no brand. It is the first
+   thing an admin sees on every visit and the last thing they see when a session
+   expires with the tab open, and it has to carry the brand alone for the second
+   or two it is up.
+
+   WHAT IT REPLACES: a fixed radial-gradient wash over --color-bg-deep (the
+   green-black the token contract moved away from because it fights copper), a
+   340px panel at rgba(1,8,4,0.85) with a radius, a 1px gold border and two
+   stacked box-shadows, and a 36px spinning ring. Six decisions, none of them
+   from this system.
+
+   NO SPINNER, AND THAT IS THE ONE SUBSTANTIVE CHANGE RATHER THAN A RESTYLE.
+   The check here is synchronous - the provider reads a token out of
+   localStorage and decodes its `exp` - so the panel is on screen for one paint
+   in the ordinary case, which sits far inside the band where no feedback is
+   owed at all. A ring animating over a wait the eye never resolves is theatre,
+   and it is the same argument that keeps skeletons off the lists. What is left
+   is the register the admin's own loading copy already uses - a plain line of
+   text - given the token treatment.
+
+   NO PANEL EITHER. There is nothing for a panel to separate this text FROM.
+   =========================================================================== */
+
 .gate {
+  /* Relative, not the "@/" alias every TS import in this tree uses: `composes`
+     is resolved by the CSS toolchain rather than by TypeScript, and every other
+     composes in this repo is spelled relatively. One resolution mechanism, one
+     spelling. */
+  composes: adminSurface from "../../../components/admin/adminTokens.module.css";
+
   position: fixed;
   inset: 0;
   display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 2rem;
-  background: radial-gradient(
-      circle at 50% 30%,
-      rgba(226, 176, 126, 0.08),
-      transparent 60%
-    ),
-    var(--color-bg-deep, #020f05);
-}
-
-.panel {
-  display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 1rem;
-  max-width: 340px;
-  width: 100%;
-  padding: 2.25rem 2rem;
+  justify-content: center;
+  gap: var(--space-m);
+  padding: var(--gutter);
   text-align: center;
-  background: rgba(1, 8, 4, 0.85);
-  border: 1px solid rgba(226, 176, 126, 0.25);
-  border-radius: var(--radius-md, 8px);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.55),
-    0 0 0 1px rgba(226, 176, 126, 0.05);
+  font-family: var(--font-primary);
+  background: var(--surface-0);
 }
 
-.spinner {
-  width: 2.25rem;
-  height: 2.25rem;
-  border-radius: 50%;
-  border: 2px solid rgba(226, 176, 126, 0.2);
-  border-top-color: var(--color-accent-gold, #e2b07e);
-  animation: spin 0.8s linear infinite;
+/* The one place in the admin an eyebrow earns its space. Everywhere else the
+   chrome bar overhead already says where you are and an eyebrow would be saying
+   it twice - here there is no chrome, and a blank warm-dark screen with one
+   muted sentence on it has no owner without this line. Gold at eyebrow size,
+   the same treatment and the same reasoning as every other eyebrow in the
+   system: at 11-12px copper is ~4.6:1 on this ground and gold is ~9.7:1, so
+   copper is the colour of rules and gold is the colour of accent text. */
+.eyebrow {
+  margin: 0;
+  font-size: var(--fs-eyebrow);
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-accent-gold);
 }
 
+/* --ink-2 rather than gold, which is what the old label used. The sentence is
+   status, not accent - and gold at lede size across a whole empty screen reads
+   as a headline announcing that nothing has happened yet. */
 .label {
   margin: 0;
-  font-family: "Geist", "Inter", sans-serif;
-  font-size: 1rem;
-  font-weight: 500;
-  letter-spacing: 0.03em;
-  color: var(--color-accent-gold, #e2b07e);
+  font-size: var(--fs-lede);
+  font-weight: 400;
+  line-height: 1.55;
+  color: var(--ink-2);
 }
 
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .spinner {
-    animation-duration: 0.001ms;
-    animation-iteration-count: 1;
-  }
-}
+/* No prefers-reduced-motion block, and its absence is the decision. The rule
+   recorded at the foot of editorialTokens.module.css is that SC 2.3.3 is about
+   motion and displacement, and that a block should exist only where there is
+   motion to neutralise. The spinner was the only animation on this surface and
+   it is gone, so a query left behind would be a rule with nothing to reduce -
+   and the next person would have to work out what it was protecting. */

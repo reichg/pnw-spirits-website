@@ -1,0 +1,151 @@
+/* ===========================================================================
+   The /admin landing entry - the one place in the admin where a whole card is
+   the link, which is only legal because it contains no other interactive
+   content. See admin.types.ts for why this is a separate component from
+   AdminCard rather than an `href` variant of one.
+
+   WHAT IT REPLACES: a color-mix bordered button-card with --radius-lg and a
+   translateY(-2px) hover lift, on a full-bleed Vermouth.jpg at
+   blur(4px) brightness(0.2). All four go. The lift goes for a reason worth
+   stating separately from "no radius, no shadow": this system has exactly one
+   displacement in it, the closing CTA's 2px hover, and that is a documented
+   exception on a conversion control at the end of a reading page. A working
+   surface's navigation is not a conversion, and four entries that jump under
+   the pointer are four pieces of motion between the admin and the task.
+
+   THE HOVER VOCABULARY IS THE ONE THIS SYSTEM ALREADY OWNS: the ground goes to
+   --surface-1 and a gold underline wipes across the label. Both already exist
+   (ContentRow's .row and .titleText), both are sub-350ms, neither displaces
+   anything.
+   =========================================================================== */
+
+.card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2xs);
+  /* The grid stretches its items to a shared height; this makes the LINK fill
+     the item rather than sitting at the top of it, so the whole ruled band is
+     the target and not just the two lines of text inside it. */
+  block-size: 100%;
+  /* Same bleed as AdminCard, and it has to be the same or the two would tint
+     different widths on a page that shows both. */
+  margin-inline: calc(-1 * var(--space-s));
+  padding: var(--space-l) var(--space-s);
+  font-family: var(--font-primary);
+  color: var(--ink-1);
+  text-decoration: none;
+  transition: background-color var(--dur-fast, 200ms)
+    var(--ease-out-soft, cubic-bezier(0.22, 0.61, 0.36, 1));
+}
+
+/* Inset to the spine rather than drawn as a border, for the reason AdminCard
+   records: the box is 16px wider than the spine on each side so the tint can
+   bleed past the rule, and a border would be drawn at the bled width.
+
+   WHETHER IT IS DRAWN AT ALL IS THE LIST'S CALL, NOT THIS FILE'S. An entry in
+   the first row sits directly under the page header's copper rule and must not
+   draw a second rule 40px below it; every other entry must. Which entries are
+   in the first row depends on the column count, and the column count is
+   declared on the list - so AdminCardGrid.module.css .cards sets
+   --admin-navcard-rule at its own 900px seam and this reads it. That file
+   carries the measurement, and the reason :first-of-type - the form
+   AdminPanel.module.css uses for the same defect - cannot express a 2x2. */
+.card::before {
+  content: "";
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline: var(--space-s);
+  border-top: 1px solid var(--admin-navcard-rule, var(--hairline));
+}
+
+/* The ink is restated on hover and it is not redundant: this whole card is an
+   <a>, and globals.css declares `a:hover { color: var(--color-bg-highlight) }`
+   at (0,1,1) - which outranks a single class and merely ties with one. Every
+   text node inside happens to set its own colour today, so nothing changes
+   visibly; the first child added that inherits would change colour under the
+   pointer for no reason anybody could find. The doubled class is explained in
+   AdminButton.module.css. */
+@media (hover: hover) {
+  .card.card:hover {
+    background-color: var(--surface-1);
+    color: var(--ink-1);
+  }
+}
+
+.card:focus-visible {
+  background-color: var(--surface-1);
+  outline: 2px solid var(--color-accent-gold);
+  outline-offset: 3px;
+}
+
+/* --fs-h3 (20 -> 24px), one step under the page's own --fs-h2 heading. A
+   landing entry is the largest thing on the admin's front door after the title,
+   and it is still subordinate to it - the size difference is what makes the
+   page an outline rather than five competing headlines. */
+.label {
+  font-size: var(--fs-h3);
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: -0.005em;
+  color: var(--ink-1);
+}
+
+/* The underline reveal painted as a background so its width can transition, on
+   an inline box so a wrapped label is underlined per line at its own width.
+   Identical to .titleText on the public card and row - the same mechanism, not
+   a second one invented for the admin. */
+.labelText {
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+  background-image: linear-gradient(
+    var(--color-accent-gold),
+    var(--color-accent-gold)
+  );
+  background-repeat: no-repeat;
+  background-position: 0 100%;
+  background-size: 0% 1px;
+  padding-bottom: 0.08em;
+  transition: background-size var(--dur-medium, 320ms)
+    var(--ease-out-soft, cubic-bezier(0.22, 0.61, 0.36, 1));
+}
+
+.card:hover .labelText,
+.card:focus-visible .labelText {
+  background-size: 100% 1px;
+}
+
+/* The meta register the public bylines use, at the quietest ink tier. The hint
+   is a caption on the label, not a second line of equal weight - "Create and
+   edit blog posts" should be readable when wanted and invisible when the admin
+   already knows where they are going, which is every visit after the first. */
+.hint {
+  font-size: var(--fs-meta);
+  font-weight: 500;
+  line-height: 1.4;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+
+@media (max-width: 599px) {
+  /* 40px of block padding per entry is right on a 2x2 block with room around
+     it; stacked four-deep on a phone it pushes the fourth destination off the
+     screen. --space-m still leaves each entry a 24 + ~46 + 24 = ~94px target. */
+  .card {
+    padding-block: var(--space-m);
+  }
+}
+
+/* The underline wipe is a 320ms background-size transition with no
+   displacement, which is not what the preference asks to have removed - but it
+   is also the only motion on this page, and a front door is where a reduced
+   motion preference is most likely to have been set for a reason. Collapsed
+   rather than removed, so the end state (a gold underline on the hovered entry)
+   still arrives and the affordance survives. */
+@media (prefers-reduced-motion: reduce) {
+  .card,
+  .labelText {
+    transition-duration: 0.001ms;
+  }
+}

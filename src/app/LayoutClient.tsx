@@ -1,5 +1,4 @@
 "use client";
-import AdminHeader from "@/components/Layout/AdminHeader";
 import Footer from "@/components/Layout/Footer";
 import Header from "@/components/Layout/Header";
 import ScrollUpButton from "@/components/Layout/ScrollUpButton";
@@ -38,8 +37,11 @@ export default function LayoutClient({
   }, []);
   return (
     <body className={`${geistSans.variable} ${geistMono.variable}`}>
-      {/* Admin routes are full-bleed and use their own chrome (no public Footer/ScrollUpButton). */}
-      {isAdmin ? <AdminHeader /> : <Header />}
+      {/* Admin routes are full-bleed and use their own chrome (no public
+          Footer/ScrollUpButton). AdminHeader is not rendered here: it needs the
+          admin token context, which is mounted below this point, so the admin
+          route layout owns its render site. See (pages)/admin/layout.tsx. */}
+      {!isAdmin && <Header />}
       {children}
       {!isAdmin && (
         <>

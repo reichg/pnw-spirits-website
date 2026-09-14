@@ -127,6 +127,32 @@ body {
   --font-primary: var(--font-geist-sans), Arial, Helvetica, sans-serif;
   --font-secondary: var(--font-geist-sans), Arial, Helvetica, sans-serif;
   --font-mono: var(--font-geist-mono), "Menlo", "Consolas", monospace;
+
+  /* Those tokens were declared but never applied, so the document's inherited
+     family stayed the UA default - which Chromium resolves to its "standard
+     font", Times New Roman. Every element that looked right did so only
+     because it set a family itself; anything that did not, or that said
+     `font-family: inherit`, painted serif. Measured on the public routes
+     before this line existed: Header's .link and .menuLink anchors, its
+     .trigger buttons (which do say `inherit`) and SubscribeForm's label were
+     all rendering in Times New Roman, next to a wordmark in Geist.
+
+     Applied here rather than on `html` so it stays in the same scope as the
+     variable it reads - see the note above. That also makes its failure mode
+     safe: if --font-geist-sans ever goes missing, the var() is invalid at
+     computed-value time and font-family falls back to its inherited value,
+     which is exactly today's behaviour. This line can only improve on the bug.
+
+     Deliberately NOT paired with `font-family: inherit` on the global `button`
+     rule below. Form controls do not inherit this: Chromium's UA sheet sets a
+     family on the control itself, and a UA declaration on an element beats an
+     inherited value. So a button that declares no family gets UA Arial, not
+     serif - already the first fallback in these tokens, i.e. an inconsistency
+     rather than the defect being fixed here. Forcing it would restyle public
+     buttons that render acceptably today (ContactForm's .submit,
+     SubscribeForm's .subscribeBtn), so it belongs to a task that owns those
+     components. Anything new that must match body text has to ask for it. */
+  font-family: var(--font-primary);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -147,6 +173,42 @@ h6 {
   margin-bottom: 0.5em;
 }
 
+/* The two :hover rules below are a known specificity trap, INVESTIGATED AND
+   DEFERRED - do not "just scope them" without reading this.
+
+   `a:hover` and `button:hover` are (0,1,1); `.button:hover` is (0,2,0). A CSS
+   Module's single-class rule is (0,1,0) and loses to all of them, so a
+   component that sets a background or a color on its base class has it
+   repainted from here under the pointer. That is why component stylesheets in
+   this repo reach for doubled-class selectors: they are buying specificity,
+   not expressing intent.
+
+   Removing or scoping these would be the root fix, but on the public site they
+   are load-bearing. Measured with CDP forced :hover over all ten public routes
+   at 1440 and 390 - 434 button/.button/a nodes - six components depend on them:
+
+     .scrollUpButton         this rule is its ONLY hover feedback; its module
+                             declares no :hover at all
+     ContactForm .submit     same, and the `background` shorthand here also
+                             resets its gold gradient to flat brown, which its
+                             own hover rule (lift + brightness + glow) clearly
+                             never intended
+     .landingFourColCard     each has a :hover rule that styles transform,
+     ClassesPage .ctaButton   filter or shadow but no color, so the colour half
+     ContactPage .email       of the hover treatment is coming from `a:hover`
+     ContentRow .row          here
+
+   Every way of keeping these rules off a component keeps them off those six
+   too - :where() or a cascade layer (both lose to the component's own base
+   class), :not([class]) or :not([class*="-module__"]) (all six carry module
+   classes). They are the same case as the bug: a module-classed element whose
+   hover paint comes only from here. So this cannot be fixed from this file
+   alone, and a partial fix would silently restyle the public site.
+
+   Unblocking it is component work, outside this file: give .scrollUpButton and
+   ContactForm .submit their own :hover background, and the four links their
+   own :hover color. Once nothing depends on these, drop them. Until then, a
+   component rule must out-specify (0,1,1) to win. */
 a {
   color: var(--color-bg-deep1);
   text-decoration: underline;

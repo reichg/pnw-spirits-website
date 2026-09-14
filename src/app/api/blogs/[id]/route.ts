@@ -2,23 +2,12 @@ import { requireAdmin } from "@/utils/auth";
 import { logger } from "@/utils/logger";
 import prisma from "@/utils/prisma";
 import { invalidateBlogCache } from "@/utils/redisClient";
+import { rowIdParamSchema } from "@/utils/rowId";
 import { deleteS3Objects, getS3ImageUrl } from "@/utils/s3";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
 const CONTEXT = "api.blogs.id";
-
-/**
- * The `[id]` path segment, which is untrusted and reaches Prisma.
- *
- * `parseInt` was doing this job and is too permissive for a primary key: it
- * reads a leading integer and discards the rest, so `/api/blogs/1abc` served
- * blog 1, and it happily returns values past the 32-bit range of the column,
- * where Prisma throws rather than returning no rows. Coercion here rejects all
- * of those before a query is built — the same shape the public blog page
- * already applies in `src/app/(pages)/blogs/[id]/page.tsx`.
- */
-const BlogIdParam = z.coerce.number().int().positive().max(2147483647);
 
 /**
  * The PUT body, which is untrusted and is spread into `prisma.blog.update`.
@@ -57,7 +46,7 @@ export async function GET(
   context: { params: Promise<{ id: string }> },
 ) {
   const { id } = await context.params;
-  const idResult = BlogIdParam.safeParse(id);
+  const idResult = rowIdParamSchema.safeParse(id);
   if (!idResult.success)
     return NextResponse.json({ error: "Invalid blog id" }, { status: 400 });
   const parsedId = idResult.data;
@@ -99,7 +88,7 @@ export async function PUT(
     const authResult = requireAdmin(req);
     if (authResult) return authResult;
     const { id } = await context.params;
-    const idResult = BlogIdParam.safeParse(id);
+    const idResult = rowIdParamSchema.safeParse(id);
     if (!idResult.success)
       return NextResponse.json({ error: "Invalid blog id" }, { status: 400 });
     const parsedId = idResult.data;
@@ -210,7 +199,7 @@ export async function DELETE(
   const authResult = requireAdmin(req);
   if (authResult) return authResult;
   const { id } = await context.params;
-  const idResult = BlogIdParam.safeParse(id);
+  const idResult = rowIdParamSchema.safeParse(id);
   if (!idResult.success)
     return NextResponse.json({ error: "Invalid blog id" }, { status: 400 });
   const parsedId = idResult.data;

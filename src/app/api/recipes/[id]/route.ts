@@ -2,6 +2,7 @@ import { requireAdmin } from "@/utils/auth";
 import { logger } from "@/utils/logger";
 import prisma from "@/utils/prisma";
 import { invalidateRecipeCache } from "@/utils/redisClient";
+import { rowIdParamSchema } from "@/utils/rowId";
 import { getS3ImageUrl } from "@/utils/s3";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
@@ -37,16 +38,10 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> },
 ) {
   const { id: idRaw } = await params;
-  const id = Number(idRaw);
-  if (!id)
-    return NextResponse.json(
-      {
-        error: "Invalid recipe id",
-        idRaw,
-        idType: typeof idRaw,
-      },
-      { status: 400 },
-    );
+  const idParsed = rowIdParamSchema.safeParse(idRaw);
+  if (!idParsed.success)
+    return NextResponse.json({ error: "Invalid recipe id" }, { status: 400 });
+  const id = idParsed.data;
   const recipe = await prisma.cocktailRecipe.findUnique({ where: { id } });
   if (!recipe)
     return NextResponse.json({ error: "Recipe not found" }, { status: 404 });
@@ -69,16 +64,10 @@ export async function PUT(
   const { id: idRaw } = await params;
   const authResult = requireAdmin(req);
   if (authResult) return authResult;
-  const id = Number(idRaw);
-  if (!id)
-    return NextResponse.json(
-      {
-        error: "Invalid recipe id",
-        idRaw,
-        idType: typeof idRaw,
-      },
-      { status: 400 },
-    );
+  const idParsed = rowIdParamSchema.safeParse(idRaw);
+  if (!idParsed.success)
+    return NextResponse.json({ error: "Invalid recipe id" }, { status: 400 });
+  const id = idParsed.data;
   const body = await req.json();
   const parsed = RecipeSchema.safeParse(body);
   if (!parsed.success) {
@@ -163,9 +152,10 @@ export async function DELETE(
   const { id: idRaw } = await params;
   const authResult = requireAdmin(req);
   if (authResult) return authResult;
-  const id = Number(idRaw);
-  if (!id)
+  const idParsed = rowIdParamSchema.safeParse(idRaw);
+  if (!idParsed.success)
     return NextResponse.json({ error: "Invalid recipe id" }, { status: 400 });
+  const id = idParsed.data;
   // Fetch recipe to check coverPhoto and embedded media
   const recipe = await prisma.cocktailRecipe.findUnique({ where: { id } });
   // 1. Cover photo (delete by exact key)

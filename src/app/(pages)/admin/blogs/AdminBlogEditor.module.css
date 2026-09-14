@@ -1,290 +1,148 @@
-/* Cover photo row and preview */
-/* Add Cover button */
-.coverAddBtn {
-  background: var(--color-accent-primary);
-  color: #fff;
-}
+/* The post editor's form, inside AdminDialog.
 
-/* Remove Cover button */
-.coverRemoveBtn {
-  background: var(--color-accent-secondary);
-  color: var(--color-text-inverse);
-}
+   Everything that used to be here is gone: the hand-rolled fixed overlay, the
+   copper-gradient panel at blur(8px) saturate(1.15), the 18px radius, the
+   `linear-gradient(90deg, #b85c5c, #3d4a3a)` buttons, the near-white input
+   fills and the pink `.error` band. The dialog chrome is AdminDialog's and the
+   controls are the admin layer's; what is left below is layout and the two
+   things a cover-photo group needs that no primitive owns.
 
-/* Hidden file input */
-.coverInputHidden {
-  display: none;
-}
-/* Container for all form fields */
-.fieldsContainer {
+   No colour is declared here that is not read from a token, and no token value
+   is restated - the ground, ink tiers and spacing all arrive through the
+   composed admin surface on the dialog panel. */
+
+.form {
   display: flex;
   flex-direction: column;
-  gap: 15px;
-  padding: 15px;
-  background: var(--color-bg-secondary);
-  border-radius: var(--radius-lg);
-  width: 100%;
-  max-width: 1000px;
-  margin: 0 auto;
-  font-family: var(--font-sans);
+  gap: var(--space-m);
+  min-width: 0;
+}
+
+/* A grid, not a stack of six identical boxes. Title and Author are short and
+   pair naturally on one line at the dialog's width; everything with a textarea
+   in it takes the full measure. The asymmetry (2fr/1fr) is the point - two
+   equal columns would read as a table and put an author name in a box sized for
+   a headline. */
+.fields {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-m);
+}
+
+@media (min-width: 700px) {
+  .fields {
+    grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+  }
+}
+
+/* Declared unconditionally: in the single-column grid below 700px it is a
+   no-op, which is cheaper than a second media query that has to be kept in step
+   with the first. */
+.wide {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2xs);
+  min-width: 0;
+}
+
+/* A <fieldset> reset. The UA default draws a 2px groove border and an inline
+   padding that no other field in this form has, so the group has to be
+   flattened before it can sit in the same column as an AdminField. */
+.group {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  min-width: 0;
+}
+
+/* Composed, not copied: the legend has to read as the same thing as every
+   AdminField label beside it, and restating the six declarations here is how
+   two labels end up 0.02em apart three months from now. */
+.groupLabel {
+  composes: label from "../../../../components/admin/AdminField.module.css";
+  /* `display: block` drops the legend's special placement over the fieldset
+     border, which this fieldset does not have; it is what makes margin-bottom
+     behave the way it does on every other label in the form. */
+  display: block;
+  padding: 0;
+  margin-bottom: var(--space-2xs);
+}
+
+/* Carries no margin of its own on purpose. `composes` puts both class names on
+   the element at EQUAL specificity, so a `margin-top` here would be settled
+   against the composed rule's `margin: 0` by stylesheet emission order - a bug
+   that is visible on one build and gone on the next. The spacing around this
+   line is owned by its neighbours instead. */
+.groupHint {
+  composes: hint from "../../../../components/admin/AdminField.module.css";
 }
 
 .coverRow {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 0.7em;
-  margin: 0.5em 0 0.2em 0;
+  gap: var(--space-2xs);
+  margin-top: var(--space-2xs);
+  min-width: 0;
 }
 
+/* Sized to the aspect a cover is actually cropped to downstream, so what is
+   previewed is what the card will show. Zero radius and no shadow: the system's
+   media treatment, unchanged from the public cards. */
 .coverPreview {
-  width: auto;
-  max-width: 90px;
-  max-height: 60px;
-  border-radius: 8px;
+  inline-size: 7rem;
+  block-size: 4.5rem;
   object-fit: cover;
-  box-shadow: 0 2px 8px rgba(35, 66, 54, 0.13);
-  /* border: 1.5px solid var(--color-accent-primary, #b85c5c); */
-  background: var(--color-bg-warm);
-}
-.mediaBtn {
-  background: linear-gradient(
-    90deg,
-    var(--color-accent-primary, #b85c5c) 60%,
-    var(--color-accent-secondary, #3d4a3a) 100%
-  );
-  color: #fff;
-  border: none;
-  border-radius: 9px;
-  padding: 10px 22px;
-  font-size: 1.08rem;
-  font-family: var(--font-sans, "Geist", "Inter", sans-serif);
-  font-weight: 600;
-  cursor: pointer;
-  transition:
-    background 0.2s,
-    box-shadow 0.2s;
-  margin-top: 14px;
-  box-shadow: 0 2px 8px rgba(35, 66, 54, 0.1);
+  border-radius: 0;
 }
 
-.coverPlaceholder {
-  background: var(--color-bg-muted);
-  color: var(--color-text-secondary);
-  padding: 0.5rem 1rem;
-  border-radius: 6px;
-  margin-left: 1rem;
-  font-size: 1rem;
-  font-family: var(--font-sans);
+/* The pending-removal note. --ink-2 prose, no fill and no --danger: nothing has
+   been destroyed yet and the state is reversible by pressing Add cover again,
+   so an alarm here would be the third false alarm this file used to raise. */
+.coverNote {
+  margin: 0;
+  font-size: var(--fs-meta);
+  line-height: 1.4;
+  color: var(--ink-2);
 }
 
-/* Only animate coverAddBtn on hover/focus, not parent containers */
-button.coverAddBtn:hover,
-button.coverAddBtn:focus {
-  background: linear-gradient(
-    90deg,
-    var(--color-accent-secondary, #3d4a3a) 60%,
-    var(--color-accent-primary, #b85c5c) 100%
-  );
-  box-shadow: 0 4px 16px rgba(35, 66, 54, 0.13);
+/* display:none rather than a visually-hidden clip. The visible affordance is
+   the button beside it, and a clipped input would be a second, unlabelled
+   control in the tab order and in the accessibility tree saying the same thing.
+   display:none also keeps it out of Modal's focus trap - which is safe here
+   only because it is never the first or last focusable element in the dialog. */
+.fileInput {
+  display: none;
 }
 
-.mediaBtn:disabled {
-  background: #e0b3a7;
-  color: #fff;
-  cursor: not-allowed;
+/* Tall enough to hold a paragraph of a post without becoming a scroll port, and
+   still short enough that Save stays on screen at 900px.
+
+   DOUBLED, at (0,2,0). AdminInput merges `className` rather than replacing it,
+   so this class lands on the same element as its own `.textarea` rule - which
+   declares `min-block-size: 10rem` at the same (0,1,0) specificity, leaving the
+   winner to stylesheet emission order. The override has to be stated as one
+   that cannot lose, or this box is 10rem tall on some builds and 16rem on
+   others. */
+.contentInput.contentInput {
+  min-block-size: 16rem;
 }
 
-/* Modal overlay fills viewport, centers form, and allows scroll if needed */
-.modal {
-  background: rgba(0, 0, 0, 0.4);
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100dvh;
-  z-index: 1000;
+.mediaRow {
   display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-direction: column;
-  overflow: auto;
-  padding: max(env(safe-area-inset-top, 0px), 0.5rem) 5vw
-    max(env(safe-area-inset-bottom, 0px), 0.5rem) 5vw;
-  box-sizing: border-box;
+  flex-wrap: wrap;
+  gap: var(--space-2xs);
 }
-/* Form is scrollable if content exceeds viewport */
-.form {
-  background: linear-gradient(
-    120deg,
-    var(--color-bg-overlay) 70%,
-    var(--color-accent-copper) 100%
-  );
-  border-radius: 18px;
-  box-shadow: 0 8px 32px rgba(35, 66, 54, 0.18);
-  font-family: var(--font-sans, "Geist", "Inter", sans-serif);
-  border: 1.5px solid var(--color-accent-primary);
-  backdrop-filter: blur(8px) saturate(1.15);
-  -webkit-backdrop-filter: blur(8px) saturate(1.15);
-  padding: 40px 28px 32px 28px;
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;
-  max-width: 1400px;
-  width: 100%;
-  max-height: 90vh;
-  overflow-y: auto;
-}
-.heading {
-  font-size: 2rem;
-  font-weight: 700;
-  color: var(--color-accent-primary, #b85c5c);
-  text-align: center;
-  letter-spacing: 0.7px;
-  font-family: var(--font-sans, "Geist", "Inter", sans-serif);
-  margin-bottom: 1.5rem;
-}
-.field {
-  color: var(--color-accent-secondary);
-}
-.label {
-  /* border: 1.5px solid #b85c5c; */
-  font-size: 1.08em;
-  font-weight: 500;
-  color: #3d4a3a;
-}
-.input,
-.textarea {
-  width: 100%;
-  padding: 12px 14px;
-  border: 1.5px solid var(--color-accent-primary, #b85c5c);
-  border-radius: 9px;
-  font-size: 1.08rem;
-  margin-top: 6px;
-  font-family: inherit;
-  background: rgba(255, 255, 255, 0.92);
-  color: var(--color-text-primary, #2e2e2e);
-  transition:
-    border 0.18s,
-    box-shadow 0.18s;
-  box-shadow: 0 2px 8px rgba(35, 66, 54, 0.07);
-}
-.input:focus,
-.textarea:focus {
-  border: 2px solid var(--color-accent-primary, #b85c5c);
-  outline: none;
-  box-shadow: 0 4px 16px rgba(35, 66, 54, 0.13);
-}
-.textarea {
-  resize: vertical;
-  min-height: 120px;
-}
-.error {
-  color: var(--color-error, #b85c5c);
-  background: rgba(255, 220, 220, 0.85);
-  border-radius: 8px;
-  padding: 8px 12px;
-  margin: 10px 0 0 0;
-  font-size: 1rem;
-  text-align: center;
-  box-shadow: 0 2px 8px rgba(35, 66, 54, 0.07);
-}
+
 .actions {
   display: flex;
-  gap: 16px;
+  /* Wraps: two uppercase controls at 40px do not share a line on a 320px
+     screen, and an action row that overflows is an action row with a Save
+     button off the edge of it. */
+  flex-wrap: wrap;
   justify-content: flex-end;
-  margin-top: 2rem;
-}
-
-@media (max-width: 700px) {
-  .modal {
-    align-items: center;
-    justify-content: center;
-    min-height: 100dvh;
-    min-width: 100vw;
-    overflow: auto;
-    padding: max(env(safe-area-inset-top, 0px), 0.5rem) 2vw
-      max(env(safe-area-inset-bottom, 0px), 0.5rem) 2vw;
-    box-sizing: border-box;
-  }
-  .form {
-    max-width: 98vw;
-    min-width: 0;
-    width: 90vw;
-    border-radius: 10px;
-    padding: 16px 2vw 16px 2vw;
-    box-sizing: border-box;
-    max-height: 92dvh;
-    overflow-y: auto;
-  }
-  .heading {
-    font-size: 1.08em;
-    margin-bottom: 0.7em;
-  }
-  .input,
-  .textarea {
-    font-size: 1em;
-    padding: 8px 8px;
-    border-radius: 6px;
-  }
-  .actions {
-    gap: 10px;
-    margin-top: 10px;
-  }
-
-  .adminBlogEditorRoot {
-    min-height: 100vh;
-    width: 100vw;
-    background: url("/images/Bottles.jpg");
-    background-size: cover;
-    background-repeat: no-repeat;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: flex-start;
-    padding: 2.5rem 0;
-    position: relative;
-    overflow: hidden;
-  }
-
-  .adminBlogEditorRoot::before {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: inherit;
-    filter: blur(18px) brightness(0.85) saturate(1.1);
-    z-index: 0;
-    pointer-events: none;
-  }
-
-  .adminBlogEditorRoot > * {
-    position: relative;
-    z-index: 1;
-  }
-  .mediaBtn {
-    width: 100%;
-    padding: 10px 0;
-    font-size: 1.08em;
-    margin-right: 0;
-  }
-
-  .coverRow {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0.3em;
-  }
-  .coverPreview {
-    max-width: 100%;
-    max-height: 40vw;
-    margin-top: 0.3em;
-  }
-}
-
-@media (max-width: 600px) {
-  .fieldsContainer {
-    max-width: 100%;
-    gap: 20px;
-  }
+  gap: var(--space-2xs);
+  padding-top: var(--space-m);
+  border-top: 1px solid var(--hairline);
 }

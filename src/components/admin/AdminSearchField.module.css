@@ -1,0 +1,134 @@
+/* The bare underlined field, in the admin register.
+
+   Deliberately NOT AdminInput's treatment. AdminInput is a form control: it
+   carries a --surface-1 ground and a boxed --hairline-strong border because it
+   sits in a column of sibling fields that have to read as a set. This field
+   sits alone in the header's second band, above the list rather than inside a
+   form, and a boxed control there would read as one more panel across the top
+   of a page whose whole argument is that the records start as high as possible.
+   The public archive reached the same answer for the same surface; the rule
+   below is that field's geometry with the admin's control-boundary token in
+   place of the content hairline.
+
+   No radius, no shadow, no fill - the system's stated rules, unchanged. */
+
+.field {
+  position: relative;
+  display: flex;
+  width: 100%;
+  min-width: 0;
+}
+
+/* Visually hidden, not absent. See the component on why the placeholder cannot
+   serve as the accessible name. */
+.label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+.input {
+  width: 100%;
+  min-width: 0;
+  /* The trailing reserve is permanent even though Clear is not, so the first
+     character typed does not shrink the field under the cursor. 4.5rem is the
+     40px control plus a space; it is the one measured value here and it is
+     derived from --control-min rather than guessed at. */
+  padding: var(--space-2xs) calc(var(--control-min) + var(--space-2xs))
+    calc(var(--space-2xs) + 2px) 0;
+  min-block-size: var(--control-min);
+  border: 0;
+  /* --hairline-strong, not --hairline: the token contract's rule is that a line
+     bounding an interactive control is a different line from one separating
+     content, and at 14% ink this edge measures 1.42:1 - felt, but not a
+     perceivable boundary. */
+  border-bottom: 1px solid var(--hairline-strong);
+  border-radius: 0;
+  background: transparent;
+  font-family: var(--font-primary);
+  font-size: var(--fs-body);
+  line-height: 1.4;
+  color: var(--ink-1);
+  appearance: none;
+}
+
+.input::placeholder {
+  color: var(--ink-3);
+  opacity: 1;
+}
+
+/* Safari draws its own clear affordance inside type="search". Two clear
+   controls, one of them unlabelled and 14px, is worse than one. */
+.input::-webkit-search-cancel-button,
+.input::-webkit-search-decoration {
+  appearance: none;
+}
+
+/* The underline IS the focus indicator: it doubles in weight and takes the gold
+   the rest of the system uses for focus. An outline ring around a borderless
+   field would draw a box this field spent its whole design avoiding, and the
+   public archive field already resolved this the same way. */
+.input:focus,
+.input:focus-visible {
+  outline: none;
+  border-bottom-color: var(--color-accent-gold);
+  box-shadow: 0 1px 0 0 var(--color-accent-gold);
+}
+
+.clear {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-end: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  /* Both axes, because SC 2.5.8 measures both. Sitting over the input's
+     reserved trailing padding is what lets a 40px target live on a field that
+     is only ~44px tall. */
+  min-block-size: var(--control-min);
+  min-inline-size: var(--control-min);
+  padding: 0 0 0 var(--space-2xs);
+  border: 0;
+  border-radius: 0;
+  background: none;
+  font-family: var(--font-primary);
+  font-size: var(--fs-eyebrow);
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  cursor: pointer;
+  transition: color var(--dur-fast, 200ms) ease;
+}
+
+/* Doubled class, at (0,2,0), to outrank globals.css `button:hover` at (0,1,1) -
+   which otherwise paints a copper fill behind this word. Matches the pattern
+   the rest of the admin layer uses for the same reason. */
+.clear.clear:hover {
+  background: none;
+}
+
+@media (hover: hover) {
+  .clear.clear:hover {
+    color: var(--ink-1);
+  }
+}
+
+.clear:focus-visible {
+  outline: 2px solid var(--color-accent-gold);
+  outline-offset: 2px;
+  color: var(--ink-1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .clear {
+    transition-duration: 0.001ms;
+  }
+}

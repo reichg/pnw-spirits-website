@@ -36,8 +36,12 @@ import BlogsLandingPage from "./page";
 // that never runs under a static render.
 //
 // Cards are counted by their <h2> titles, which only ContentCard emits, and by
-// their accessible names; images by their tag. CSS-module class names are hashed
-// by the transform and are not a contract, so nothing below keys off one.
+// their accessible names; images by their tag.
+//
+// No assertion keys off a CSS-module class name. Under Vitest the import is a
+// Proxy that echoes ANY key back as `_<key>_<hash>`, so a class assertion could
+// never prove a rule exists anyway - see the canonical note in
+// Pagination.test.tsx.
 
 type BlogPayload = {
   id: number;

@@ -1,0 +1,54 @@
+/* ===========================================================================
+   "Nothing here yet."
+
+   COMPOSED, NOT COPIED, AND NOTHING IS DECLARED. The research asked for the
+   public archive's .emptyMessage treatment verbatim, and the only spelling of
+   verbatim that cannot drift is the same declarations at one declaration site.
+   Restating --fs-lede, 1.55, --ink-2 and the 48ch measure here would put four
+   values in two files nobody would remember to retune together.
+
+   Composing is safe here for the precise reason it was NOT safe for the page
+   header (see AdminPageLayout.module.css): this rule overrides nothing the
+   composed rule declares, so the two class names on the element have no
+   property to contest. Composing is only ever safe when you add nothing.
+
+   Reaching into src/components/ui/ is also the legal direction. That directory
+   is the domain-agnostic set any surface may read; what must never happen is
+   the reverse, a public page reading src/components/admin/.
+
+   NO SKELETON ABOVE IT AND NO SPINNER IN IT. The public thesis argument - "a
+   skeleton would draw twelve grey card shapes on a page whose thesis is that
+   there are no card shapes" - is now joined by an evidence one: these lists
+   fetch paginated JSON from a Redis-cached route, and a sub-second wait sits
+   inside the band where no special feedback is required at all. Drawing eight
+   grey 80px rectangles over it is theatre.
+
+   THE ONE THING A WORKING SURFACE ADDS, and it is not about this component. On
+   a public archive an empty state is a dead end the reader leaves by
+   navigating. Here it is a state the admin PUT THEMSELVES INTO - by searching,
+   or by paging past the end - and must be able to reverse in place. So the
+   requirement that ships with this component is: THE CONTROL BAND ABOVE IT MUST
+   NEVER UNMOUNT. Statamic's empty state keeps its search field, its clear
+   control and its filter button on screen; unmounting them is how an admin gets
+   stranded in a state with no exit.
+   =========================================================================== */
+
+.emptyMessage {
+  composes: emptyMessage from "../ui/ContentLandingLayout.module.css";
+
+  /* THE ONE VALUE THAT DOES NOT TRAVEL, and it is still not a declaration: the
+     composed rule reads --empty-block-pad and this sets it, so the two class
+     names on this element have no real property to contest and the "composing
+     is only safe when you add nothing" rule above still holds.
+
+     64px top AND bottom is right for the public archive, where the empty state
+     IS the page body. It is wrong here. The classes screen can show three of
+     these at once - one per panel - and rendered at 1440 they pushed the
+     sessions form 128px below a single sentence (.screenshots/slice-b/
+     state-gated-empty-1440x900.png). --space-m is the admin's internal rung:
+     AdminPanel opens on it and spaces its body by it, so the empty line now
+     sits in the same rhythm as the content it replaces rather than announcing
+     itself as a section of its own. The measure, the size and the ink tier are
+     untouched - this is density, not a different empty state. */
+  --empty-block-pad: var(--space-m);
+}

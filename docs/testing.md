@@ -141,6 +141,29 @@ There are no E2E tests and no Playwright test specs or config in this repo.
 local dev server for design review. Do not read its presence as an existing E2E
 harness.
 
+### The admin run carries a token — it is still not an auth harness
+
+`pnpm screenshot --admin` captures the auth-gated `/admin` routes, and to get
+past the gate it carries an admin JWT (`SCREENSHOT_ADMIN_TOKEN`, or
+`--admin-token`). That is not authentication coverage. The script never logs
+in: it takes a token minted by hand, out of band, and seeds it into
+`localStorage` before the first navigation. No run exercises the login form,
+the credential check, or session expiry — `/admin/login` is in the captured
+set, but only as a page to photograph.
+
+It also **never verifies the token's signature**, and that is deliberate rather
+than an omission to fix. The script has no access to `JWT_SECRET` and does not
+need it: the server is the thing that verifies, and the browser gate only
+decodes. Its pre-flight check is structural (three base64url segments, a
+numeric `exp` still in the future) and mirrors `isTokenValid()` in
+`AdminTokenContext.tsx`, which is what actually decides whether the gate opens.
+A stricter check here would reject tokens the app itself would accept.
+
+The auth logic a screenshot run steps around is covered by unit tests instead:
+`src/utils/auth.test.ts` pins the server-side `isAdmin` / `requireAdmin`
+behavior, including the signature-verification failure path, and
+`AdminTokenContext.test.ts` pins the client gate's `isTokenValid`.
+
 ## When behavior changes
 
 Per the project rules, a behavior change needs Vitest coverage in the same

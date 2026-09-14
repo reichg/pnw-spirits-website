@@ -224,18 +224,16 @@ describe("GET and DELETE error disclosure", () => {
 });
 
 describe("[id] path param validation", () => {
-  // parseInt reads a leading integer and discards the rest, so `1abc` resolved
-  // to blog 1; and it returns values past the column's 32-bit range, where
-  // Prisma throws instead of returning no rows - straight into the leaky catch.
+  // A behavioural sample, not the rule. The exhaustive table lives once, beside
+  // the parser this route imports: src/utils/rowId.test.ts. These three are the
+  // distinct failure modes it closes - `parseInt` truncating `1abc` onto blog 1,
+  // `Number()` resolving `0x1f` onto blog 31, and a value past the column's
+  // 32-bit range where Prisma throws instead of returning no rows - and what
+  // they prove here is that this route actually calls the shared schema.
   const rejected: [string, string][] = [
     ["trailing garbage", "1abc"],
-    ["non-numeric", "abc"],
-    ["empty", ""],
-    ["fractional", "1.5"],
-    ["negative", "-1"],
-    ["zero", "0"],
+    ["hexadecimal", "0x1f"],
     ["past the 32-bit column range", "3000000000"],
-    ["whitespace-padded garbage", "7 OR 1=1"],
   ];
 
   it.each(rejected)("GET rejects %s without querying", async (_l, id) => {

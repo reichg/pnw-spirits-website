@@ -46,9 +46,11 @@ import { ARCHIVE_PAGE_SIZE } from "@/utils/contentArchive";
 // answers 400 whenever the YouTube key or channel id is absent, so the degraded
 // path below is what a developer sees every day, not a rare failure.
 //
-// Rows are counted by their <h2> titles, which only ContentRow emits. No
-// assertion depends on a CSS-module class name: they are hashed and are not a
-// contract.
+// Rows are counted by their <h2> titles, which only ContentRow emits.
+// No assertion keys off a CSS-module class name. Under Vitest the import is a
+// Proxy that echoes ANY key back as `_<key>_<hash>`, so a class assertion could
+// never prove a rule exists anyway - see the canonical note in
+// Pagination.test.tsx.
 
 type VideoPayload = {
   id: string;

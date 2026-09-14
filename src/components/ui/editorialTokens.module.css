@@ -254,6 +254,31 @@
      is for. */
   --row-media-col: 26%;
 
+  /* --- Grain ---------------------------------------------------------------
+     The brand's one tactile mark, and a TOKEN because it had become a
+     duplicated literal: the same ~1kB data URI was declared in
+     ContentLandingLayout.module.css and again in AdminPageLayout.module.css,
+     which is the drift this file exists to prevent - a second shell copying a
+     third time is how one surface ends up at baseFrequency 0.8 and the next at
+     0.9 with nobody able to say which is right.
+
+     A url() is a legal custom-property value and a data URI has no relative
+     path to resolve, so it cannot pick up the base URL of whichever stylesheet
+     happens to read it. Both shells paint it the same way - a position: fixed
+     ::after at inset 0 - and only the image and the alpha are shared, because
+     the LAYER is shell geometry (z-index, pointer-events, which pseudo is
+     free) and the MARK is brand.
+
+     fractalNoise at 0.8 / 3 octaves, desaturated, tiled at 200px: fine enough
+     to read as film grain rather than as noise, coarse enough to survive a 1x
+     display. 0.035 is where it is perceptible on --surface-0 without lifting
+     the ground - at 0.05 the near-black measurably greys.
+
+     Keeping it on the admin was a decision, not an oversight: see the argument
+     recorded at .root::after in AdminPageLayout.module.css. */
+  --grain-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23g)'/%3E%3C/svg%3E");
+  --grain-opacity: 0.035;
+
   /* --- Motion -------------------------------------------------------------
      Decelerating ease-out for entrance and image motion. The global
      --transition-* tokens are a symmetric ease-in-out, which is right for a

@@ -89,17 +89,24 @@
 
 /* Fine film grain instead of a blurred photographic backdrop: about 1 kB
    inline, zero network requests, one static compositing layer. Uses ::after
-   because a page-level class on the same <main> owns ::before. */
+   because a page-level class on the same <main> owns ::before.
+
+   The image and its alpha are --grain-image / --grain-opacity, declared once in
+   editorialTokens.module.css and composed onto .root. They were a literal here
+   until the admin shell needed the same mark and copied it; two copies of a
+   1kB data URI is exactly the drift this file's header argues against. The
+   LAYER stays here because it is shell geometry - which pseudo is free, what
+   z-index the spine sits above - and that differs per shell. */
 .root::after {
   content: "";
   position: fixed;
   inset: 0;
   z-index: 0;
   pointer-events: none;
-  opacity: 0.035;
+  opacity: var(--grain-opacity);
   background-repeat: repeat;
   background-size: 200px 200px;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23g)'/%3E%3C/svg%3E");
+  background-image: var(--grain-image);
 }
 
 /* --- Page header ---------------------------------------------------------
@@ -173,8 +180,15 @@
    shadow, and no rules of its own - the header rule above and the CTA rule
    below already bracket it, and adding a third pair would put four hairlines
    inside 320px. */
+/* --empty-block-pad, defaulting to the public 64px. The KNOB, not the value:
+   an archive page's empty state is the whole body of the page and wants the
+   section rung; the admin composes this rule and lands up to three of them
+   inside one screen's panels, where 64px of air top and bottom reads as a
+   broken layout rather than as composure. The fallback is what keeps every
+   public reader on exactly the measurement they had - see
+   AdminEmptyState.module.css for the override and its reasoning. */
 .emptyMessage {
-  padding-block: var(--space-xl);
+  padding-block: var(--empty-block-pad, var(--space-xl));
   font-size: var(--fs-lede);
   line-height: 1.55;
   color: var(--ink-2);

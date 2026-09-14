@@ -41,8 +41,10 @@ import type { ContentArchiveSearchProps } from "./content.types";
 // new search to the first page. The label/input id wiring is also fully
 // observable, and it is the accessibility contract the placeholder cannot serve.
 //
-// No assertion depends on a CSS-module class name: they are hashed and are not a
-// contract.
+// No assertion keys off a CSS-module class name. Under Vitest the import is a
+// Proxy that echoes ANY key back as `_<key>_<hash>`, so a class assertion could
+// never prove a rule exists anyway - see the canonical note in
+// Pagination.test.tsx.
 
 const BASE: ContentArchiveSearchProps = {
   basePath: "/recipes",

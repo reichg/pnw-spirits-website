@@ -49,19 +49,21 @@ This project uses a pinned, modern toolchain. All dependencies are pinned to exa
 
 #### Available Scripts
 
-| Command             | Description                                                                                                                    |
-| ------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
-| `pnpm dev`          | Start the development server (listens on 0.0.0.0).                                                                             |
-| `pnpm build`        | Build the production app.                                                                                                      |
-| `pnpm start`        | Run the production build.                                                                                                      |
-| `pnpm lint`         | Lint the codebase with ESLint.                                                                                                 |
-| `pnpm typecheck`    | Type-check with `tsc --noEmit`.                                                                                                |
-| `pnpm test`         | Run the test suite with Vitest (`vitest run`).                                                                                 |
-| `pnpm format`       | Format the codebase with Prettier.                                                                                             |
-| `pnpm format:check` | Check formatting without writing changes.                                                                                      |
-| `pnpm db:seed`      | Seed the database.                                                                                                             |
-| `pnpm db:seed:demo` | Seed the database with demo content.                                                                                           |
-| `pnpm screenshot`   | Capture screenshots of the public pages from a running dev server, for design review. Requires `pnpm dev` in another terminal. |
+| Command             | Description                                                                                                                                                    |
+| ------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `pnpm dev`          | Start the development server (listens on 0.0.0.0).                                                                                                             |
+| `pnpm build`        | Build the production app.                                                                                                                                      |
+| `pnpm start`        | Run the production build.                                                                                                                                      |
+| `pnpm lint`         | Lint the codebase with ESLint.                                                                                                                                 |
+| `pnpm typecheck`    | Type-check with `tsc --noEmit`.                                                                                                                                |
+| `pnpm test`         | Run the test suite with Vitest (`vitest run`).                                                                                                                 |
+| `pnpm format`       | Format the codebase with Prettier.                                                                                                                             |
+| `pnpm format:check` | Check formatting without writing changes.                                                                                                                      |
+| `pnpm db:seed`      | Seed the database.                                                                                                                                             |
+| `pnpm db:seed:demo` | Seed the database with demo content.                                                                                                                           |
+| `pnpm screenshot`   | Capture screenshots from a running dev server, for design review — the public pages, or the admin set with `--admin`. Requires `pnpm dev` in another terminal. |
+
+`pnpm screenshot --admin` captures the `/admin` route set instead. Those pages sit behind a client-side auth gate, so the run needs an admin JWT — supply it through the `SCREENSHOT_ADMIN_TOKEN` environment variable rather than the `--admin-token` flag, which lands in shell history. Run `pnpm screenshot --help` for the full flag list and a worked example of minting a token from the running dev server; a real token must never be pasted into a command you will print, share, or commit.
 
 #### Prisma Commands
 

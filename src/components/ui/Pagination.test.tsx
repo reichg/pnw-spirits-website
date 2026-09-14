@@ -16,12 +16,20 @@ import Pagination from "./Pagination";
 // state (which encodes the clamp), and the "Page X of Y" status text.
 //
 // Both modes are covered, because both ship. Callback mode drives client-side
-// paging over an already-fetched array, whose only consumer is AdminBlogList.
-// Link mode drives URL-driven paging on the three content archives, reached
-// through ContentArchiveLayout. The two modes differ in the element they emit at
-// a boundary — a `disabled` <button> versus a non-interactive <span role="link"
-// aria-disabled="true"> — which is the substantive difference to pin, since
-// there is no such thing as a disabled anchor.
+// paging over an already-fetched array, consumed by the admin blog and recipe
+// lists. Link mode drives URL-driven paging on the three content archives,
+// reached through ContentArchiveLayout. Both modes now spell a boundary
+// `aria-disabled`, and differ only in the element: a focusable, inert <button>
+// versus a non-interactive <span role="link">, because there is no such thing
+// as a disabled anchor.
+//
+// The native `disabled` attribute is therefore a REGRESSION MARKER rather than
+// an expected one. A disabled element cannot hold focus, so a Next that
+// disabled itself on reaching the last page had the browser drop focus to
+// <body> - measured stable there for >935ms on both admin lists. The assertions
+// below pin the absence of `disabled` as tightly as the presence of
+// `aria-disabled`, since server markup is exactly where that distinction is
+// visible.
 //
 // The ONE path renderToStaticMarkup cannot exercise is the click -> onPageChange
 // callback, because firing a real click needs a DOM event dispatch (a forbidden
@@ -33,6 +41,33 @@ import Pagination from "./Pagination";
 // dispatching events. The vi.fn() handler is passed purely to prove rendering
 // does not invoke it at render time. Link mode has no equivalent gap: its clamp
 // is baked into the href the caller is asked for, which IS in the markup.
+//
+// WHAT A CSS-MODULE CLASS NAME IS WORTH IN THIS ENVIRONMENT — the canonical
+// statement for this suite, because this file is one of the three that assert on
+// one (with AdminConfirmDialog.test.tsx and SortablePhotoCard.test.tsx).
+//
+// Most files in this suite carry a line saying class names "are hashed and are
+// not a contract". That is true but it understates the situation, and read
+// literally it suggests the class does not reach the markup. It does. Verified
+// by probe: under Vitest's default `css: false`, a CSS-module import is not an
+// object at all but a PROXY that echoes ANY key back as `_<key>_<per-file hash>`
+// - `styles.keyThatDoesNotExist` yields `_keyThatDoesNotExist_4c2e46`, and
+// `Object.keys(styles)` is `[]`. The real .module.css file is never read.
+//
+// So a class assertion here can NEVER show that a style rule exists: delete
+// `.pageButtonDisabled` from the stylesheet entirely and every assertion below
+// still passes. It shows exactly one thing - WHICH IDENTIFIER THE COMPONENT
+// CHOSE, and therefore which branch it took. That is a real component contract,
+// and it is the only reason `pageButtonDisabled` is asserted below: the boundary
+// state has `aria-disabled` as its semantic carrier, and the class is the second
+// half of the same decision.
+//
+// It follows that the bare key (`toContain("pageButtonDisabled")`) is the right
+// spelling and `/_pageButtonDisabled_/` is not: the underscores are the
+// transform's naming scheme, which is a build artifact rather than anything this
+// component decides. Where a sibling file does use the underscored form it is to
+// stop a bare word like "danger" matching prose in an aria-label, and it says so
+// at the assertion.
 //
 // next/link is reduced to a plain anchor below. That is what makes `prefetch`
 // observable at all: the real component consumes the prop and never emits it as
@@ -100,7 +135,7 @@ describe("Pagination (node / server-render markup contract)", () => {
     expect(html).toContain('aria-label="Pagination"');
   });
 
-  it("disables Previous and enables Next on the first page", () => {
+  it("marks Previous unavailable and leaves Next available on the first page", () => {
     const html = renderToStaticMarkup(
       React.createElement(Pagination, {
         page: 1,
@@ -109,16 +144,17 @@ describe("Pagination (node / server-render markup contract)", () => {
       }),
     );
 
-    // The Previous button (the one labeled "Previous page") is disabled; the
-    // Next button is not. Slice around each accessible name to scope the check.
+    // Slice around each accessible name to scope the check to one control.
     const prev = sliceButton(html, "Previous page");
     const next = sliceButton(html, "Next page");
 
-    expect(prev).toContain("disabled");
-    expect(next).not.toContain("disabled");
+    expect(prev).toContain('aria-disabled="true"');
+    expect(prev).toContain("pageButtonDisabled");
+    expect(next).not.toContain("aria-disabled");
+    expect(next).not.toContain("pageButtonDisabled");
   });
 
-  it("disables Next and enables Previous on the last page", () => {
+  it("marks Next unavailable and leaves Previous available on the last page", () => {
     const html = renderToStaticMarkup(
       React.createElement(Pagination, {
         page: 3,
@@ -130,8 +166,9 @@ describe("Pagination (node / server-render markup contract)", () => {
     const prev = sliceButton(html, "Previous page");
     const next = sliceButton(html, "Next page");
 
-    expect(prev).not.toContain("disabled");
-    expect(next).toContain("disabled");
+    expect(prev).not.toContain("aria-disabled");
+    expect(next).toContain('aria-disabled="true"');
+    expect(next).toContain("pageButtonDisabled");
   });
 
   it("enables both controls on an interior page", () => {
@@ -146,8 +183,57 @@ describe("Pagination (node / server-render markup contract)", () => {
     const prev = sliceButton(html, "Previous page");
     const next = sliceButton(html, "Next page");
 
-    expect(prev).not.toContain("disabled");
-    expect(next).not.toContain("disabled");
+    expect(prev).not.toContain("aria-disabled");
+    expect(next).not.toContain("aria-disabled");
+    expect(prev).not.toContain("pageButtonDisabled");
+    expect(next).not.toContain("pageButtonDisabled");
+  });
+
+  it("never natively disables a boundary control, at either end", () => {
+    // THE REGRESSION THIS FILE EXISTS TO CATCH. `disabled` takes an element out
+    // of the tab order, and the browser blurs it the moment it is set - so a
+    // Next that disabled itself on reaching the last page dropped the admin's
+    // focus to <body>, under their own finger. aria-disabled keeps the control
+    // mounted, named, focusable and inert instead, and focus never moves.
+    //
+    // Asserted at BOTH ends and against the native attribute specifically:
+    // `toContain("disabled")` would pass on `aria-disabled="true"` alone, which
+    // is exactly how this could regress unnoticed.
+    for (const [page, boundary] of [
+      [1, "Previous page"],
+      [4, "Next page"],
+    ] as const) {
+      const control = sliceButton(
+        renderToStaticMarkup(
+          React.createElement(Pagination, {
+            page,
+            totalPages: 4,
+            onPageChange: () => {},
+          }),
+        ),
+        boundary,
+      );
+
+      expect(control).toContain('aria-disabled="true"');
+      expect(nativelyDisabled(control)).toBe(false);
+    }
+  });
+
+  it("keeps both controls in the markup at every page, so the row never changes shape", () => {
+    // A pager whose tab-stop count changes as you move through it is a moving
+    // target for a keyboard user. Two controls at every position, always named.
+    for (const page of [1, 2, 4]) {
+      const html = renderToStaticMarkup(
+        React.createElement(Pagination, {
+          page,
+          totalPages: 4,
+          onPageChange: () => {},
+        }),
+      );
+
+      expect((html.match(/<button/g) ?? []).length).toBe(2);
+      expect(nativelyDisabled(html)).toBe(false);
+    }
   });
 
   it("does not invoke onPageChange during render", () => {
@@ -318,6 +404,17 @@ describe("Pagination link mode (URL-driven archive paging)", () => {
     expect(builder).toHaveBeenCalledWith(2);
   });
 });
+
+/**
+ * True when the markup carries a NATIVE `disabled` attribute, as opposed to
+ * `aria-disabled`. React emits a boolean `disabled` as `disabled=""`, and
+ * `aria-disabled="true"` ends in the same eight characters - so a plain
+ * substring check cannot tell the two apart, and the whole point of this change
+ * is that they are not the same thing.
+ */
+function nativelyDisabled(html: string): boolean {
+  return /(?<!aria-)disabled=""/.test(html);
+}
 
 // Returns the substring of the rendered markup belonging to the <button> that
 // carries the given accessible name, so a per-button attribute (e.g. `disabled`)

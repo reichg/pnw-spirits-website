@@ -1,103 +1,364 @@
-.adminPageBg {
-  position: relative;
-  min-height: 100vh;
-  width: 100vw;
-  padding: 2rem;
-  background: url("/images/Vermouth.jpg") center center/cover no-repeat;
-}
+/* ===========================================================================
+   The newsletter composer - the one admin surface that is NOT the row anatomy
+   and not uniformly warm-dark.
 
-.adminPageBg::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: rgba(1, 8, 4, 0.61);
-}
+   WHAT IT REPLACES: a full-bleed Vermouth.jpg under an rgba(1,8,4,0.61) scrim,
+   a 900px rgba panel with a radius and a shadow, four hand-rolled form controls,
+   three colour-mixed message boxes (one of them --color-error, measured at
+   3.69:1 and below AA), and a white iframe sitting in the middle of it with no
+   frame and no caption. Every control, every message and the shell itself now
+   come from the design layer; what is left in this file is the COMPOSITION,
+   which is the only thing a screen is supposed to own.
 
-.container {
-  position: relative;
-  z-index: 1;
-  max-width: 900px;
-  margin: 0 auto;
-  padding: 1.75rem;
-  border-radius: var(--radius-md);
-  background: var(--color-bg-overlay);
-  box-shadow: var(--shadow-md);
-}
+   THE COMPOSITION DECISION: FORM AND SPECIMEN SIDE BY SIDE. The research settled
+   that this surface is "a form plus a preview" and said to frame the preview
+   rather than fight it; it did not say where to put it. Stacked, the specimen
+   sits below a ~18rem textarea, so the admin types HTML with the thing it
+   renders into off screen and confirms by scrolling. Beside it, the specimen is
+   in view while the source is being edited, which is the entire reason a
+   preview exists. Below the seam, where side-by-side is not available, the
+   ordering is what has to carry the argument instead - the specimen goes
+   between the draft and the send controls, never after them.
 
-.heading {
-  color: var(--color-accent-gold);
-  font-size: 2rem;
-  margin-bottom: 1.25rem;
-}
+   The seam is at 1000px rather than the design layer's usual 900, and the
+   number is derived: the spine is 1200px and email HTML is authored at 600px by
+   near-universal convention, so a half-spine column is 568px - a specimen at
+   very close to its true width. Below 1000px the two columns would each be
+   under ~470px, at which point the preview is no longer showing the email at
+   the width it was written for and the arrangement stops paying for itself.
 
-.form {
+   NO PANEL, NO RADIUS, NO SHADOW, and no background image. The page ground is
+   AdminPageLayout's.
+   =========================================================================== */
+
+/* THE GRID IS THE FORM ITSELF, and its three blocks are source, specimen and
+   commit. Below the seam they stack in that order, which is the whole reason
+   the preview moved inside the <form>: the send controls cannot leave it, so
+   the only way to get the specimen BETWEEN the draft and the irreversible
+   action - rather than stranded under it - is DOM order. The component states
+   the SC 1.3.2 half of that argument.
+
+   --space-l between the three, and it is doing double duty below the seam: it
+   is the block rhythm AND the specimen's external clearance, which is the
+   research's "generous --space-m" met at the rung above. Above the seam the
+   specimen leaves the column, so the row gap only separates the draft from its
+   action row and drops to --space-m - see the media query. */
+.composer {
   display: grid;
-  gap: 0.85rem;
+  gap: var(--space-l);
 }
 
-.label {
-  color: var(--color-text-inverse);
+/* The two blocks that stack in column one. One rule, because they are the same
+   thing at two altitudes: a vertical run of full-width form material at the
+   --space-m inner rhythm. Splitting them would be two identical declarations
+   waiting to drift apart. */
+.fields,
+.foot {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-m);
+  min-width: 0;
+}
+
+/* THE DOUBLED CLASS IS LOAD-BEARING, for the reason the design layer states
+   about globals.css and now one module further out. AdminTextarea merges this
+   class onto the same element as its own .control and .textarea, which is the
+   passthrough its contract advertises - but .control already declares
+   font-family and .textarea already declares min-block-size, and a single class
+   from a DIFFERENT module merely TIES with them. A tie between two CSS Modules
+   is settled by stylesheet emission order, which is not guaranteed, so the
+   monospace would be a bug that presents on one build and not the next.
+   (0,2,0) wins outright.
+
+   MONOSPACE, and only here. Every other field in the admin holds prose; this
+   one holds markup, where a proportional font hides the difference between a
+   closing tag and a mistyped one. --font-mono is the repo's own token.
+
+   18rem against the shared 10rem floor, which is sized for a session
+   description. This field holds an entire email, and 18rem is about eleven
+   lines - a <table> wrapper and the first block inside it visible at once,
+   which is the unit of email HTML anybody actually edits. */
+.htmlInput.htmlInput {
+  min-block-size: 18rem;
+  font-family: var(--font-mono);
+}
+
+/* The counts, inside the status message rather than beside it. AdminStatus
+   takes a node for exactly this - the send result is not a second message, it
+   is the same message at more resolution. Columns that wrap rather than a fixed
+   four, so at 390px inside a 64ch measure the set folds to two lines instead of
+   compressing each pair. */
+.counts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2xs) var(--space-m);
+  margin: var(--space-2xs) 0 0;
+}
+
+/* Label above value, the same eyebrow-over-fact treatment the record cards use
+   for their metadata, so a count and an "AUTHOR" read as the same kind of
+   thing. */
+.count {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15em;
+}
+
+.count dt {
+  font-size: var(--fs-eyebrow);
   font-weight: 600;
+  line-height: 1;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-3);
 }
 
-.input,
-.textarea {
-  width: 100%;
-  border-radius: var(--radius-sm);
-  border: 1px solid var(--color-input-border);
-  background: var(--color-input-bg);
-  color: var(--color-text-primary);
-  padding: 0.65rem;
+.count dd {
+  margin: 0;
+  font-size: var(--fs-body);
+  font-weight: 600;
+  line-height: 1.2;
+  /* --ink-2 at every count, including Failed. A non-zero Failed is a FACT about
+     a send that completed, not a destroyed record, and the rule this admin runs
+     on is that --danger marks a destructive commitment or a failed write and
+     nothing else. Reddening a number here would spend the alarm on a report. */
+  color: var(--ink-2);
 }
 
-.textarea {
-  resize: vertical;
+.failureExample {
+  display: block;
+  margin-top: var(--space-2xs);
+  font-size: var(--fs-meta);
+  line-height: 1.4;
+  color: var(--ink-3);
+  /* A bounced address can be long and unbroken; the status block has a 64ch
+     measure and no horizontal scroll of its own. */
+  overflow-wrap: anywhere;
 }
 
+/* flex-wrap, always. Two 40px controls with 8px between them and uppercase
+   tracked labels do not share a line inside a 390px gutter, and a bare flex row
+   would push the primary off the right edge rather than onto a second line. */
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2xs);
+  margin-top: var(--space-2xs);
+}
+
+/* NO flex-grow here, and it was wrong on the first pass: growing both controls
+   stretched them across the whole form column, which turned a primary and a
+   secondary into something that reads as a two-position segmented control -
+   two halves of one thing rather than two ranked actions. They take the width
+   of their own labels above the seam. The growth is a phone rule and lives in
+   the phone query, which is also where AdminPageLayout puts the identical rule
+   for its toolbar. */
+
+/* --- The specimen ---------------------------------------------------------
+   The caption names it; the hairline frames it; the clearance is what keeps it
+   from reading as a hole punched in the page. Below the seam the EXTERNAL
+   clearance is .composer's --space-l gap above and below; beside the form it is
+   the --space-xl column gap. Both exceed the --space-m the research asked for,
+   so nothing is declared here for it - a margin would be a third value
+   governing the same gap. The INTERNAL clearance, which is the one that was
+   missing and the one that actually does the framing, is on .previewPlate. */
+.preview {
+  min-width: 0;
+}
+
+.previewCaption {
+  margin: 0 0 var(--space-2xs);
+  font-size: var(--fs-eyebrow);
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+
+/* THE MAT IS THE FRAME, and without it the border was a no-op. Measured at
+   1440x900 before this rule: padding 0, border rgba(242,235,227,0.14), and the
+   white iframe butted straight up against it. A 14%-alpha warm-white line drawn
+   against #fff is invisible from the inside and 1.42:1 from the outside, so
+   what actually rendered was a raw 21:1 cliff from white to page ground with no
+   transition - the "hole punched in the page" the research named as the failure
+   mode, produced by the rule written to prevent it.
+
+   Two declarations fix it and both are required; either alone still reads as a
+   hole. The 16px of page ground inside the border is what the eye reads as a
+   mount, and the border is what gives that mount an edge - otherwise the inset
+   is just an unexplained offset and the white still floats.
+
+   --hairline-strong (3.20:1), AND THIS IS A DEPARTURE FROM THE TWO-TIER RULE
+   THAT THE RULE ITSELF LICENSES. The token contract splits the tiers by
+   perceivability, citing WCAG 1.4.11's 3:1, and files --hairline-strong under
+   "bounds an interactive control". 1.4.11 has a second clause - graphical
+   objects required to understand the content - and this line is squarely it:
+   it is the only thing on the page that says the white region is a mounted
+   sample rather than the page changing colour. --hairline is right for
+   AdminCard's .mediaEmpty because that plate is dark-on-dark and only needs to
+   be FELT; this one bounds the single highest-luminance object in the admin and
+   has to be READ. The precedent is the same token's own justification one file
+   over: "--hairline at 1.42:1 could not legally bound it".
+
+   --space-s and not the research's --space-m, and the cost is measured. The
+   column is 568px because email HTML is authored at 600px by convention and a
+   half-spine lands near that; a 24px mat spends 48px of it and takes the
+   specimen to 518, 14% under the width it was written for. 16px holds 536 -
+   under 6% off - and a mat this thin still separates the two grounds
+   completely, because the contrast doing the work is 21:1.
+
+   The mat is page ground, not --surface-1: at 1.056:1 a --surface-1 mount would
+   be indistinguishable from the page and would buy an extra colour for nothing.
+
+   IDENTICAL IN BOTH CONTENT STATES, deliberately. A border that changed weight
+   when the admin typed the first character would make the frame a status
+   indicator; it is furniture, and an empty mount reads as "the specimen goes
+   here", which is what the sentence inside it says. */
+.previewPlate {
+  display: flex;
+  padding: var(--space-s);
+  border: 1px solid var(--hairline-strong);
+  min-block-size: 22rem;
+}
+
+/* WHITE, AND THAT IS NOT A DRIFT FROM THE PALETTE. An iframe with no background
+   of its own composites the page's warm-dark through, so email HTML written for
+   an inbox - which is white, in every client - would preview against a ground
+   no subscriber will ever see it on. A literal rather than a token because it
+   is not this system's colour: it belongs to the medium being previewed, and a
+   token would invite some other surface to reach for it. */
 .previewFrame {
-  width: 100%;
-  min-height: 280px;
-  border-radius: var(--radius-sm);
-  border: 1px solid var(--color-input-border);
+  /* Fills the plate in both axes: flex-grow takes the inline axis, the flex
+     container's default stretch takes the block axis. An iframe carries a
+     300x150 intrinsic default that would otherwise sit in the corner of the
+     frame with warm-dark around two of its edges. */
+  flex: 1 1 auto;
+  min-inline-size: 0;
+  border: 0;
   background: #fff;
 }
 
-.buttonRow {
-  display: flex;
-  gap: 0.75rem;
-  flex-wrap: wrap;
+/* The preview's empty state, and the reason the white plate is conditional: a
+   blank white rectangle on first paint is the "hole in the page" reading the
+   framing exists to prevent, and it says nothing.
+
+   It stays at 22rem while empty, which the first render is what taught: pinned
+   to the viewport the plate was ~650px tall, and 650px of empty bordered ground
+   with one sentence floating in the middle of it is a worse hole than the white
+   one. That is still the governing constraint now that the filled plate has
+   come down to ~414px - the empty height was never the defect and does not move
+   with it, so the two states now differ by ~60px rather than ~300. The tall
+   sizing is a .previewPlateFilled rule rather than an override on
+   .previewPlate, so the two never contest a property. */
+.previewEmpty {
+  margin: auto;
+  padding: var(--space-m);
+  max-width: 32ch;
+  text-align: center;
+  font-size: var(--fs-meta);
+  line-height: 1.5;
+  color: var(--ink-3);
 }
 
-.error {
-  border-radius: var(--radius-sm);
-  padding: 0.6rem 0.75rem;
-  color: var(--color-text-inverse);
-  background: color-mix(in srgb, var(--color-error) 80%, black 20%);
-}
-
-.success {
-  border-radius: var(--radius-sm);
-  padding: 0.6rem 0.75rem;
-  color: var(--color-text-inverse);
-  background: color-mix(in srgb, var(--color-success) 70%, black 30%);
-}
-
-.result {
-  border-radius: var(--radius-sm);
-  padding: 0.75rem;
-  color: var(--color-text-inverse);
-  background: rgba(0, 0, 0, 0.3);
-  display: grid;
-  gap: 0.25rem;
-}
-
-@media (max-width: 700px) {
-  .container {
-    margin: 1rem;
-    padding: 1rem;
+@media (min-width: 1000px) {
+  /* NAMED AREAS, because the mobile DOM order is source -> specimen -> commit
+     and the desktop composition is not. Auto-placement would drop the specimen
+     into column 2 of row 1 only, leaving the action row stranded in row 3 and a
+     column-height hole beside the fields; a spanning `grid-row: 1 / -1` cannot
+     be used either, because against a single-row explicit grid -1 resolves to
+     the last EXPLICIT line rather than the last implicit one. Two declared rows
+     with the specimen spanning both is the only placement that states the
+     intent instead of depending on how the tracks happen to resolve. */
+  .composer {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-areas:
+      "fields preview"
+      "foot   preview";
+    /* --space-xl, not --col-gap. Two columns of unlike material - a stack of
+       dark controls and a white plate - need more separation than two columns
+       of the same material, or the plate's edge reads as the form's right
+       margin. */
+    column-gap: var(--space-xl);
+    /* --space-m, down from the stacked --space-l. Above the seam this gap no
+       longer carries the specimen's clearance - only the step from the draft to
+       its action row, which is an inner-block rhythm and takes the inner rung. */
+    row-gap: var(--space-m);
+    /* Required for the sticky below to have anywhere to travel: stretched grid
+       items are already as tall as the row - and here the specimen's area spans
+       both rows, so without this it would stretch to the entire form's height,
+       which is the shape the review mistook for the cause of the white slab. */
+    align-items: start;
   }
 
-  .heading {
-    font-size: 1.6rem;
+  .fields {
+    grid-area: fields;
+  }
+
+  .foot {
+    grid-area: foot;
+  }
+
+  /* Sticky, because the textarea is the tall element on this page and the
+     specimen is useless once it has scrolled away. Safe to pin at the viewport
+     top: AdminHeader is position: relative, so there is no fixed chrome for
+     this to slide under. */
+  .preview {
+    grid-area: preview;
+    position: sticky;
+    top: var(--space-m);
+  }
+
+  /* 72vh WAS TOO MUCH WHITE, and the correction is measured rather than felt.
+     At 1440x900 that resolved to 648px, so the plate rendered 568x648 = 28.2%
+     of the viewport in pure white for a three-line email - and white is 21:1
+     against --surface-0 where the brightest ink this palette owns is 13.57:1.
+     The specimen outranked the composer; the page's hierarchy was inverted by
+     its own preview.
+
+     A CORRECTION TO THE REVIEW THAT FOUND IT, recorded because the wrong
+     mechanism would send the next reader to the wrong line. The finding
+     attributed the 648px to the plate being a stretched grid item inheriting
+     the form column's height, and prescribed `align-items: start`. That rule
+     was already present below and the plate was already start-aligned: 648 is
+     exactly 72vh of 900, and the same capture at 1024x768 measured 553 = 72vh
+     of 768. The height was always this declaration. The symptom was real; the
+     cause was one line lower than reported.
+
+     THE FLOOR IS 22rem BECAUSE THAT IS THE EMPTY PLATE'S OWN HEIGHT. Typing the
+     first character must never make the specimen SHRINK, which a bare clamp
+     floored lower would do on a short viewport. So the two states share a
+     bound: the plate opens at 22rem and grows from there, never below.
+
+     The ceiling is 28rem. At 1440x900 the clamp yields 414px, which is 36%
+     off the old slab and puts the white at ~16% of the viewport; the specimen
+     is still 1.4x the height of the 18rem source field it mirrors, so the
+     render is never a smaller window than the markup. Between those bounds it
+     tracks the viewport, and the bounds bind at 626px and 974px of viewport
+     height - so on the 768 and 900 displays this is actually used on, the vh
+     term is the one doing the work.
+
+     AND IT CANNOT BE SIZED TO ITS CONTENT, which is the thing the next person
+     will try. Auto-sizing an iframe to its document requires measuring that
+     document from the parent, and `sandbox=""` puts the frame in a unique
+     opaque origin precisely so the parent cannot reach into it. Giving the
+     measurement back would mean handing the script the sandbox exists to block
+     a channel into this page. A fixed window that the email scrolls inside is
+     the correct trade, and it is also what an email client does.
+
+     block-size against .previewPlate's min-block-size, still never the same
+     property, for the reason that rule pair was built on. */
+  .previewPlateFilled {
+    block-size: clamp(22rem, 46vh, 28rem);
+  }
+}
+
+/* The phone rule the action row's own comment points at. Below the seam the
+   wrap has already happened, so growing each control spans it across the
+   gutter - the only width at which a 40px target is comfortably thumb-sized,
+   and the same rule AdminPageLayout applies to its toolbar at the same width. */
+@media (max-width: 599px) {
+  .actions > * {
+    flex: 1 1 auto;
   }
 }

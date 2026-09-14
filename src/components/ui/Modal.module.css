@@ -1,6 +1,12 @@
 /* Full-screen backdrop: dims and softly blurs the page behind the dialog,
    matching the site's existing backdrop-filter usage (see PhotoAlbum swipe
-   hint). Centers the panel; the high z-index keeps it above page chrome. */
+   hint). Centers the panel; the high z-index keeps it above page chrome.
+
+   A CONSUMER CAN REPLACE THE BLUR, and only through `backdropClassName` - see
+   Modal.tsx. This element is the panel's PARENT, so no custom property set by a
+   consumer's panel class can reach it, and the admin dialogs need to opt out of
+   a 3px blur that is the only one on their whole surface. The blur stays the
+   default because the public dialogs were designed with it. */
 .backdrop {
   position: fixed;
   inset: 0;
@@ -39,7 +45,38 @@
   animation: panelIn var(--transition-medium) ease-out both;
 }
 
-/* Close affordance pinned to the top-right corner of the panel. */
+/* The panel takes initial focus now (see Modal.tsx), and it is a tabIndex={-1}
+   container rather than a control - so a UA focus ring drawn around the whole
+   dialog would be marking something the user cannot act on and did not navigate
+   to.
+
+   :not(:focus-visible) is what keeps that from becoming a suppressed focus
+   indicator. Programmatic focus does not match :focus-visible, so this removes
+   the outline for exactly the case it should - the dialog opening - and leaves
+   it for the one case where a keyboard user genuinely lands here, which is the
+   trap holding focus on the panel when a dialog contains nothing focusable at
+   all. Removing the ring unconditionally would make that state invisible. */
+.panel:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* Close affordance pinned to the top-right corner of the panel.
+
+   40px, RAISED FROM 32px, AND THE REASON IS NOT THE ADMIN. A 2rem control
+   passes SC 2.5.8 (24x24) and fails the target size every other control on this
+   site is built to; the dialog it closes is most often the photo lightbox,
+   which is opened on a phone, held one-handed, and dismissed by a thumb aimed
+   at the corner of the screen. This is the same judgement editorialTokens
+   records for --step-marker: a target must not be smallest on the device where
+   it is hardest to hit. The panel's 1.5rem padding still clears it.
+
+   EVERY PAINTED VALUE IS A KNOB WITH THE PUBLIC VALUE AS ITS DEFAULT. The
+   admin's dialogs need this control in their own vocabulary - square, ruled,
+   no fill - and were reaching it with a `.panel.panel > button` descendant
+   selector from outside this file: a structural coupling to "the panel's only
+   direct-child button", which is true today and is not a contract. Custom
+   properties inherit from the panel to this element, so the admin now sets
+   values instead of out-specifying rules, and no public reader changes. */
 .close {
   position: absolute;
   top: 0.5rem;
@@ -48,24 +85,68 @@
   align-items: center;
   justify-content: center;
   z-index: 3;
-  width: 2rem;
-  height: 2rem;
+  width: var(--modal-close-size, 2.5rem);
+  height: var(--modal-close-size, 2.5rem);
   padding: 0;
   font-size: 1.6rem;
   line-height: 1;
-  color: var(--color-text-inverse);
-  background: var(--color-bg-overlay);
-  border: 1px solid var(--color-border-dark);
-  border-radius: var(--radius-md);
+  color: var(--modal-close-ink, var(--color-text-inverse));
+  background: var(--modal-close-bg, var(--color-bg-overlay));
+  border: 1px solid var(--modal-close-rule, var(--color-border-dark));
+  border-radius: var(--modal-close-radius, var(--radius-md));
   cursor: pointer;
   transition:
     color var(--transition-medium),
     border-color var(--transition-medium);
 }
-.close:hover,
+/* THE DOUBLED CLASS IS LOAD-BEARING, and it is fixing a leak rather than
+   preventing one. globals.css declares "button:hover { background:
+   var(--color-accent-dark) }"; this rule declares color and border-color and
+   never declared background, so the global one has been painting a brown fill
+   behind this control on every hover, on the public dialogs as well as the
+   admin's - untransitioned, since the transition list here is colour only, and
+   contradicting the comment above it. Restating the resting background at a
+   specificity that outranks (0,1,1) is what makes the hover do what this file
+   says it does. The admin was already working around it from its own
+   stylesheet; the workaround is now unnecessary. */
+.close.close:hover,
+.close.close:focus-visible {
+  background: var(--modal-close-bg, var(--color-bg-overlay));
+  color: var(--modal-close-ink-hover, var(--color-accent-gold));
+  border-color: var(--modal-close-rule-hover, var(--color-accent-gold));
+}
+
+/* A STATED RING, because there was none: this repo declares no global
+   :focus-visible style, so the only thing marking the focused close control was
+   the UA's own ring - a white-on-black double line over a dark dialog, decided
+   by the browser rather than by this design. Gold at 2px with an offset is what
+   every other control in the system focuses to. It is a token so a surface with
+   a different ground can re-point it; nothing needs to today. */
 .close:focus-visible {
-  color: var(--color-accent-gold);
-  border-color: var(--color-accent-gold);
+  outline: 2px solid var(--modal-close-focus, var(--color-accent-gold));
+  outline-offset: 2px;
+}
+
+/* A locked dialog (a confirm mid-request) disables this control along with
+   every other dismissal route, so it has to stop LOOKING pressable - an enabled
+   appearance on a control that does nothing is the defect this pairs with, not
+   a cosmetic detail. The cursor is the part that matters most: it is what a
+   pointer user reads before clicking.
+
+   Contrast is not lowered further than the ink tier below, and it does not need
+   to be: a disabled control is exempt from the contrast minimum, and dimming it
+   to the point of illegibility would hide the fact that a Close affordance
+   exists at all. */
+.close:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+/* The hover rule above is (0,2,1) and would otherwise still fire on a disabled
+   button, repainting it as though it were live under the pointer. */
+.close.close:disabled:hover {
+  color: var(--modal-close-ink, var(--color-text-inverse));
+  border-color: var(--modal-close-rule, var(--color-border-dark));
 }
 
 @keyframes backdropFade {

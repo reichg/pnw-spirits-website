@@ -22,8 +22,11 @@ import type { ContentItem } from "./content.types";
 // papered over; the post-effect swap to a real <img> is the environment-imposed
 // gap.
 //
-// Class names are hashed by the CSS-modules transform and are not a contract, so
-// elements are identified by tag and text content rather than by class.
+// No assertion keys off a CSS-module class name. Under Vitest the import is a
+// Proxy that echoes ANY key back as `_<key>_<hash>`, so a class assertion could
+// never prove a rule exists anyway - see the canonical note in
+// Pagination.test.tsx.
+// Elements are identified by tag and text content rather than by class.
 
 const ITEM: ContentItem = {
   id: "12",

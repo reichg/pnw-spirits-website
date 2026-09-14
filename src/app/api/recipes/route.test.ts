@@ -1,8 +1,13 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const { prismaMock, redisMock, invalidateRecipeCache } = vi.hoisted(() => ({
   prismaMock: {
-    cocktailRecipe: { findMany: vi.fn(), count: vi.fn() },
+    cocktailRecipe: {
+      findMany: vi.fn(),
+      count: vi.fn(),
+      update: vi.fn(),
+      delete: vi.fn(),
+    },
   },
   redisMock: { get: vi.fn(), set: vi.fn(), del: vi.fn(), keys: vi.fn() },
   invalidateRecipeCache: vi.fn(),
@@ -19,10 +24,13 @@ vi.mock("@/utils/logger", () => ({
   logger: { info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() },
 }));
 
+import jwt from "jsonwebtoken";
 import type { NextRequest } from "next/server";
-import { GET } from "./route";
+import { MAX_INT4 } from "@/utils/rowId";
+import { DELETE, GET, PATCH } from "./route";
 
 const DEFAULT_PAGE_SIZE = 10;
+const TEST_JWT_SECRET = "test-jwt-secret";
 
 const RECIPE = {
   id: 1,
@@ -61,10 +69,17 @@ async function cacheKeyFor(query?: string): Promise<string> {
 
 beforeEach(() => {
   vi.clearAllMocks();
+  vi.stubEnv("JWT_SECRET", TEST_JWT_SECRET);
   redisMock.get.mockResolvedValue(null);
   redisMock.set.mockResolvedValue("OK");
   prismaMock.cocktailRecipe.findMany.mockResolvedValue([RECIPE]);
   prismaMock.cocktailRecipe.count.mockResolvedValue(1);
+  prismaMock.cocktailRecipe.update.mockResolvedValue(RECIPE);
+  prismaMock.cocktailRecipe.delete.mockResolvedValue(RECIPE);
+});
+
+afterEach(() => {
+  vi.unstubAllEnvs();
 });
 
 describe("GET /api/recipes pagination params reaching Prisma", () => {
@@ -255,5 +270,117 @@ describe("GET /api/recipes preserved behavior", () => {
     await expect(res.json()).resolves.toEqual({
       error: "Failed to fetch recipes",
     });
+  });
+});
+
+const adminToken = (): string => jwt.sign({ role: "admin" }, TEST_JWT_SECRET);
+
+/** PATCH/DELETE read the body and the Authorization header, and nothing else. */
+function bodyRequest(body: unknown, authorization?: string): NextRequest {
+  return {
+    headers: new Headers(
+      authorization ? { authorization } : ({} as Record<string, string>),
+    ),
+    json: async () => body,
+  } as unknown as NextRequest;
+}
+
+const asAdmin = (body: unknown) => bodyRequest(body, `Bearer ${adminToken()}`);
+
+const RECIPE_FIELDS = {
+  title: "Pacific Negroni",
+  description: "...",
+  author: "Ada",
+  ingredients: "...",
+  instructions: "...",
+};
+
+/**
+ * A behavioural sample, not the rule.
+ *
+ * The exhaustive table lives once, beside the parser these schemas embed:
+ * src/utils/rowId.test.ts. `59.5` and `"59.5"` are the shapes that mattered here
+ * — `Number()` stood in front of a bare `z.number()`, so both survived and
+ * Prisma truncated them onto recipe 59, a request aimed at a row that does not
+ * exist editing one that does. `"0x1f"` coerced to 31 the same way. What these
+ * prove is that the route now calls the shared schema on a body id.
+ */
+const REJECTED_IDS: [string, unknown][] = [
+  ["a fractional id", 59.5],
+  ["a fractional id as a string", "59.5"],
+  ["a hex id", "0x1f"],
+  ["an id above the Int ceiling", MAX_INT4 + 1],
+  ["a zero id", 0],
+  ["a negative id", -1],
+  ["a missing id", undefined],
+];
+
+describe("PATCH /api/recipes body id", () => {
+  it.each(REJECTED_IDS)("rejects %s and writes nothing", async (_label, id) => {
+    const res = await PATCH(asAdmin({ ...RECIPE_FIELDS, id }));
+
+    expect(res.status).toBe(400);
+    expect(prismaMock.cocktailRecipe.update).not.toHaveBeenCalled();
+    expect(invalidateRecipeCache).not.toHaveBeenCalled();
+  });
+
+  it("accepts a well-formed id and passes it through as a number", async () => {
+    const res = await PATCH(asAdmin({ ...RECIPE_FIELDS, id: 59 }));
+
+    expect(res.status).toBe(200);
+    expect(prismaMock.cocktailRecipe.update).toHaveBeenCalledWith(
+      expect.objectContaining({ where: { id: 59 } }),
+    );
+  });
+});
+
+describe("DELETE /api/recipes body id", () => {
+  it.each(REJECTED_IDS)(
+    "rejects %s and deletes nothing",
+    async (_label, id) => {
+      const res = await DELETE(asAdmin({ id }));
+
+      expect(res.status).toBe(400);
+      expect(prismaMock.cocktailRecipe.delete).not.toHaveBeenCalled();
+      expect(invalidateRecipeCache).not.toHaveBeenCalled();
+    },
+  );
+
+  it("accepts a well-formed id and passes it through as a number", async () => {
+    const res = await DELETE(asAdmin({ id: 59 }));
+
+    expect(res.status).toBe(200);
+    expect(prismaMock.cocktailRecipe.delete).toHaveBeenCalledWith({
+      where: { id: 59 },
+    });
+  });
+});
+
+describe("/api/recipes write authorization", () => {
+  // Authorization stays in front of parsing, so a caller who is not an admin
+  // never reaches the id check at all.
+  it.each([
+    ["PATCH", PATCH],
+    ["DELETE", DELETE],
+  ])("refuses an anonymous %s before parsing the body", async (_l, handler) => {
+    const res = await handler(bodyRequest({ ...RECIPE_FIELDS, id: 59.5 }));
+
+    expect(res.status).toBe(401);
+    expect(prismaMock.cocktailRecipe.update).not.toHaveBeenCalled();
+    expect(prismaMock.cocktailRecipe.delete).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    ["PATCH", PATCH],
+    ["DELETE", DELETE],
+  ])("refuses a valid non-admin %s with 403", async (_l, handler) => {
+    const token = jwt.sign({ role: "user" }, TEST_JWT_SECRET);
+    const res = await handler(
+      bodyRequest({ ...RECIPE_FIELDS, id: 59 }, `Bearer ${token}`),
+    );
+
+    expect(res.status).toBe(403);
+    expect(prismaMock.cocktailRecipe.update).not.toHaveBeenCalled();
+    expect(prismaMock.cocktailRecipe.delete).not.toHaveBeenCalled();
   });
 });

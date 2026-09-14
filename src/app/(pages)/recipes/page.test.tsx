@@ -50,9 +50,11 @@ import { MAX_SEARCH_LENGTH } from "@/utils/pagination";
 // against the helpers in isolation, because the helpers already have their own
 // unit tests and the wiring between them is what was untested.
 //
-// Rows are counted by their <h2> titles, which only ContentRow emits. No
-// assertion depends on a CSS-module class name: they are hashed and are not a
-// contract.
+// Rows are counted by their <h2> titles, which only ContentRow emits.
+// No assertion keys off a CSS-module class name. Under Vitest the import is a
+// Proxy that echoes ANY key back as `_<key>_<hash>`, so a class assertion could
+// never prove a rule exists anyway - see the canonical note in
+// Pagination.test.tsx.
 
 type RecipePayload = {
   id: number;

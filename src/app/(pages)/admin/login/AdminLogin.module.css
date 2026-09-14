@@ -1,157 +1,72 @@
-.error {
-  color: var(--color-error, #b85c5c);
-  background: rgba(255, 220, 220, 0.85);
-  border-radius: 8px;
-  padding: 8px 12px;
-  margin: 10px 0 0 0;
-  font-size: 1rem;
-  text-align: center;
-  box-shadow: 0 2px 8px rgba(35, 66, 54, 0.07);
-}
-.form {
-  max-width: 550px;
-  width: 100%; 
-  background: rgba(255, 248, 240, 0.82);
-  border-radius: 18px;
-  box-shadow: 0 8px 32px rgba(35, 66, 54, 0.18);
-  font-family: "Geist", "Inter", sans-serif;
-  border: 1.5px solid var(--color-accent-primary);
-  backdrop-filter: blur(8px) saturate(1.15);
-  -webkit-backdrop-filter: blur(8px) saturate(1.15);
-  padding: 40px 28px 32px 28px;
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;
+/* ===========================================================================
+   The sign-in panel.
+
+   WHAT IT REPLACES, and it is worth listing because almost none of it belonged
+   to this product: a 550px rgba(255,248,240,0.82) panel - a LIGHT card, on a
+   warm-dark site - at 18px radius with an 8px backdrop-filter and two stacked
+   box-shadows; labels in var(--color-accent-secondary) #3d4a3a, a dark green
+   that is illegible the moment that panel is not cream; inputs at 9px radius
+   with their own shadow; a 90deg two-colour gradient submit button; an error
+   box painting rgba(255,220,220,0.85) behind --color-error text, which is a
+   light panel AND a colour measured at 3.69:1, below AA; and a nested
+   `.button:hover` rule written INSIDE the `.button` block, which CSS Modules
+   does not compile as a nested selector, so the hover state never existed.
+
+   None of that is restyled here. Every control on this form now comes from the
+   admin design layer, and what is left is the panel's measure and its internal
+   rhythm - which is the only thing this file should ever have owned.
+
+   NO PANEL SURFACE. There is nothing for a panel to separate this form FROM:
+   it sits alone in its own half of the viewport, on the page ground, with a
+   photograph on the other side of a hard seam. A card drawn around it would be
+   a box inside a box.
+   =========================================================================== */
+
+.panel {
+  /* 24rem, and the measure is the form's not the page's. A text input wider
+     than this is harder to use rather than easier - the cursor ends up a long
+     way from the label that says what belongs in it - and a username is never
+     long. It sits centred in its column by the shell's own justification plus
+     this auto margin, so the two halves of the split meet at the middle and the
+     form sits in the middle of its half. */
+  inline-size: min(100%, 24rem);
+  margin-inline: auto;
 }
 
-.heading {
-  margin-bottom: 22px;
-  font-size: 1.7rem;
-  font-weight: 700;
-  color: var(--color-accent-primary);
-  text-align: center;
-  letter-spacing: 0.7px;
-  font-family: var(--font-sans, "Geist", "Inter", sans-serif);
-}
-
-.adminLoginRoot {
-  min-height: 100vh;
-  width: 100vw;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: flex-start;
-  padding: 2.5rem 2.5rem;
-  position: relative;
-  overflow: hidden;
-}
-
-.adminLoginRoot::before {
-  content: "";
-  position: absolute;
-  top: -10;
-  left: -10;
-  width: 103%;
-  height: 103%;
-  background: url("/images/Bottles.jpg") center center/cover no-repeat;
-  filter: blur(18px) brightness(0.85) saturate(1.1);
-  z-index: 0;
-  pointer-events: none;
-}
-
-.adminLoginRoot > * {
-  position: relative;
-  z-index: 1;
-}
-
-.field {
-  margin-bottom: 18px;
-}
-
-.label {
-  font-size: 1.08rem;
-  font-weight: 500;
-  color: var(--color-accent-secondary, #3d4a3a);
-  margin-bottom: 4px;
-  display: block;
-}
-
-.input {
-  width: 100%;
-  padding: 12px 14px;
-  border: 1.5px solid var(--color-accent-primary, #b85c5c);
-  border-radius: 9px;
-  font-size: 1.08rem;
-  margin-top: 6px;
-  font-family: inherit;
-  background: rgba(255, 255, 255, 0.92);
-  color: var(--color-text-primary, #2e2e2e);
-  transition:
-    border 0.18s,
-    box-shadow 0.18s;
-  box-shadow: 0 2px 8px rgba(35, 66, 54, 0.07);
-}
-.input:focus {
-  border: 2px solid var(--color-accent-primary, #b85c5c);
-  outline: none;
-  box-shadow: 0 4px 16px rgba(35, 66, 54, 0.13);
-}
-
-.button {
-  width: 100%;
-  padding: 13px 0;
-  background: linear-gradient(
-    90deg,
-    var(--color-accent-primary, #b85c5c) 60%,
-    var(--color-accent-secondary, #3d4a3a) 100%
-  );
-  color: #fff;
-  border: none;
-  border-radius: 9px;
-  font-size: 1.13rem;
+/* Gold at eyebrow size, the same treatment and the same arithmetic as every
+   other eyebrow in the system and as the "Checking access" gate specifically:
+   at 11-12px copper is ~4.6:1 on this ground and gold is ~9.7:1, so copper is
+   the colour of rules and gold is the colour of accent text. */
+.eyebrow {
+  margin: 0;
+  font-size: var(--fs-eyebrow);
   font-weight: 600;
-  cursor: pointer;
-  transition:
-    background 0.2s,
-    box-shadow 0.2s;
-  margin-top: 12px;
-  box-shadow: 0 2px 8px rgba(35, 66, 54, 0.1);
-  .button:hover,
-  .button:focus {
-    background: linear-gradient(
-      90deg,
-      var(--color-accent-secondary, #3d4a3a) 60%,
-      var(--color-accent-primary, #b85c5c) 100%
-    );
-    box-shadow: 0 4px 16px rgba(35, 66, 54, 0.13);
-  }
-}
-.button:disabled {
-  background: #ccc;
-  cursor: not-allowed;
-  color: #b85c5c;
-  margin-bottom: 10px;
-  text-align: center;
-  font-size: 1em;
+  line-height: 1;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-accent-gold);
 }
 
-@media (max-width: 600px) {
-  .form {
-    max-width: 96vw;
-    padding: 18px 18px;
-    border-radius: 10px;
-  }
-  .heading {
-    font-size: 1.13rem;
-    margin-bottom: 12px;
-  }
-  .input {
-    font-size: 0.98rem;
-    padding: 8px 8px;
-  }
-  .button {
-    font-size: 1rem;
-    padding: 9px 0;
-    border-radius: 6px;
-  }
+/* --fs-h2, matching every other admin page heading rather than the public
+   --fs-page poster size. This page has more room than any other admin screen
+   and is the one most tempted to spend it on type; a login heading that is
+   larger than the portal's own would rank the door above the building. */
+.heading {
+  margin: var(--space-s) 0 0;
+  font-size: var(--fs-h2);
+  font-weight: 600;
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+  color: var(--ink-1);
+}
+
+/* --space-l between the heading and the first field, --space-m between fields:
+   the same ratio the panel component uses between sections and within one, and
+   it is what makes the brand block read as a header over the form rather than
+   as its first row. */
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-m);
+  margin-top: var(--space-l);
 }

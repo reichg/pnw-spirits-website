@@ -1,0 +1,363 @@
+/* ===========================================================================
+   Admin page shell - the ground, the spine and the two-band header that every
+   admin screen renders into.
+
+   ONE HEADER, ONE DECLARATION SITE, FOR ALL FIVE SCREENS. That is the whole
+   point of this file. The admin arrived at this redesign carrying two
+   near-verbatim copies of the same card block (AdminBlogList / AdminRecipeList)
+   plus five hand-tuned copies of one blurred-photograph filter chain, and the
+   cure is not a shared class here and there - it is that no admin screen
+   declares a header at all.
+
+   THE HEADER COMPOSITION DECISION, AND WHAT LOST. The research offered two
+   implementations and forbade a third. Neither of the two was taken, and the
+   reasoning is worth stating because "compose the public archive header" looks
+   like the obviously correct answer:
+
+   (a) COMPOSE ContentArchiveLayout.module.css's .header. Rejected. That rule
+       declares exactly three properties - padding-bottom: --space-l,
+       margin-bottom: --space-xl, border-bottom: 1px solid --rule-accent - and
+       the admin wants only the third. The archive's 40/64 rhythm is derived for
+       a page whose rows are ~392px apart; this page's rows are 80px apart, and
+       64px of air between the copper rule and the first hairline is 9.5% of a
+       900px viewport spent on a gap. So composing would mean overriding two of
+       the three declarations it brought - and overriding a composed class is
+       precisely the equal-specificity, emission-order contest that
+       editorialTokens.module.css exists to forbid. Composing is only safe when
+       you override nothing.
+   (b) EXTRACT a shared archive shell that the public archive and the admin both
+       compose. Rejected on the same measurement. Once (a)'s two overrides are
+       accounted for, the genuinely shared surface is ONE declaration -
+       `border-bottom: 1px solid var(--rule-accent)` - and that value is already
+       shared, through the token. Extracting a fourth module to co-own a border
+       whose colour already has a single declaration site moves code without
+       removing a single duplicated value. It is also outside this specialist's
+       file boundary and would have blocked the wave on a round trip.
+   (c) A third hand-written header. Forbidden, and correctly - but the thing
+       (c) actually names is duplicated LITERALS: two files that separately spell
+       rgba(1,8,4,0.96) and blur(4px) and 20rem drift the moment one is retuned.
+       Nothing below is a literal. Every value is a token reference, so the admin
+       header and the archive header cannot disagree about the ground, the ink,
+       the type scale or the copper - only about rhythm, which is the one thing
+       they are supposed to disagree about.
+
+   WHAT THE ADMIN HEADER KEEPS FROM THE ARCHIVE'S, DELIBERATELY: two bands and
+   no more (Grafana's four bands cost ~200px of chrome before the first record);
+   the copper rule closing the header; the count set as an inventory line in the
+   meta register rather than as a lede; the controls pinned right by an auto
+   margin rather than by space-between, because an element's position must not
+   depend on whether its neighbour rendered.
+
+   AND WHAT IT CHANGES: the heading is --fs-h2 (24 -> 32px), not --fs-page
+   (36 -> 64px). --fs-page is a poster size for a landing page whose heading is
+   the only thing above the fold. An admin page heading is a label on a tool,
+   and the 32px saved is a ninth record on screen.
+   =========================================================================== */
+
+.root {
+  composes: adminSurface from "./adminTokens.module.css";
+
+  position: relative;
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  font-family: var(--font-primary);
+  background: var(--surface-0);
+  color: var(--ink-1);
+  /* 24 / 64, against the public shell's clamp(3rem, 9vw, 7rem) top. The public
+     shell opens with up to 112px of air because its heading is a poster with
+     nothing above it; this one opens under a chrome bar that already says where
+     you are, and every pixel here is taken from the list.
+
+     THE TOP STEP WAS --space-l AND IS NOW --space-m, WHICH IS WHERE THE REVIEW'S
+     DENSITY FINDING WAS PAID FROM. Rendered rather than budgeted, the chrome
+     above the first record on /admin/blogs measured 297.8px at 1440x900 against
+     the ~232px this budget assumed, and 80px of it was pure gap: 40 here and 40
+     below the header's rule. The 40 below the rule is load-bearing - see
+     .header, where it carries the 0.60 ratio that makes the rule CLOSE the
+     header rather than float between two blocks - but this step answers only to
+     the admin bar above it, which already says where you are. 24 returns 16px
+     to the list: first record y297.8 -> 281.8, list area 618.2px, 7.73 records
+     of 80px against 7.53. EIGHT WHOLE records would need the first record at
+     y<=260 and is not reachable by spacing steps alone. */
+  padding: var(--space-m) var(--gutter) var(--space-xl);
+}
+
+/* Every direct child on one left-aligned 1200px spine, lifted above the grain.
+   Identical in intent to the public shell's rule, and the admin needs it for
+   the same reason: the header rule, the list and the pager must all start and
+   stop on the same two edges or the page stops reading as a single column. */
+.root > * {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: var(--container);
+  margin-inline: auto;
+}
+
+/* THE GRAIN LAYER, AND THE DECISION TO KEEP IT ON A WORKING SURFACE.
+   The research left this open on performance grounds - "a fixed extra paint on
+   a surface that will be scrolled and re-rendered often". Inspected rather than
+   assumed, that cost does not exist: the layer is position: fixed with static
+   content and no scroll-linked property, so it is composited once and is not
+   invalidated either by scrolling or by a React re-render of the list inside
+   it. What remains is a ~1kB inline data URI, zero network requests and one
+   compositing layer.
+
+   So it stays, and the reason is identity rather than indifference. The
+   research's own answer to "how does a branded admin signal it is the admin" is
+   structure and vocabulary, NOT a different palette - every measured reference
+   (Statamic, WordPress, Ghost) separates the admin by changing the chrome and
+   keeping the brand. Grain is the one tactile mark this brand has besides the
+   copper rule, it costs nothing measurable, and deleting it would make the
+   admin a page that shares a hex value with the public site rather than a page
+   that shares its surface.
+
+   THE DUPLICATED DATA URI IS GONE. It was declared here and again in
+   ContentLandingLayout.module.css - the boundary gap this comment used to
+   record - and both now read --grain-image / --grain-opacity from
+   editorialTokens.module.css, which .root composes in through adminSurface.
+   Composing the public shell's .root instead was still not an option: it also
+   declares padding, background, display and min-height that this shell must set
+   differently - the (a) objection above. Only the MARK is shared; the layer
+   below is shell geometry and stays per-shell.
+
+   ::after rather than ::before so a screen may still own ::before. */
+.root::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: var(--grain-opacity);
+  background-repeat: repeat;
+  background-size: 200px 200px;
+  background-image: var(--grain-image);
+}
+
+/* --- Band 1 and band 2 ---------------------------------------------------
+   24px above the rule, 40px below. The ABSOLUTE values are reduced from the
+   archive's 40/64; the RATIO is inherited deliberately (0.60 here against
+   0.625 there), because that ratio is what makes the rule read as the thing
+   that CLOSES the header rather than as a mark floating between two blocks. The
+   archive records measuring 56px above and 64px below and finding the rule
+   belonged to neither side. Equal gaps mean the element belongs to neither
+   neighbour, and that defect is scale-independent - which is why the ratio
+   travels here and the numbers do not. */
+/* THE 40 BELOW THE RULE STAYS, and the review's request to cut it to --space-m
+   is declined on this file's own evidence. That change would set 24 above the
+   rule and 24 below it, and the paragraph above records equal gaps as the
+   defect the archive measured and this rhythm exists to avoid - the rule stops
+   closing the header and starts floating between two blocks. It is also worth
+   very little: measured on /admin/blogs at 1440x900 it moves the list from 7.73
+   records to 7.93, crossing no whole-record boundary, because EIGHT whole
+   records need the first item at y<=260 and neither one step nor two reaches
+   it. The 16px the review was after is taken from .root's top padding instead,
+   which carries no ratio. */
+.header {
+  padding-bottom: var(--space-m);
+  margin-bottom: var(--space-l);
+  border-bottom: 1px solid var(--rule-accent);
+}
+
+/* THE COPPER RULE IS THE OPENING RULE FOR WHATEVER COMES FIRST, declared once
+   here for all five screens.
+
+   Three different components can be the first thing under this header - an
+   AdminPanel on /admin/classes, a nav of AdminNavCards on /admin, a list of
+   AdminCards on /admin/blogs and /admin/recipes - and each draws its own
+   opening hairline. Whichever arrived first therefore drew a SECOND horizontal
+   rule below this one with no content between them, which is not a hierarchy
+   of two tiers but one rule drawn twice; the copper is already the stronger and
+   already says "the header ends and the body begins". Measured before the fix,
+   /admin/blogs at 1440x900: copper y257.8, hairline y297.8, both x120 w1200.
+
+   THE SHELL KNOWS ONE HALF OF IT AND THE LIST KNOWS THE OTHER. "You open the
+   page" is a fact about position in the shell and is knowable only here. "You
+   are the first record in the run" is a fact about position in a list and is
+   knowable only there. Neither alone is sufficient - a list nested inside a
+   panel opens no page, and a record halfway down a list opens no run - so the
+   property is declared here, gated in AdminCardGrid.module.css (.rows and
+   .cards), and painted by the card. That is also why it inherits to the whole
+   subtree instead of naming a descendant: it is a permission the list spends,
+   not an instruction the card obeys.
+
+   The adjacent-sibling selector is what makes it portable: it is written
+   entirely inside this file, so CSS Modules' per-file hashing - which forbids
+   pairing this class with a list's class across two modules - does not apply,
+   and no screen has to remember to pass a prop.
+
+   AdminPanel does NOT read this yet; it answers the same defect with
+   :first-of-type in its own file. AdminCardGrid.module.css records why the two
+   have not been converged and what converging would cost. */
+.header + * {
+  --admin-opening-rule: transparent;
+}
+
+/* Gold, not copper, at eyebrow size - the rule editorialTokens states and both
+   public shells follow: at 11-12px copper is ~4.6:1 on this ground and gold is
+   ~9.7:1, so copper is the colour of rules and gold is the colour of accent
+   text. Optional and rarely wanted: the chrome bar overhead already says
+   "Admin Portal", so a list screen that also sets an eyebrow is saying it
+   twice and paying 36px of list area for the repetition. */
+.eyebrow {
+  margin: 0 0 var(--space-s);
+  font-size: var(--fs-eyebrow);
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-accent-gold);
+}
+
+/* THE PRIMARY ACTION SITS BESIDE THE TITLE, NOT AT THE TRAILING EDGE - the
+   first of the composition decisions the research left open, and it went to
+   WordPress over Statamic on three grounds.
+
+   1. Distance. At --fs-h2 the word "Blogs" is about 90px of a 1200px spine. A
+      far-right primary would put ~1050px of empty ground between the noun and
+      the verb that creates one. Statamic can afford that because its own
+      heading sits in a 1128px table with a view toggle and an overflow menu
+      already occupying the right end; this header has nothing else there.
+   2. The right edge is already spoken for. Band 2 pins the search field right
+      (see .controls). A primary at the right of band 1 would stack two
+      right-aligned controls into a de-facto right rail - the "toolbar bolted
+      above the content" that ContentArchiveLayout.module.css explicitly
+      designs against.
+   3. It solves the conditional-control problem for free. The blogs screen has a
+      "Continue draft" button that appears only when a draft exists in
+      localStorage, and a control that comes and goes inside the primary cluster
+      would move the primary between visits. Source order fixes it structurally:
+      the primary is FIRST in the cluster and the cluster starts at a fixed
+      offset from the title, so anything appearing after it cannot displace it.
+      This is the same principle .controls applies with its auto margin, stated
+      once in ContentArchiveLayout.module.css: an element's position must not
+      depend on whether its neighbour rendered.
+
+   align-items: center rather than baseline: the toolbar holds 40px controls and
+   the heading is a 32px cap-height line, so baseline alignment hangs the
+   buttons low against a heading whose descender is the only thing near them. */
+.titleRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-m);
+}
+
+/* No 18ch cap, which the public headings both carry. That cap is a poster
+   device for one- and two-word titles set at up to 64px; "Send Newsletter" at
+   32px is a label and wrapping it at 18 characters would break it for nothing. */
+.heading {
+  margin: 0;
+  font-family: var(--font-primary);
+  font-size: var(--fs-h2);
+  font-weight: 600;
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+  color: var(--ink-1);
+}
+
+/* --space-2xs between controls, not a spacing rung up. These are peers in one
+   cluster - a primary and at most one conditional sibling - and 8px is what
+   reads as "these two belong together" while still clearing SC 2.5.8's spacing
+   test, which measures a 24px circle centred on each 40px target. */
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2xs);
+}
+
+/* 56ch, not the 48ch lede measure. An admin intro is an instruction ("The
+   public album shows the first 12 photos in album order"), read once and then
+   never again, so it wants to be one or two lines rather than a shaped column. */
+.intro {
+  margin: var(--space-s) 0 0;
+  max-width: 56ch;
+  font-size: var(--fs-body);
+  line-height: 1.5;
+  color: var(--ink-2);
+}
+
+/* Band 2: the inventory count at the left of the spine, the list's own controls
+   at its right. Lifted from ContentArchiveLayout's .headerFoot in intent and
+   for its recorded reasons - align-items: end because a bare underlined search
+   field's baseline sits above its own rule, and NO justify-content because the
+   count is absent whenever there is nothing to count and space-between would
+   then snap the field the full width of the spine mid-keystroke. */
+.headerFoot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: var(--space-m);
+  margin-top: var(--space-m);
+}
+
+/* The same meta register the public bylines and .resultCount use: an inventory
+   statement is the same TIER of information as "BY JANE DOE", not a lede. */
+.count {
+  margin: 0;
+  font-size: var(--fs-meta);
+  font-weight: 500;
+  line-height: 1.4;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+
+/* Pinned right by an auto margin rather than by the parent's justification, so
+   losing the count cannot move the field. Width is on the FIELD ZONE and fixed
+   at 20rem for the reason the archive measured: a field that flexes to fill
+   shrinks under the cursor the moment a sibling control appears beside it. */
+.controls {
+  position: relative;
+  display: flex;
+  width: min(100%, 20rem);
+  margin-inline-start: auto;
+}
+
+/* The pager row, and it carries no rule of its own. The list brackets itself
+   top and bottom (see AdminCardGrid.module.css), so the pager sits in plain
+   whitespace - a rule here would be a third mark on a page that already has the
+   copper header rule and the list's hairlines. */
+.footer {
+  display: flex;
+  margin-top: var(--space-l);
+}
+
+@media (max-width: 599px) {
+  .root {
+    padding-block: var(--space-m) var(--space-l);
+  }
+
+  /* The title and its primary action stop sharing a line. stretch rather than
+     flex-start so a lone "New Blog" spans the gutter-to-gutter width it has at
+     this size, which is also the only width at which a 40px control is
+     comfortably thumb-reachable. */
+  .titleRow {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--space-s);
+  }
+
+  .toolbar > * {
+    flex: 1 1 auto;
+  }
+
+  /* Same two-line collapse the archive header makes at this width and for the
+     same measured reason: side by side at 390px the search field would be
+     narrower than the placeholder it has to hold. The auto margin is released
+     rather than overridden, so the field starts on the same left edge as
+     everything else on the page. */
+  .headerFoot {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--space-s);
+  }
+
+  .controls {
+    width: 100%;
+    margin-inline-start: 0;
+  }
+}

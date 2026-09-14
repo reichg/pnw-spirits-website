@@ -22,9 +22,11 @@ import type { ContentItem } from "./content.types";
 // pages sign on the server and therefore take the `url` branch, which is why the
 // page tests see real imagery and this file mostly does not.
 //
-// No assertion depends on a CSS-module class name: they are hashed by the
-// transform and are not a contract. Elements are identified by tag, attribute
-// and text.
+// No assertion keys off a CSS-module class name. Under Vitest the import is a
+// Proxy that echoes ANY key back as `_<key>_<hash>`, so a class assertion could
+// never prove a rule exists anyway - see the canonical note in
+// Pagination.test.tsx.
+// Elements are identified by tag, attribute and text.
 //
 // Nor does any assertion depend on the emitted `q=` value. next/image resolves
 // its allow-list from a build-time config injection that Vitest does not

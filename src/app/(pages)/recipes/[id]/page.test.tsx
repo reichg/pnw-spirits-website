@@ -42,8 +42,11 @@ import RecipeDetailPage, { generateMetadata } from "./page";
 // static render they emit nothing. That is asserted below as what actually
 // happens — and it is production's first paint too — rather than papered over.
 //
-// Class names are hashed by the CSS-modules transform and are not a contract:
-// elements are identified by tag, text and attribute.
+// No assertion keys off a CSS-module class name. Under Vitest the import is a
+// Proxy that echoes ANY key back as `_<key>_<hash>`, so a class assertion could
+// never prove a rule exists anyway - see the canonical note in
+// Pagination.test.tsx.
+// Elements are identified by tag, text and attribute.
 
 type RecipeRow = {
   id: number;
@@ -148,6 +151,24 @@ describe("RecipeDetailPage routing", () => {
     expect(prismaMock.cocktailRecipe.findUnique).not.toHaveBeenCalled();
   });
 
+  // The guard here was `Number.parseInt` behind `isSafeInteger && > 0`, which is
+  // the lenient shape the API routes were hardened away from: parseInt reads a
+  // leading integer and discards the rest, so `/recipes/7.9` and `/recipes/7abc`
+  // rendered recipe 7 under a URL naming neither, and isSafeInteger sits nine
+  // orders of magnitude above what the Int column holds. It is
+  // `rowIdParamSchema` now - the sample is behavioural; the rule is asserted
+  // exhaustively in src/utils/rowId.test.ts.
+  it.each(["7.9", "7abc", "0x1f", "007", "3000000000"])(
+    "404s on the non-canonical id %s without querying the database",
+    async (id) => {
+      await expect(renderPage(id)).rejects.toThrow(
+        "NEXT_HTTP_ERROR_FALLBACK;404",
+      );
+
+      expect(prismaMock.cocktailRecipe.findUnique).not.toHaveBeenCalled();
+    },
+  );
+
   it("404s when the id parses but no row exists", async () => {
     prismaMock.cocktailRecipe.findUnique.mockResolvedValue(null);
 
@@ -161,16 +182,16 @@ describe("RecipeDetailPage routing", () => {
   });
 
   it("builds canonical URLs from the row id, not from the request param", async () => {
-    // The id parse is lenient, so more than one path can reach the same row:
-    // "/recipes/007", "/recipes/7.9" and "/recipes/7abc" all return 200
-    // rendering row 7. Every self-referential URL the page emits — the
-    // canonical link, og:url and the JSON-LD mainEntityOfPage — must name the
-    // row's own id and must agree with each other, or each variant declares
-    // itself a distinct page for the same recipe.
+    // Only one path reaches a row now that the parser is canonical —
+    // "/recipes/007" and "/recipes/7abc" 404 rather than rendering row 7 — so
+    // this no longer guards against duplicate URLs for one recipe. It still
+    // guards the half that outlives the parser: the canonical link, og:url and
+    // the JSON-LD mainEntityOfPage are each built from the row's own id and must
+    // agree.
     stubRecipe();
 
-    const html = await renderPage("007");
-    const metadata = await metadataFor("007");
+    const html = await renderPage("7");
+    const metadata = await metadataFor("7");
 
     expect(metadata.alternates?.canonical).toBe(
       "https://spirits.example/recipes/7",
