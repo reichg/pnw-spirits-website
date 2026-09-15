@@ -185,29 +185,40 @@ h6 {
 
    Removing or scoping these would be the root fix, but on the public site they
    are load-bearing. Measured with CDP forced :hover over all ten public routes
-   at 1440 and 390 - 434 button/.button/a nodes - six components depend on them:
+   at 1440 and 390 - 434 button/.button/a nodes - six components depended on
+   them. The /classes + /contact migration (2026-09-14) freed three; THREE STILL
+   DEPEND, so the rules stay:
 
      .scrollUpButton         this rule is its ONLY hover feedback; its module
                              declares no :hover at all
-     ContactForm .submit     same, and the `background` shorthand here also
-                             resets its gold gradient to flat brown, which its
-                             own hover rule (lift + brightness + glow) clearly
-                             never intended
      .landingFourColCard     each has a :hover rule that styles transform,
-     ClassesPage .ctaButton   filter or shadow but no color, so the colour half
-     ContactPage .email       of the hover treatment is coming from `a:hover`
-     ContentRow .row          here
+     ContentRow .row         filter, shadow or background but no color, so the
+                             colour half of the hover treatment is coming from
+                             `a:hover` here
 
-   Every way of keeping these rules off a component keeps them off those six
-   too - :where() or a cascade layer (both lose to the component's own base
-   class), :not([class]) or :not([class*="-module__"]) (all six carry module
-   classes). They are the same case as the bug: a module-classed element whose
-   hover paint comes only from here. So this cannot be fixed from this file
-   alone, and a partial fix would silently restyle the public site.
+   FREED, and recorded so nobody re-adds them to the list:
+     ContactForm .submit     now declares an UNCONDITIONAL `.submit:hover`
+                             background. Unconditional matters: a disabled
+                             button still matches `button:hover`, and this one
+                             is disabled for the whole duration of a send
+     ContactPage .email      no longer the panelled link this list described -
+                             the address is now inline in the lede, and the
+                             rewritten rule restates `color` on :hover itself
+     ClassesPage .closeButton  was .ctaButton; composes .viewAllButton, whose
+                             :hover restates `color` at (0,2,0)
 
-   Unblocking it is component work, outside this file: give .scrollUpButton and
-   ContactForm .submit their own :hover background, and the four links their
-   own :hover color. Once nothing depends on these, drop them. Until then, a
+   Every way of keeping these rules off a component keeps them off the
+   remaining three too - :where() or a cascade layer (both lose to the
+   component's own base class), :not([class]) or :not([class*="-module__"])
+   (all three carry module classes). They are the same case as the bug: a
+   module-classed element whose hover paint comes only from here. So this still
+   cannot be fixed from this file alone, and a partial fix would silently
+   restyle the public site. Three fewer dependents is a shorter list, not a
+   different conclusion.
+
+   Unblocking it is component work, outside this file: give .scrollUpButton its
+   own :hover background, and .landingFourColCard and ContentRow .row their own
+   :hover color. Once nothing depends on these, drop them. Until then, a
    component rule must out-specify (0,1,1) to win. */
 a {
   color: var(--color-bg-deep1);

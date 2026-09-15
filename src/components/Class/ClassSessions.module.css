@@ -49,8 +49,27 @@
    re-derived here; a longer venue name wraps inside it and the right edge does
    not move.
 
-   PADDING IS --space-m, NOT THE ARCHIVE ROW'S --space-l. This row is two short
-   lines, not a 160px plate. */
+   PADDING IS --space-l ABOVE 900px AND --space-m BELOW IT, and the split is
+   measured rather than tidy. At 1440 this section rendered 367px against the
+   album's 429px, so the page's first question - "is there a date I can come
+   to" - was answered by its quieter half. The album is four plates forming one
+   1200x286 band of continuous colour and the schedule cannot win that
+   comparison on type; it should not try, because the type roles here are
+   already right (--fs-card / 600 / --ink-1 is the rank the date earns as the
+   only thing the reader is here for). Air is the knob. One rung up takes the
+   row from 103 to 135px and the three-row list from 309 to 405px, which puts
+   the schedule ahead of the album, and it gives each date the space the plates
+   already have - which is what makes a dated index read as an occasion rather
+   than as a table.
+
+   THAT COMPARISON ONLY EXISTS ABOVE 900px. At 390 the album is a single 342px
+   plate rather than a band, and the two sections never share a screen: the
+   schedule ends before the album's heading enters an 844px viewport, so there
+   is no simultaneous contrast to correct. What --space-l would buy there is
+   scroll - rows go 124 to 156px - and unlike the album, which stops at
+   MAX_ALBUM_PHOTOS, the upcoming-session list has no ceiling. Eight dates, an
+   ordinary quarter for a class that runs weekly, is 1248px of list at
+   --space-l against 992px at --space-m. The mobile override keeps --space-m. */
 .row {
   display: grid;
   grid-template-columns: minmax(0, 1fr) fit-content(14rem);
@@ -58,7 +77,7 @@
   /* Baselines rather than box tops: the date and the location are one line of
      information read across the spine, and they are set at different sizes. */
   align-items: baseline;
-  padding-block: var(--space-m);
+  padding-block: var(--space-l);
   border-top: 1px solid var(--hairline);
 }
 
@@ -78,7 +97,7 @@
 
 /* Dissolves on the two-up so .time and .location become grid items of .row
    itself and can be placed in two different tracks. The box comes back below
-   900px and carries them as one strip - see the breakpoint. */
+   900px and carries them as one stack - see the breakpoint. */
 .meta {
   display: contents;
 }
@@ -114,48 +133,56 @@
    One structural change, at the 900px every other composition in this system
    collapses at. A right-aligned track in a 375px viewport would be a second
    alignment in a space too small to read it as a decision, so the two meta
-   blocks become one left-aligned strip.
+   blocks become one left-aligned stack.
 
-   The separator is the positioned-rule device ContentDetailShell derives at its
-   own 900px breakpoint, reproduced rather than reinvented: a border-inline-start
-   travels with its item, so the first item on a wrapped line carries a rule with
-   nothing to its left - a stray 1px tick - while a rule drawn half a gap to the
-   item's left lands outside the container whenever its item starts a line, and
-   the overflow clip removes it. Half-gap is --space-m / 2 = 12px each side, the
-   value that file settled on after 8px read as attached to its neighbour. */
+   A STACK, NOT A SEPARATED STRIP, AND THE CORRECTION IS SPECIFIC TO A LIST.
+   This was ContentDetailShell's wrapping-flex-plus-half-gap-tick device,
+   reproduced rather than reinvented. Rendered at 390 it produced three rows
+   that disagreed with each other: the two rows whose time carried an endTime
+   were long enough to wrap, so their location started a line, its tick landed
+   outside the container and the overflow clip removed it - while the row with
+   a single start time fit on one line and painted its tick. Measured 124 /
+   124 / 97px, with a joining glyph on one row of three. The mechanism was
+   behaving exactly as documented; the design was not.
+
+   The device is correct where that file uses it, because a byline renders once
+   per page and has no sibling to be compared against. Copied into a list it
+   becomes a content-length-dependent variation with two siblings beside it,
+   and a reader who sees a joining mark on one entry and not on the next will
+   look for a meaning it does not carry.
+
+   Stacking removes the cause rather than clipping the symptom: a separator
+   joins items that share a line, and a column has nothing to join. So the tick
+   goes, and with it the overflow clip and the positioning context that existed
+   only to place it. Every row then reads date / time / location on three lines
+   at one constant --space-2xs pitch - the row's own gap, so the three lines are
+   evenly spaced rather than grouped two-and-one - and row height stops tracking
+   the LENGTH of a field. It still tracks the PRESENCE of one: a session with a
+   null `location` sets two lines rather than three and is correspondingly
+   shorter. That is a missing fact rather than a formatting accident, and
+   reserving a blank line under every date would paint space asserting a venue
+   nobody entered. */
 @media (max-width: 899px) {
   .row {
     grid-template-columns: minmax(0, 1fr);
+    /* See the .row header: --space-l buys a comparison that only exists where
+       the album is a band and both sections share a screen. Here it would buy
+       scroll on an uncapped list. */
+    padding-block: var(--space-m);
   }
 
   .meta {
     grid-column: 1;
     grid-row: 2;
     display: flex;
-    flex-wrap: wrap;
-    align-items: baseline;
-    gap: var(--space-2xs) var(--space-m);
-    /* Clips the separator of whichever item happens to start a wrapped line.
-       Nothing else in this strip can overflow. */
-    overflow: hidden;
-  }
-
-  .meta > * {
-    position: relative;
+    flex-direction: column;
+    gap: var(--space-2xs);
   }
 
   /* The location is no longer in a right track, so its own right alignment has
      to be unwound; it is a flex item here and text-align still applies. */
   .location {
     text-align: start;
-  }
-
-  .meta > * + *::before {
-    content: "";
-    position: absolute;
-    inset-block: 0;
-    inset-inline-start: calc(var(--space-m) / -2);
-    border-inline-start: 1px solid var(--hairline);
   }
 }
 

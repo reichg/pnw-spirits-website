@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import {
-  ALBUM_BREAKPOINTS,
+  albumBreakpointsFor,
   MAX_ALBUM_PHOTOS,
   MAX_ALBUM_SLIDES_PER_VIEW,
 } from "@/config/album";
@@ -19,19 +19,24 @@ import "swiper/css/pagination";
 
 // Declared once and used by both thumbnail branches, so the two cannot drift.
 //
-// The breakpoints mirror ALBUM_BREAKPOINTS exactly (1 / 2 / 3 / 4 slides at
-// 0 / 600 / 900 / 1200), and the widths are the slide's real share of the
-// 1200px spine rather than a round guess: at 375px one slide is ~89vw of the
-// viewport, at 768px two are ~44vw each, at 1024px three are ~29vw each, and
-// from 1200px up the spine caps so four slides are ~288px each however wide the
-// display gets. Each figure is rounded up a little for margin.
+// The breakpoints mirror ALBUM_BREAKPOINTS exactly (1 / 2 / 3 / 4 whole slides
+// at 0 / 600 / 900 / 1200), and every width is the slide's MEASURED share of
+// the viewport at the widest point of its bucket, rounded up a little for
+// margin - a slide is widest just before the next tier takes a plate away, so
+// the top of each range is the only figure that cannot understate.
 //
-// Understating a width here costs more than it used to: the plate is now
+// RESTATED FOR THE PEEK. Each tier now carries ALBUM_PEEK, so a slide is a
+// fraction narrower than its tier's even share: measured 76.1% of the viewport
+// at 599px, 40.3% at 899px, 27.4% at 1199px, and a flat 274px from 1200px up
+// where the spine caps. The previous figures (92 / 47 / 32vw, 300px) described
+// peekless plates and now over-fetch at every tier.
+//
+// Understating a width here costs more than it used to: the plate is
 // object-fit: cover at 1/1, so a portrait source fills the plate's full width,
 // where `contain` used to render it at two-thirds of that and hide the
 // shortfall.
 const PHOTO_SIZES =
-  "(max-width: 599px) 92vw, (max-width: 899px) 47vw, (max-width: 1199px) 32vw, 300px";
+  "(max-width: 599px) 77vw, (max-width: 899px) 41vw, (max-width: 1199px) 28vw, 280px";
 
 // Consumes the server-signed `photo.url` directly; no client-side signing.
 // next/image lazy-loads off-screen slides by default, so only visible images
@@ -107,17 +112,6 @@ function AlbumPhoto({
   );
 }
 
-// Base (mobile) tier and the per-breakpoint Swiper config are derived from the
-// shared ALBUM_BREAKPOINTS so Swiper owns all responsive sizing from album.ts.
-const [BASE_TIER, ...RESPONSIVE_TIERS] = ALBUM_BREAKPOINTS;
-
-const SWIPER_BREAKPOINTS: SwiperOptions["breakpoints"] = Object.fromEntries(
-  RESPONSIVE_TIERS.map((tier) => [
-    tier.minWidth,
-    { slidesPerView: tier.slidesPerView, slidesPerGroup: tier.slidesPerGroup },
-  ]),
-);
-
 /**
  * Photographs from past classes, as square plates on the page ground.
  *
@@ -127,8 +121,15 @@ const SWIPER_BREAKPOINTS: SwiperOptions["breakpoints"] = Object.fromEntries(
  * dimmed - and put content on top of that scrim, which the card's own rules
  * forbid; it rendered at every breakpoint including 1440px, where "Swipe" is
  * not the interaction available; and under prefers-reduced-motion it degraded
- * into a static blurred veil, the worst of both outcomes. Swiper's gold
- * dynamicBullets pagination already carries the affordance.
+ * into a static blurred veil, the worst of both outcomes.
+ *
+ * WHAT CARRIES THE AFFORDANCE INSTEAD is two things, and for a while it was
+ * only one. Swiper's gold pagination shipped with the deletion; the partial
+ * next-slide peek specified alongside it did not, which left a 7px dot as the
+ * entire signal that more photographs exist. The peek now lives in ALBUM_PEEK
+ * in src/config/album.ts, at the source, so no tier can quietly go flush again,
+ * and the dots are static rather than dynamic so they are all one size and
+ * start on the strip's own left edge (PhotoAlbum.module.css derives both).
  *
  * Removing it took with it the `interacted` and `locked` state, the `readyRef`
  * and `lastRealIndexRef` guards, and the six Swiper handlers (onAfterInit,
@@ -143,6 +144,28 @@ export default function PhotoAlbum({ photos }: { photos: ClassPhotoView[] }) {
   // Fixed, viewport-independent slice: the same set renders on server and
   // client, so Swiper initializes once and never remounts slides on resize.
   const visible = photos.slice(0, MAX_ALBUM_PHOTOS);
+
+  // Swiper owns all responsive sizing, and album.ts owns what it is handed: the
+  // tier table with the peek withdrawn from any tier this album cannot overflow
+  // (albumBreakpointsFor records why a peek with nothing behind it is a hole).
+  // The count is the only input, so the memo holds the same object identity
+  // across re-renders and Swiper is never handed a fresh params object to
+  // reconcile. Above the early return, because hooks cannot be conditional.
+  const { baseTier, breakpoints } = useMemo(() => {
+    const [base, ...responsive] = albumBreakpointsFor(visible.length);
+    return {
+      baseTier: base!,
+      breakpoints: Object.fromEntries(
+        responsive.map((tier) => [
+          tier.minWidth,
+          {
+            slidesPerView: tier.slidesPerView,
+            slidesPerGroup: tier.slidesPerGroup,
+          },
+        ]),
+      ) satisfies SwiperOptions["breakpoints"],
+    };
+  }, [visible.length]);
 
   if (visible.length === 0) {
     return (
@@ -162,14 +185,15 @@ export default function PhotoAlbum({ photos }: { photos: ClassPhotoView[] }) {
     <div className={styles.carousel}>
       <Swiper
         modules={[Pagination, A11y, Keyboard]}
-        pagination={{ clickable: true, dynamicBullets: true }}
+        // dynamicBullets is deliberately OFF; PhotoAlbum.module.css records why.
+        pagination={{ clickable: true }}
         keyboard={{ enabled: true }}
         grabCursor
         loop={canLoop}
         spaceBetween={16}
-        slidesPerView={BASE_TIER.slidesPerView}
-        slidesPerGroup={BASE_TIER.slidesPerGroup}
-        breakpoints={SWIPER_BREAKPOINTS}
+        slidesPerView={baseTier.slidesPerView}
+        slidesPerGroup={baseTier.slidesPerGroup}
+        breakpoints={breakpoints}
       >
         {visible.map((photo, index) => (
           <SwiperSlide key={photo.id}>

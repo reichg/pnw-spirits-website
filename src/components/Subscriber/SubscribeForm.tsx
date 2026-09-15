@@ -34,9 +34,27 @@ const SubscribeForm = () => {
   };
 
   return (
-    <form className={styles.subscribeForm} onSubmit={handleSubmit}>
-      <label className={styles.subscribeLabel} htmlFor="subscribe-firstname">
-        Get the latest recipes & stories:
+    // aria-labelledby, because a <form> only becomes a landmark once it has an
+    // accessible name - and the pitch below is the name it already had lying
+    // around. This section of the landing page has no heading of its own, so
+    // without this the page's only form is unreachable by landmark.
+    <form
+      className={styles.subscribeForm}
+      onSubmit={handleSubmit}
+      aria-labelledby="subscribe-heading"
+    >
+      {/* This was a <label htmlFor="subscribe-firstname">, which made it the
+          first field's accessible NAME: a screen reader announced the
+          first-name box as "Get the latest recipes & stories:". It is a pitch,
+          not a field name, so it names the form and nothing else now. */}
+      <p className={styles.subscribeHeading} id="subscribe-heading">
+        Get the latest recipes &amp; stories:
+      </p>
+      <label
+        className={styles.subscribeFieldLabel}
+        htmlFor="subscribe-firstname"
+      >
+        First name
       </label>
       <input
         className={styles.subscribeInput}
@@ -49,6 +67,12 @@ const SubscribeForm = () => {
         disabled={status === "loading"}
         autoComplete="given-name"
       />
+      <label
+        className={styles.subscribeFieldLabel}
+        htmlFor="subscribe-lastname"
+      >
+        Last name
+      </label>
       <input
         className={styles.subscribeInput}
         id="subscribe-lastname"
@@ -60,6 +84,9 @@ const SubscribeForm = () => {
         disabled={status === "loading"}
         autoComplete="family-name"
       />
+      <label className={styles.subscribeFieldLabel} htmlFor="subscribe-email">
+        Email address
+      </label>
       <input
         className={styles.subscribeInput}
         id="subscribe-email"
@@ -78,7 +105,26 @@ const SubscribeForm = () => {
       >
         {status === "loading" ? "Subscribing..." : "Subscribe"}
       </button>
-      {message && <div className={styles.subscribeMsg}>{message}</div>}
+      {/* Rendered unconditionally and empty when idle, so the live region is
+          already in the accessibility tree before its text changes rather than
+          being inserted along with it. It used to be `{message && <div>}` with
+          no role and no aria-live at all, so NEITHER outcome was announced -
+          the visitor heard nothing back from a subscribe that had failed. The
+          CSS keeps an empty one at zero cost, gap included.
+
+          role and aria-live follow AdminStatus.tsx, which settled both for this
+          codebase and which ContactForm.tsx also follows: a failed write is an
+          `alert` (implicitly assertive) because what the visitor does next
+          depends on knowing it did not land, everything else is a polite
+          `status`, and the politeness is stated alongside the role because
+          screen readers honour the implication inconsistently. */}
+      <p
+        className={styles.subscribeMsg}
+        role={status === "error" ? "alert" : "status"}
+        aria-live={status === "error" ? "assertive" : "polite"}
+      >
+        {message}
+      </p>
     </form>
   );
 };

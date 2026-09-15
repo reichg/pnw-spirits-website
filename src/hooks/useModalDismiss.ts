@@ -75,13 +75,13 @@ function findSurvivingAnchor(
  * Where focus should go when a modal closes.
  *
  *   1. The trigger, if it is still in the document. Escape, Cancel, and every
- *      modal whose opener survives (ClassSessions, the newsletter's submit
- *      button) end here - with one MEASURED caveat. PhotoAlbum's thumbnails sit
- *      inside Swiper, which preventDefaults pointerdown in order to drag, so a
- *      MOUSE-opened lightbox never focused its thumb and `previouslyFocused` is
- *      already <body>. Tier 1 then "answers" with <body> and focus is not
- *      restored; activating the same thumb by KEYBOARD restores correctly. That
- *      is a PhotoAlbum defect, not one this resolver can fix - it can only hand
+ *      modal whose opener survives (the newsletter's submit button) end here -
+ *      with one MEASURED caveat. PhotoAlbum's thumbnails sit inside Swiper,
+ *      which preventDefaults pointerdown in order to drag, so a MOUSE-opened
+ *      lightbox never focused its thumb and `previouslyFocused` is already
+ *      <body>. Tier 1 then "answers" with <body> and focus is not restored;
+ *      activating the same thumb by KEYBOARD restores correctly. That is a
+ *      PhotoAlbum defect, not one this resolver can fix - it can only hand
  *      back what it was given.
  *   2. The nearest surviving non-shell ANCESTOR of the trigger, re-entered at
  *      the index the trigger's branch occupied - so after deleting the 2nd of 4
@@ -195,10 +195,10 @@ export const SETTLE_WINDOW_MS = 600;
  * those intents are set only by deletes. This is the only thing acting there.
  *
  * Every other consumer stands down rather than firing - and the reasons are not
- * the same one, which matters when debugging: ClassSessions and the newsletter
- * keep their trigger connected AND focused, so tier 1 answers and the first
- * `attempt` sees focus already held. PhotoAlbum on the mouse path stands down
- * via the TRIGGER-CONNECTED guard instead, never the focus-already-held one -
+ * the same one, which matters when debugging: the newsletter keeps its trigger
+ * connected AND focused, so tier 1 answers and the first `attempt` sees focus
+ * already held. PhotoAlbum on the mouse path stands down via the
+ * TRIGGER-CONNECTED guard instead, never the focus-already-held one -
  * its trigger survives but never held focus (see the Swiper caveat on
  * resolveFocusRestoreTarget), so focus sits on <body> and the correction
  * correctly declines to move it;
@@ -260,7 +260,7 @@ export function scheduleSettleCorrection(
 }
 
 // Shared dismissal/affordance side-effects for any modal-like surface
-// (session-details dialog, photo lightbox, admin confirm dialog). Wiring all of
+// (photo lightbox, admin dialog, admin confirm dialog). Wiring all of
 // Escape-to-close, background scroll lock, and focus restore here keeps every
 // modal on one behavior contract instead of re-implementing the side-effects
 // per modal.

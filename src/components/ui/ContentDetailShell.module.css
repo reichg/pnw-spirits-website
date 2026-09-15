@@ -1,5 +1,6 @@
 /* ===========================================================================
-   Content detail shell - the skeleton shared by /blogs/[id] and /recipes/[id].
+   Content detail shell - the skeleton shared by /blogs/[id] and /recipes/[id],
+   plus the two type roles /classes composes from it (.title, .sectionHeading).
 
    WHY THIS FILE EXISTS. The two detail pages were built in parallel against one
    written contract and drifted anyway, in the one place the system depends on
@@ -15,7 +16,10 @@
    WHAT IS SHARED. Return link -> eyebrow -> title -> meta -> copper rule, and
    the hairline-plus-gold-CTA close. What is NOT shared is everything below the
    copper rule: an article has prose, a recipe has ingredients and a method, and
-   forcing those into one vocabulary would be abstraction for its own sake.
+   forcing those into one vocabulary would be abstraction for its own sake. The
+   one exception is .sectionHeading, the type role those sections open with,
+   which is shared because it is type rather than structure - and because
+   /classes made it a third identical copy. See the rule for who consumes it.
 
    COMPOSITION, NOT DUPLICATION. .page, .masthead, .eyebrow, .closeRow and
    .closeButton pull the landing system's own rules in by `composes` rather than
@@ -216,6 +220,40 @@
   font-weight: 600;
   line-height: 1.08;
   letter-spacing: -0.02em;
+  color: var(--ink-1);
+}
+
+/* --- Section head ---------------------------------------------------------
+   One rank under .title, on every page that has sections: --fs-h2 (24 -> 32px),
+   the system's section-head role, not --fs-card. These heads are how a reader
+   standing over a shaker - or scanning a class schedule - finds their place
+   again, so they are signposts rather than the quiet in-prose subheads
+   --fs-card would give. Against --fs-title's 52px ceiling the drop is 1.63:1
+   and against the 19px body it is 1.68:1: the head outranks the body by about
+   as much as the title outranks the head, which is what keeps the three levels
+   evenly spaced instead of bunching two of them together. margin restated
+   because globals.css gives every h1-h6 a 0.5em bottom.
+
+   Consumed by /classes and /recipes/[id], which compose it and declare NOTHING
+   of their own - that is what makes it safe, per the disjointness rule in the
+   header. A page needing a different margin above its heads is not a consumer
+   and must not compose-and-override it.
+
+   /blogs/[id] IS NOT A CONSUMER, and that is a finding rather than an
+   oversight. Its heads are `.prose h2` on HTML emitted by `marked`, so they
+   carry no class for `composes` to attach to - `composes` is only legal on a
+   single local class selector - and they take margin-block
+   `calc(var(--space-prose) * 2)` above rather than this rule's `0`, because a
+   head inside flowing prose must open its own gap where a head opening a
+   laid-out <section> gets one from the section. Two honest rules, not a third
+   copy: do not "fix" this by forcing them together. */
+.sectionHeading {
+  margin: 0 0 var(--space-s);
+  font-family: var(--font-primary);
+  font-size: var(--fs-h2);
+  font-weight: 600;
+  line-height: 1.25;
+  letter-spacing: -0.01em;
   color: var(--ink-1);
 }
 

@@ -257,6 +257,20 @@ only thing that makes a logged error locatable.
 
 ## 2026-09-14: The Admin Composes the Editorial Contract and Adds Four Rungs
 
+> **Amended (2026-09-14).** Three rungs, not four. `--danger` was **promoted**
+> out of `adminTokens.module.css` and down into `.editorialSurface` in
+> `src/components/ui/editorialTokens.module.css`, where its derivation now
+> lives, so the public `/contact` form could take it for its failed-write line.
+> It is a **move, not a copy**: `.adminSurface` composes `.editorialSurface`, so
+> every admin reader resolves it unchanged and there is still exactly one
+> declaration site. The dependency direction this entry argues for is intact —
+> the token went **down** into the shared contract, not up out of it — and the
+> argument below was always premised on "nothing there may use", a premise that
+> expired when a public page acquired a failed-write state. `--control-min`,
+> `--record-thumb` and `--hairline-strong` stay in the admin file and the rest
+> of this entry stands, including "a fifth rung is proposed" as the revisit
+> trigger, now read as a fourth.
+
 ### Summary
 
 `src/components/admin/adminTokens.module.css` declares `.adminSurface`, which
@@ -321,6 +335,16 @@ row actions — that should not all be copper.
 
 ### `--danger` is `#e2645f`, and `--color-error` is retired from the admin
 
+> **Amended (2026-09-14).** The colour, the derivation and the retirement of
+> `--color-error` all stand exactly as recorded. What changed is where the
+> token is declared: `--danger` now lives on `.editorialSurface` in
+> `src/components/ui/editorialTokens.module.css`, not on `.adminSurface` in
+> `src/components/admin/adminTokens.module.css`. It is no longer an admin-only
+> token. Read "retired from the admin" as the narrower claim it always was —
+> `--color-error` is not the error colour anywhere this system paints — and
+> read the measurements below as still current; they were carried across
+> verbatim rather than re-derived.
+
 This is the finding most likely to be undone, because a contributor reaching for
 "the error colour" will reach for the wrong one. `--color-error` (`#c1440e`)
 measures **3.69:1 on `--surface-0` — below AA for normal text outright** — and it
@@ -371,6 +395,14 @@ published figure did not survive that re-derivation, which is the whole reason
 ---
 
 ## 2026-09-14: `--danger` Is Spent Once Per Screen State, and Never as a Fill
+
+> **Amended (2026-09-14).** Still three roles, and the list is still closed —
+> but the token is no longer admin-only, so the roles are not admin-only
+> either. `/contact`'s failed-submit line is a **failed write at screen scope**
+> and therefore occupies role 2 alongside `AdminStatus tone="error"`; it is not
+> a fourth reader and does not open the list. Everything below applies to it
+> unchanged, including "never as a fill". See the promotion note on the
+> preceding entry.
 
 ### Summary
 
@@ -796,3 +828,92 @@ A surface needs a different session outcome — a soft "your session expired, he
 is what you were doing" rather than an immediate sign-out. That is a change to
 the gate, which owns the landing, not to the fetch, which owns the credential.
 Adding a navigation here re-creates the race this entry removed.
+
+---
+
+## 2026-09-14: `/classes` and `/contact` Compose the Shell Instead of Dressing Themselves
+
+### Summary
+
+Both pages now open with
+`.page { composes: root from ContentLandingLayout.module.css }` and declare none
+of what that rule already declares. What that replaced was two hand-tuned page
+stylesheets, each painting its own ground from a photograph behind a `::before`
+— `Vermouth.jpg` at `blur(4px) brightness(0.2)` on `/classes`, `Bottles.jpg` at
+`blur(8px) brightness(0.2)` on `/contact`. Both photographic backdrops are gone,
+and so is every filled panel they carried: on `/classes` the schedule rows and
+photo plates that were `--color-bg-deep` cards with a radius and a shadow, plus
+the brown `--color-accent-secondary` CTA; on `/contact` the form section, the
+wrapping contact card, and the cream `rgba(255, 248, 236, 0.9)` panel that held
+the channel links.
+
+### Rationale
+
+A page that paints its own ground is a second declaration site for a decision
+the shell already owns, and these two had drifted from it in different
+directions — two photographs, two blur radii, two brightness values, one
+brightness dark enough that the "ground" was doing the work of `--surface-0`
+with a texture on top. Composing `root` leaves one ground, one spine, one grain.
+The filled panels went with it for the same reason the landing pages dropped
+theirs: on a warm-dark ground a panel is a second surface tier that the ink
+tiers already express, and the cream card was a third.
+
+### The session modal was removed, not restyled
+
+Each schedule row used to be a `<button>` that opened a `Modal` rendering the
+same three values the row already showed. A session holds date, time and
+location and nothing else, so the dialog opened to display what had just been
+clicked. Removing it deletes a dialog, a focus trap, a piece of state and a
+click, and returns `ClassSessions` to plain server markup; its props contract is
+unchanged.
+
+**What would bring it back:** a session gaining content of its own — a price, a
+capacity, a per-session description, a booking link. That is a schema change,
+not a design one, and until the schema has something more to show, a dialog has
+nothing to show.
+
+### The swipe-hint overlay was removed, not restyled
+
+The album carousel carried an animated overlay — a pouring cocktail glass over
+`rgba(0, 0, 0, 0.582)` with `backdrop-filter: blur(3px)` at `inset: 0`. It was
+ungated by breakpoint, so it dimmed and blurred the photographs on desktop,
+where there is nothing to swipe. Under `prefers-reduced-motion: reduce` it
+stopped animating but kept the veil, which is the worst of the two states: a
+permanent static scrim over the photographs, shown to the users least able to
+dismiss it as motion.
+
+An affordance that obscures the thing it is an affordance for is the wrong
+trade on a page whose subject is the photographs. It is carried instead by
+Swiper's gold `dynamicBullets` pagination, which sits outside the image. (The
+direction also offered a partial next-slide peek; it was not taken — the album
+shows a whole number of slides per tier, 1 / 2 / 3 / 4, so the pagination is
+the affordance on its own.)
+
+### "Upcoming" is an option on the read, not a change to the contract
+
+`getClassPage` gained `upcomingSessionsOnly`, **default off**, and exactly one
+caller passes it: `getClassPageView`, the read behind the public `/classes`
+page. `/api/classes` and the admin manager behind it are untouched and still see
+every session, because an admin edits past sessions too.
+
+The rule is that **a session is upcoming until it ends, not until it starts** —
+so a class already in progress keeps showing its time and location — with the
+boundary inclusive, so a session exactly at its cutoff is listed rather than
+flickering out. A session with no `endTime` falls back to its `startTime`.
+
+The rule has two representations and they must move together. The Prisma filter
+bounds what the database returns; an in-memory twin re-applies the same
+predicate on the **Redis cache-hit path**, because the entry lives for up to 55
+minutes — long enough for a listed session to end while the payload is still
+warm. Without the second pass the cache would advertise a class that is already
+over. The re-scope costs one array pass; the expensive half of the payload, the
+S3 signing, still comes from the cache.
+
+### Revisit when
+
+A session grows a field of its own — that is the occasion to reconsider the
+dialog, and only then. For the schedule read: if a second caller ever wants
+upcoming-only, it passes the option; the default stays off, because the default
+is the `/api/classes` contract. If "upcoming" ever needs a third representation,
+that is the signal to move the predicate behind one exported helper rather than
+to add a third copy of the shape.

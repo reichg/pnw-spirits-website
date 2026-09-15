@@ -42,8 +42,20 @@ const ContactForm = () => {
   };
 
   return (
-    <form className={styles.form} onSubmit={handleSubmit} noValidate>
-      <div className={styles.field}>
+    // aria-label, and it is the page's only section name rather than a second
+    // one. The <h2> that used to name this block from the page module read
+    // "Send a message" above a button reading SEND MESSAGE, so it was deleted;
+    // a named <form> is a `form` landmark, which is a truer statement about
+    // this block than the generic region an aria-labelledby <section> made of
+    // it, and it keeps the accessible name the heading was providing.
+    <form
+      className={styles.form}
+      onSubmit={handleSubmit}
+      noValidate
+      aria-label="Send a message"
+    >
+      {/* Rows one and two are unpaired - see .fieldWide. */}
+      <div className={`${styles.field} ${styles.fieldWide}`}>
         <label className={styles.label} htmlFor="contact-name">
           Name
         </label>
@@ -60,7 +72,7 @@ const ContactForm = () => {
         />
       </div>
 
-      <div className={styles.field}>
+      <div className={`${styles.field} ${styles.fieldWide}`}>
         <label className={styles.label} htmlFor="contact-email">
           Email
         </label>

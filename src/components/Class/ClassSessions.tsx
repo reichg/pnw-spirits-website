@@ -74,7 +74,7 @@ export default function ClassSessions({
             {/* The wrapper is load-bearing at two widths in opposite ways: it
                 dissolves (display: contents) on the two-up so the time and the
                 location can take different tracks, and it comes back below
-                900px to carry them as one separated strip. */}
+                900px to carry them as one left-aligned stack. */}
             <div className={styles.meta}>
               <p className={styles.time}>
                 <time dateTime={start.toISOString()}>

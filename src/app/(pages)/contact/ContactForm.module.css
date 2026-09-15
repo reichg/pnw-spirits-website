@@ -31,24 +31,41 @@
    ContentCard.module.css states in one line.
    =========================================================================== */
 
-/* Paired rows where the data is short, which is what keeps this from reading
-   as a five-row support ticket.
+/* A paired row where the data is genuinely short, which is what keeps this
+   from reading as a five-row support ticket.
 
    The cap is --measure-prose (44ch), and `ch` resolves against the font-size
    of the element it is declared on - so the 44ch is stated here, on an element
    deliberately set to --fs-body: 44 x 0.6630em x 17px = 496px at the scale
-   ceiling, using the repo's own measured Geist advance. Two tracks inside
-   496px with --col-gap between them leave each paired field about 230px, which
-   is ~31 rendered characters at the measured 1.50 characters per ch. That
-   covers a name outright and most addresses; a longer address scrolls inside
-   its own input, which is ordinary non-destructive single-line behaviour. A
-   --measure-form token was considered and declined: its clean derivation came
-   out at 576px against this 554/496px, a 4% difference, i.e. two names for one
-   decision.
+   ceiling, using the repo's own measured Geist advance. A --measure-form token
+   was considered and declined: its clean derivation came out at 576px against
+   this 554/496px, a 4% difference, i.e. two names for one decision. The token
+   is unchanged, and the cap is not what broke.
 
-   Capped HERE rather than on the <section>: the section is a direct child of
-   <main>, where .root > * already declares width, max-width and margin-inline
-   at equal specificity. Capping an inner element instead is the
+   ROW ONE AND ROW TWO ARE UNPAIRED, AND THAT IS A MEASUREMENT RATHER THAN A
+   PREFERENCE. Two tracks inside 496px with --col-gap between them leave each
+   paired field about 230px, which is ~31 rendered characters at the measured
+   1.50 characters per ch, and this file used to argue from that figure that a
+   longer address "scrolls inside its own input, which is ordinary
+   non-destructive single-line behaviour". Rendered, it is not ordinary. With
+   firstname.lastname@company.com typed in - 30 characters, and an entirely
+   common shape of address - the email input measured scrollWidth 272 against
+   clientWidth 232 at 1440px, so 40px of the address sat outside a field that
+   has NO FILL and therefore no visible container to explain the clip, no
+   ellipsis and no scroll cue. It reads as a layout error rather than as a
+   scrolled input, on the one field that has to be transcribed correctly for an
+   enquiry to be answerable at all, and the start of which has scrolled out of
+   view at exactly the moment the visitor wants to proofread it.
+
+   So name and email take the full 496px - about 62 rendered characters, which
+   holds that address outright with room to spare - and phone and the category
+   stay paired, because a phone number and a four-option select are genuinely
+   short. Four field rows, not five: still not the support-ticket queue the
+   pairing was avoiding.
+
+   Capped HERE rather than on the spine child: that element is a direct child
+   of <main>, where .root > * already declares width, max-width and
+   margin-inline at equal specificity. Capping an inner element instead is the
    .emptyMessage > span pattern. */
 .form {
   display: grid;
@@ -65,7 +82,10 @@
   min-width: 0;
 }
 
-/* The message spans both tracks - the only field whose content is not short. */
+/* Spans both tracks. Name, email and the message take it - the three fields
+   whose content is not reliably short - so the pairing is spent only on the
+   phone number and the category. See .form for the measurement that moved name
+   and email onto this rule. */
 .fieldWide {
   grid-column: 1 / -1;
 }
@@ -312,9 +332,13 @@
 }
 
 /* --- Responsive -----------------------------------------------------------
-   One structural change. The pairing is what the 496px measure affords, and
-   below 599px there is no second column to give: noma's measured mobile
-   behaviour is this same collapse. The submit needs nothing here - the
+   One structural change, and after the unpairing above it reaches exactly one
+   row. The pairing is what the 496px measure affords, and below 599px there is
+   no second column to give: noma's measured mobile behaviour is this same
+   collapse. Stated on .form rather than on the one pair it now moves, because
+   the grid is the thing that stops being a grid and a rule per surviving pair
+   would have to be revisited every time a field moved. The submit needs
+   nothing here - the
    composed .viewAllButton already goes full width to a 22rem cap at exactly
    this breakpoint, and declaring width or max-width alongside it would be an
    equal-specificity contest even at the same value.

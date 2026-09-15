@@ -135,22 +135,10 @@
   margin-block-start: calc(var(--space-prose) * 2);
 }
 
-/* --fs-h2 (24 -> 32px), the system's section-head role, not --fs-card. These
-   two heads are how a reader standing over a shaker finds their place again,
-   so they are signposts rather than the quiet in-prose subheads --fs-card
-   would give. Against --fs-title's 52px ceiling the drop is 1.63:1 and against
-   the 19px body it is 1.68:1 - the head outranks the body by about as much as
-   the title outranks the head, which is what keeps the three levels evenly
-   spaced instead of bunching two of them together.
-   margin restated because globals.css gives every h1-h6 a 0.5em bottom. */
+/* The system's section-head role, composed from its declaration site, which
+   carries the derivation. Ingredients and Method are the two consumers here. */
 .sectionHeading {
-  margin: 0 0 var(--space-s);
-  font-family: var(--font-primary);
-  font-size: var(--fs-h2);
-  font-weight: 600;
-  line-height: 1.25;
-  letter-spacing: -0.01em;
-  color: var(--ink-1);
+  composes: sectionHeading from "../../../../components/ui/ContentDetailShell.module.css";
 }
 
 /* --- Ingredients ----------------------------------------------------------

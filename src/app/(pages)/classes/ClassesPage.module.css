@@ -102,13 +102,9 @@
   margin-block-start: clamp(3rem, 7vw, 5rem);
 }
 
-/* --fs-h2 (24 -> 32px), the system's section-head role. Declared rather than
-   composed because this rule has no shared declaration site yet: the same six
-   declarations already appear in RecipesPostPage.module.css .sectionHeading
-   and in BlogPostPage.module.css .prose h2. Their natural home is
-   ContentDetailShell.module.css, which is outside this task's boundary, so
-   this is reported as a boundary gap rather than left as a silent third copy.
-   margin restated because globals.css gives every h1-h6 a 0.5em bottom.
+/* The system's section-head role, composed from its declaration site. This
+   page declares nothing of its own on top of it - see that rule's note on why
+   composing-and-overriding it is not available.
 
    NO RULE UNDER THE HEAD. The old page underlined every section head in
    --color-border-dark. On this ground the header's copper rule and the closing
@@ -117,13 +113,7 @@
    double rule, which is the same reason .emptyMessage carries no rules of its
    own. */
 .sectionHeading {
-  margin: 0 0 var(--space-s);
-  font-family: var(--font-primary);
-  font-size: var(--fs-h2);
-  font-weight: 600;
-  line-height: 1.25;
-  letter-spacing: -0.01em;
-  color: var(--ink-1);
+  composes: sectionHeading from "../../../components/ui/ContentDetailShell.module.css";
 }
 
 /* --- Close ----------------------------------------------------------------

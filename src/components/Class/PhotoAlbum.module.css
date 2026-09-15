@@ -27,9 +27,10 @@
   max-width: 100%;
   box-sizing: border-box;
   /* Theme Swiper bullets to the editorial palette (navigation arrows are not
-     used). The bullets are now the carousel's ONLY affordance, since the
-     animated swipe overlay is gone, so they are deliberately the system accent
-     rather than a neutral dot. */
+     used). With the animated swipe overlay gone, the bullets and the next-plate
+     peek (ALBUM_PEEK, src/config/album.ts) are the carousel's only affordances
+     between them, so the dots are deliberately the system accent rather than a
+     neutral one: the peek says a strip continues, the dots say how far. */
   --swiper-theme-color: var(--color-accent-gold);
   --swiper-pagination-bullet-inactive-color: var(--ink-1);
   --swiper-pagination-bullet-inactive-opacity: 0.45;
@@ -56,11 +57,50 @@
 
 .carousel :global(.swiper-pagination) {
   bottom: 0;
-  /* Reserve a stable row height so the active dynamic bullet scaling up does
-     not shift the slides above it. */
+  /* Reserve a stable row height so the bullet row cannot shift the slides above
+     it. 0.75rem holds the 8px dot plus its own line box. */
   height: 0.75rem;
   line-height: 0.75rem;
+  /* Swiper's own `.swiper-pagination { text-align: center }` at (0,1,0), undone
+     at (0,2,0). These dots were the only centred element on either new page, on
+     a direction that states nothing is centred. The bullets are inline-level
+     inside a container Swiper already spans to full width, so this alone starts
+     the row on the left edge - see the note below on why that is only true with
+     dynamicBullets off. */
+  text-align: start;
 }
+
+/* --- Why dynamicBullets is off ---------------------------------------------
+   text-align alone could not left-align these dots, and the reason is worth
+   recording because it is not visible from the CSS. dynamicBullets is a
+   JS-positioned sliding window: Swiper sets an inline `width` on the container
+   (80px = five 16px slots), pins it with
+   `.swiper-pagination-horizontal.swiper-pagination-bullets.swiper-pagination-bullets-dynamic
+   { left: 50%; transform: translateX(-50%) }`, and then writes an inline `left`
+   on each bullet to keep the ACTIVE one centred inside that window. Left-
+   aligning the window still left the first dot floating 12px into it at 1440
+   and 36px at 390 - and moving, by design, on every swipe. Nothing in CSS
+   reaches that without reimplementing the mechanism.
+
+   Turning it off answers the other half of the same finding for free. Dynamic
+   bullets scale non-adjacent dots to 33%, which is what made the album's entire
+   "there are more photographs" signal measure 7 / 5 / 3 / 3 / 3px at 390. Static
+   bullets are all 8px at the inactive ink declared above, so the row reads as a
+   count rather than as a fading tail.
+
+   The window existed to stop a long dot row overrunning its container, and this
+   album cannot produce one: MAX_ALBUM_PHOTOS caps the set at 16, and the row is
+   ceil(16 / slidesPerGroup) bullets at 16px each - worst case 256px at 390
+   against a 350px spine, and narrower at every wider tier because the group
+   grows. It is bounded by the cap, so there is nothing for a window to protect.
+
+   With it off, Swiper's own `.swiper-horizontal > .swiper-pagination-bullets
+   { left: 0; width: 100% }` already spans the container, so the dots need no
+   positioning override at all - only the text-align above. They land on x=124
+   at 1440: the plates' left edge rather than the spine's 120, the 4px being the
+   .swiper clip buffer the photographs already sit inside. Dots and plates share
+   one edge, which is the comparison the eye actually makes, since the dots sit
+   directly beneath the strip. */
 
 .carousel :global(.swiper-pagination-bullet-active) {
   background: var(--color-accent-gold);
@@ -213,6 +253,66 @@
   font-size: var(--fs-meta);
   line-height: 1.4;
   color: var(--ink-3);
+
+  /* --- The caption box is RESERVED, and the number is two lines of this rule's
+     own leading ------------------------------------------------------------
+     Captions are optional and free-length, so an unreserved box made every
+     slide as tall as its own caption: measured 354 / 373 / 354 / 326 / 326px
+     across one 1200px row, three heights and a ragged bottom edge under plates
+     that are all exactly 286x286. That is the Pioneer Works defect the research
+     banked as COUNTER-evidence - "image heights are ragged, so the text
+     baselines across a row do not align" - reintroduced one layer below the
+     plate geometry that was chosen to prevent it.
+
+     2.8em is derived, not chosen: this rule declares line-height 1.4, so two
+     lines is 2 x 1.4em. Em rather than a token because it has to track
+     --fs-meta's clamp - the same reasoning ContentDetailShell.module.css
+     records for its ch measures - and because no new rung is wanted for it.
+     Measured: 39.2px at 1440 (14px meta), 38.8 at 1024, 36.7 at 390.
+
+     Two lines rather than one, because one line is not the common case: of the
+     three seeded captions, one already wraps to two at 1440. Two rather than
+     three, because the reserve is paid by every slide including the caption-less
+     ones and a third line is ~19px of guaranteed void.
+
+     min-height, not height, so unusual font metrics grow the box instead of
+     clipping a descender off line two. */
+  min-height: 2.8em;
+
+  /* The cap at the other end, and the repo's existing idiom for it (ContentCard,
+     ContentRow, AdminCard all spell it this way). Without it a three-line
+     caption rags the row upward exactly as the absent ones ragged it downward.
+     Truncating here costs nothing the reader cannot recover: the plate is the
+     lightbox trigger, and .lightboxCaption below is deliberately unclamped - the
+     same split this file already records for the photograph itself, where the
+     plate crops and the lightbox holds the uncropped original. */
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
+}
+
+/* A photo with no caption renders no <figcaption> at all (AlbumPhoto keeps that
+   branch honest - an empty figcaption would give the <figure> an empty
+   accessible name instead of no name), so min-height above cannot reach it.
+   This supplies the same box as a flex item of .item, which picks up the same
+   --space-2xs gap, so a caption-less plate and a captioned one land on one
+   height. font-size is restated because em here would otherwise resolve against
+   the inherited prose size rather than the meta register.
+
+   SCOPED TO STRIPS THAT ACTUALLY HAVE A CAPTION, which is the point of the
+   :has() and not decoration. Captions are optional in the admin, so an album
+   where nothing is captioned is an ordinary outcome - and there the reserve
+   aligns nothing and would be 40px of dead strip across every plate. That is
+   the same void the pagination reserve above is withdrawn to avoid, so it is
+   withdrawn the same way: by asking whether the thing being reserved for
+   exists. */
+.carousel:has(.caption) .item:not(:has(> .caption))::after {
+  content: "";
+  display: block;
+  font-size: var(--fs-meta);
+  min-height: 2.8em;
 }
 
 /* Composed, not copied - see the same rule in ClassSessions.module.css. The

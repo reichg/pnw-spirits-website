@@ -7,18 +7,47 @@
    competing at one rank, and the loudest of them - the cream one - belonged to
    no other surface on this site.
 
-   WHAT DOES THE RANKING NOW. One masthead. The invitation takes the left
-   track, the channels take the right track in the byline's slot and at the
-   byline's size, and the direct address is ranked INSIDE the lede sentence
-   instead of getting a panel and a 1.9rem display size of its own. The form is
-   then the only thing below the copper rule, which is what makes it the body
-   of the page. No panel survives, and none comes back: this system has one
-   filled surface in total (the gold CTA), recorded in adminTokens.module.css.
+   WHAT DOES THE RANKING NOW. The landing header verbatim - eyebrow, heading,
+   lede, copper rule - which is byte for byte the opening /recipes-landing,
+   /blogs-landing and /classes use, with the direct address ranked INSIDE the
+   lede sentence instead of getting a panel and a 1.9rem display size of its
+   own. The form is then the only thing below the copper rule, which is what
+   makes it the body of the page, and the channels close the page on the
+   system's hairline row. No panel survives, and none comes back: this system
+   has one filled surface in total (the gold CTA), recorded in
+   adminTokens.module.css.
 
-   COMPOSITION, NOT DUPLICATION. .page, .masthead, .mastheadLead, .eyebrow,
-   .heading, .lede and .channelList are all `composes` of rules that already
+   WHY THE CHANNELS ARE A CLOSING ROW AND NOT THE MASTHEAD'S RIGHT TRACK.
+   They were built into the detail shell's two-up, on the reasoning that the
+   byline track is the furniture that holds the right edge of the spine.
+   Rendered, that was the wrong transfer, and the measurement is the argument.
+   ContentDetailShell's recorded answer - "it does NOT fill the right of the
+   spine below the copper rule, and no honest option does" - was written for a
+   636x1070 reading column, where the void is narrower than its content is tall
+   and the eye tracks down the column rather than across the gap. This page's
+   body measured 496x567 with a 656x567 void beside it at 1440px: an empty
+   shape wider than the content and just as deep has stopped being a margin.
+   And it had an open bottom edge, because /contact was the only page in this
+   system with no closing row - so the container was declared once, at the
+   copper rule, and never referenced again for the 771px down to the footer.
+
+   The channels are the fix because they are the only furniture on this page
+   that can hold a right edge without inventing content, and because the
+   measured reference they came from - Humaan, in the research - is "plain text
+   links at the far right of a HAIRLINE FOOTER ROW". Only the right-alignment
+   half of that had been transposed; restoring the row restores the reference's
+   actual geometry. The form now sits between two full-spine rules, copper
+   above and hairline below with a right-flush block resting on it, so the
+   right edge is declared twice and the gap between them reads as composed
+   negative space rather than as a hole. It also moves three off-site links
+   BELOW the page's only conversion path in the DOM, and therefore in the tab
+   order, where they belong: tab from page load used to reach Instagram,
+   Facebook and YouTube before any field, at every viewport.
+
+   COMPOSITION, NOT DUPLICATION. .page, .header, .eyebrow, .heading, .lede,
+   .channelsRow and .channelList are all `composes` of rules that already
    exist, so the ground, the grain, the 1200px spine, the copper rule, the
-   two-up geometry and its 899px collapse have exactly one declaration site
+   closing hairline and the byline geometry have exactly one declaration site
    each. Every composing rule here is DISJOINT from what it composes:
    `composes` puts a second class name on the same element at the same
    specificity, so a property declared on both would be settled by CSS Modules'
@@ -38,35 +67,49 @@
   composes: root from "../../../components/ui/ContentLandingLayout.module.css";
 }
 
-/* --- Masthead -------------------------------------------------------------
-   The detail pages' two-up, borrowed wholesale rather than rebuilt: title
-   block left, a short right-hand block flush to the spine's right edge, both
-   landing on the copper rule, collapsing to one column at 899px. That module
-   derived the geometry - minmax(0, 1fr) fit-content(14rem), align-items: end -
-   against the same problem this page has, which is a wide rule with a narrow
-   column under it and nothing declaring the right edge. Composing it means
-   /contact cannot drift from /blogs/[id] on the one piece of furniture they
-   share.
+/* --- Header ---------------------------------------------------------------
+   The landing header verbatim - eyebrow, heading, lede, copper rule - so
+   /contact opens on the same mark as /recipes-landing, /blogs-landing and
+   /classes, and named .header to match what those pages call it. It was the
+   detail shell's two-up masthead; see the file header for why the right track
+   went, and where it went to.
 
    A direct child of <main> may not declare position, z-index, width,
    max-width or margin-inline: .root > * declares those five at the same
    (0,1,0) specificity, so a second declaration is an emission-order contest
    rather than an override. Neither this rule nor the composed one touches any
    of them. */
-.masthead {
-  composes: masthead from "../../../components/ui/ContentDetailShell.module.css";
-}
-
-.mastheadLead {
-  composes: mastheadLead from "../../../components/ui/ContentDetailShell.module.css";
+.header {
+  composes: header from "../../../components/ui/ContentLandingLayout.module.css";
 }
 
 .eyebrow {
   composes: eyebrow from "../../../components/ui/ContentLandingLayout.module.css";
 }
 
-/* "Contact" is one word under an 18ch cap with nothing above it but the
-   eyebrow, which is exactly the content --fs-page was derived for. */
+/* THE <h1> IS THE LANDING .heading - --fs-page / 18ch / 64px - AND STAYS
+   THERE. An independent review recommended dropping it to --fs-title (52px) so
+   that it agreed with /classes. The rung is kept, because the two pages are
+   not disagreeing: they are the two sides of one rule this system already
+   runs.
+
+     A FIXED, SHORT, POSTER heading takes .heading / --fs-page / 18ch. The
+     reference is /recipes-landing, whose "Recipes" is structurally identical
+     to this page's "Contact" - authored in the source, one word, nothing above
+     it but the eyebrow, and unable to change length.
+
+     An ARBITRARY-LENGTH CONTENT title takes .title / --fs-title / 22ch. The
+     reference is /recipes/59, whose title is a record field; /classes composes
+     that same rule for that same reason, because its <h1> is the
+     admin-editable cocktailClass.title, uncapped in both schema.prisma and
+     classSchemas.
+
+   editorialTokens.module.css derives exactly this distinction at --fs-title -
+   "A landing heading is one or two words inside an 18ch cap ... so it can be a
+   poster. A detail heading carries an arbitrary article name" - and
+   ClassesPage.module.css states it from the other side. Recorded here so the
+   next reader does not derive it a third time: what selects the rung is
+   whether the text can change length, not whether the page is a landing. */
 .heading {
   composes: heading from "../../../components/ui/ContentLandingLayout.module.css";
 }
@@ -110,22 +153,66 @@
   outline-offset: 3px;
 }
 
-/* --- Channels -------------------------------------------------------------
-   Rank four, and set like it: three plain text links in the furniture
-   register, no icons, no circles, no fill. It was a <div> with a floating <h2>
-   that named nothing - the only one of the page's three blocks without an
-   accessible name - and it is now a <section aria-labelledby> whose <h2> is
-   that name. */
+/* --- The form's spine child -----------------------------------------------
+   There is deliberately no rule for it, and that is worth stating because the
+   last two things put on it both had to come back off.
+
+   It carries no MARGIN. The composed .header already ends on --space-l, which
+   is the header-to-first-content distance every page in this system uses -
+   measured at 40px on /recipes-landing and on /classes. This page had
+   `margin-block-start: var(--space-m)` on top of that, which made the gap 64px
+   and gave the system's most-repeated structural distance two values on the
+   two pages shipped in the same batch. If the extra air is genuinely wanted it
+   is a change to .header's rung for every page, not a local addition here.
+
+   It carries no ACCESSIBLE NAME, because the <form> inside it carries one
+   instead (see ContactForm.tsx): a form landmark named for what it does is a
+   truer statement than a generic region wrapped around it. The <h2> that used
+   to supply that name via aria-labelledby is gone - it read "Send a message"
+   530px above a button reading SEND MESSAGE, which on a page with exactly one
+   form labels nothing the button does not already label.
+
+   The element exists at all only so that .form's --measure-prose cap is not
+   declared on a direct child of <main>, where .root > * already declares
+   max-width at equal specificity. That is the .emptyMessage > span pattern. */
+
+/* --- Close: the channels on the system's hairline row ---------------------
+   Full-spine hairline, --space-l of air under it: byte for byte the row that
+   closes /recipes-landing, /blogs-landing, /videos-landing, /classes and both
+   detail pages, so /contact finally ends the way every other page in this
+   system ends. See the file header for why the block that sits on it is the
+   channels. */
+.channelsRow {
+  composes: viewAllRow from "../../../components/ui/ContentLandingLayout.module.css";
+}
+
+/* Rank four, and set like it: three plain text links in the furniture
+   register, no icons, no circles, no fill.
+
+   margin-inline-start: auto is what flushes the block to the right edge the
+   hairline above it declares - the row is a flex container and this is its
+   only child. It is legal here where it would not be one level up: the five
+   properties .root > * owns are forbidden to a DIRECT child of <main>, and
+   this block is a child of the row, not of <main>. Below 900px it returns to
+   the left spine with everything else on the page. */
 .channels {
   min-width: 0;
+  margin-inline-start: auto;
 }
 
 /* The label sits one tier UNDER the destinations it names - smaller, tracked
-   wider, at the quieter ink - so the three links out-read their own heading.
+   wider, at the quieter ink - so the three links out-read their own label.
    That rank is the one thing Linear's measured contact form contributes here.
-   Right-aligned to the spine above 900px, following the composed .meta; below
-   it the list becomes a left-aligned strip and the label follows it back. */
-.channelsHeading {
+
+   A <p> AND NOT AN <h2>, which is a semantics fix rather than a style one. The
+   visual rank above is right and is kept unchanged; the heading level was not.
+   Rendered at 12px it put a caption into the document outline as a sibling of
+   "Contact" at 64px - a heading level five times smaller than its peer at the
+   same level, which a screen reader's heading list reports as a section head.
+   The block keeps its accessible name by pointing <section aria-labelledby> at
+   this element's id instead, so the name is still the visible text and there
+   is no second copy of it to drift. */
+.channelsLabel {
   margin: 0 0 var(--space-2xs);
   font-size: var(--fs-eyebrow);
   font-weight: 600;
@@ -139,7 +226,10 @@
 /* The byline's own rule: stacked, right-aligned, --fs-meta tracked caps, and
    below 900px a horizontal strip whose separators are drawn inside the flex
    gap by an absolutely positioned ::before - which is why a wrapped line never
-   starts with a stray tick. All of that arrives with the compose. */
+   starts with a stray tick. All of that arrives with the compose. The stacked
+   form is also what gives the closing row enough mass to answer the form
+   across the diagonal: a single line of links would close the page without
+   composing it. */
 .channelList {
   composes: meta from "../../../components/ui/ContentDetailShell.module.css";
 }
@@ -179,36 +269,21 @@
   outline-offset: 2px;
 }
 
-/* --- The form's section ---------------------------------------------------
-   Vertical margin only. margin-block-* is not among the five properties
-   .root > * declares, so it is the one axis a spine child may set; the margin
-   shorthand and margin-inline are not available here. The composed .header
-   already ends on --space-l, and a page whose entire body is one form wants
-   more air under the copper rule than a page that opens onto a card row. */
-.formSection {
-  margin-block-start: var(--space-m);
-}
-
-/* --fs-h2 is 2:1 under --fs-page at the ceiling, which the token file states
-   is the intended rank for a section head on a landing-scale page. margin and
-   color are restated because globals.css gives every h1-h6 a 0.5em bottom
-   margin and --color-text-primary. */
-.formHeading {
-  margin: 0 0 var(--space-l);
-  font-size: var(--fs-h2);
-  font-weight: 600;
-  line-height: 1.15;
-  letter-spacing: -0.01em;
-  color: var(--ink-1);
-}
-
 /* --- Responsive -----------------------------------------------------------
-   One rule, at the 899px the composed masthead already breaks at. Everything
-   else - the two-up collapsing to one column, the channel list becoming a
-   separated strip, the heading's 14ch cap at 599px - arrives with the composed
-   classes and is deliberately not restated here. */
+   One rule, at the 899px the composed .meta already breaks at: the closing
+   block stops being a right-aligned column and becomes a left-aligned strip on
+   the spine, which is where every other mark on the page sits below that
+   width. A right-flush block in a 350px container is a second alignment in a
+   space too small to read it as a decision - the reasoning ContentDetailShell
+   records for the byline this list composes. The heading's 14ch cap at 599px
+   and the strip's separator ticks arrive with the composed classes and are
+   deliberately not restated here. */
 @media (max-width: 899px) {
-  .channelsHeading {
+  .channels {
+    margin-inline-start: 0;
+  }
+
+  .channelsLabel {
     margin-bottom: var(--space-xs);
     text-align: start;
   }

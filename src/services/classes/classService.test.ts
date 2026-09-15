@@ -386,6 +386,20 @@ describe("getClassPageView", () => {
       endTime: null,
       location: "Future",
     };
+    /** Already over, with no endTime recorded, so the startTime fallback decides. */
+    const PAST_NO_END = {
+      id: 5,
+      startTime: "2026-05-20T18:00:00.000Z",
+      endTime: null,
+      location: "Past, open-ended",
+    };
+    /** Only reachable from a poisoned cache entry: a time that will not parse. */
+    const UNREADABLE = {
+      id: 6,
+      startTime: "not a date",
+      endTime: null,
+      location: "Unreadable",
+    };
 
     /** A cached payload whose photo URLs are fresh, so the hit path is taken. */
     function cacheHitWith(sessions: unknown[]): void {
@@ -460,6 +474,30 @@ describe("getClassPageView", () => {
       // Lets the page's "no sessions scheduled" empty state fire even on a warm
       // cache, which the unfiltered read could never do.
       expect(result.sessions).toEqual([]);
+    });
+
+    it("cache hit: drops an ended session that never recorded an endTime", async () => {
+      // The endTime-null fallback in the DROP direction. FUTURE exercises only
+      // the keep direction, so a predicate that simply kept every session
+      // without an endTime would satisfy every other case in this block - and
+      // would strand an open-ended class on the page permanently.
+      cacheHitWith([PAST_NO_END, FUTURE]);
+
+      const result = await getClassPageView();
+
+      expect(result.sessions).toEqual([FUTURE]);
+    });
+
+    it("cache hit: keeps a session whose cached time cannot be parsed", async () => {
+      // The module's fail-open posture, stated on isSessionUpcoming: an
+      // unreadable value is kept rather than silently hidden, so a poisoned
+      // cache entry degrades to showing too much rather than to a page that
+      // claims there are no classes at all.
+      cacheHitWith([UNREADABLE]);
+
+      const result = await getClassPageView();
+
+      expect(result.sessions).toEqual([UNREADABLE]);
     });
   });
 });
