@@ -1,0 +1,380 @@
+/* ===========================================================================
+   Content detail shell - the skeleton shared by /blogs/[id] and /recipes/[id],
+   plus the two type roles /classes composes from it (.title, .sectionHeading).
+
+   WHY THIS FILE EXISTS. The two detail pages were built in parallel against one
+   written contract and drifted anyway, in the one place the system depends on
+   them agreeing: the masthead. An independent render measured two separator
+   mechanisms, two half-gaps (32px against 16px), two containers (spine against
+   measure), two responsive behaviours and two prefers-reduced-motion policies
+   for the same byline strip under the same 52px title. None of that was
+   carelessness - it was two files with no single declaration site between them.
+   This file is that declaration site. The masthead skeleton and the closing row
+   now exist once; a page module may add page-specific classes but may not
+   restate one of these.
+
+   WHAT IS SHARED. Return link -> eyebrow -> title -> meta -> copper rule, and
+   the hairline-plus-gold-CTA close. What is NOT shared is everything below the
+   copper rule: an article has prose, a recipe has ingredients and a method, and
+   forcing those into one vocabulary would be abstraction for its own sake. The
+   one exception is .sectionHeading, the type role those sections open with,
+   which is shared because it is type rather than structure - and because
+   /classes made it a third identical copy. See the rule for who consumes it.
+
+   COMPOSITION, NOT DUPLICATION. .page, .masthead, .eyebrow, .closeRow and
+   .closeButton pull the landing system's own rules in by `composes` rather than
+   re-typing them, so a landing page and a detail page cannot drift on the
+   ground, the grain, the 1200px spine, the header rule or the CTA.
+
+   .masthead is the one composing rule here that also declares properties of its
+   own, and the set is disjoint from .header's (which declares only
+   padding-bottom, margin-bottom and border-bottom). That matters because
+   `composes` puts both class names on the element at equal specificity, so a
+   property declared on both would be settled by stylesheet emission order
+   ACROSS two module files, which is not guaranteed. Disjoint property sets have
+   no contest to lose. Keep them disjoint.
+   =========================================================================== */
+
+.page {
+  composes: root from "./ContentLandingLayout.module.css";
+}
+
+/* --- Masthead -------------------------------------------------------------
+   A two-up at the spine's full width: the title block at the left, the byline
+   block flush to the right edge, both landing on the copper rule.
+
+   This is the answer to the composition problem the first render exposed. The
+   spine is 1200px and the reading column is 554px, so the copper rule and the
+   closing hairline declare a container that nothing between them ever reaches;
+   on a 200-character post - which is four of the five articles that actually
+   exist - the page rendered as two full-width rules 250px apart with a
+   half-width paragraph between them, and read as a hole rather than as
+   asymmetry. The byline is the only furniture that exists on every article and
+   every recipe, with or without a cover, so it is the only candidate that can
+   occupy the right of the spine without inventing content. Giving it that job
+   also settles where it lives: it had been released to the spine on one page
+   and capped at the measure on the other, and now it has a real right edge -
+   the one the two rules state.
+
+   It does NOT fill the right of the spine below the copper rule, and no
+   honest option does on a four-line article. The masthead now spans the
+   container it declares; the reading column under it is a column. */
+.masthead {
+  composes: header from "./ContentLandingLayout.module.css";
+  display: grid;
+  /* The byline is sized to its own content, capped; the title takes the rest.
+     A proportional split was tried first (2fr / 1fr) and it was wrong, because
+     a fraction of the viewport is not what either block needs. The byline is
+     four short tracked-caps lines whose width does not change with the
+     viewport, while the title's width is already governed by its own 22ch cap.
+     Under 2fr the title's track was the narrower of the two constraints
+     between about 900px and 1100px, so the track - not the type - set the
+     measure, and a render across the eight pages that exist measured a
+     stranded final word on six of eight titles at 900px, four at 960px and
+     three at 1024px. At 880px, one column, none of them orphaned. The
+     two-column masthead was making the page worse at exactly the width a
+     13-inch laptop sits at.
+
+     fit-content(14rem) gives the byline its content width and no more, so
+     everything left over goes to the title and the 22ch cap governs again at
+     every width in the band. Bare `auto` is the same thing without the cap and
+     is not safe: `auto` on a grid track resolves toward max-content, so a long
+     author name would eat the title's track - the failure this replaces, with
+     the cause moved from the viewport to the content.
+
+     14rem = 224px, derived from the content rather than picked. The longest
+     byline item is `By ` plus an author name, set at --fs-meta in 500-weight
+     tracked caps, and 224px measured 21 of those characters on a line. The
+     seeded authors are 12-16 characters, so the real byline never reaches the
+     cap at all: the track resolves to its own content width (140.7px at 900px,
+     143.6px at 1440px) and the remainder goes to the title. The cap only binds
+     on a name the seed does not contain, and it was measured there rather than
+     assumed - at 32 characters the item wraps to two right-aligned lines at
+     the space, at 44 to three at the existing hyphen, the track stops at
+     exactly 224px in both cases, the byline's right edge does not move, and
+     the masthead does not grow because the title block is the taller of the
+     two. Wrapping is the byline's normal behaviour - it is a stack of lines
+     already - so that is a graceful ceiling rather than a break. */
+  grid-template-columns: minmax(0, 1fr) fit-content(14rem);
+  column-gap: var(--col-gap);
+  /* Both blocks sit on the rule. The lead block is 250-400px tall and the
+     byline is three lines, so aligning their tops would hang the byline in the
+     middle of nothing - the failure the recipe's lead band was separately
+     measured for. */
+  align-items: end;
+  /* Consumed only in the stacked state below 900px, where the two blocks
+     become two rows. Stated once here rather than as a margin inside the
+     breakpoint. */
+  row-gap: var(--space-m);
+}
+
+/* Return link, eyebrow and title, grouped so the byline can take the second
+   grid track without either being placed by row index - a recipe and an
+   article must be free to differ in what they put above the title. */
+.mastheadLead {
+  min-width: 0;
+}
+
+.eyebrow {
+  composes: eyebrow from "./ContentLandingLayout.module.css";
+}
+
+/* --- The measure ----------------------------------------------------------
+   `ch` resolves against the font-size of the element it is declared on, so
+   --measure-prose (44ch) is only the intended 66-character column on an element
+   set at --fs-prose. Stated once and composed onto every block that has to
+   share the reading column's right edge, rather than repeated with a font-size
+   each time and drifting the first time one of them is retuned. Resolves to
+   554px at 1440px/19px (measured Geist advance of 0.6630em per ch).
+
+   --measure-cap is an escape hatch with one consumer today (the blog cover
+   releases to the full column on a phone) and it is a custom property rather
+   than a `max-width` override on purpose: an override would be a page module
+   contesting a property declared in THIS module, and the emission order between
+   two module files is not guaranteed. A custom property set by one rule and
+   read by another has no contest at all. */
+.measured {
+  font-size: var(--fs-prose);
+  max-width: var(--measure-cap, var(--measure-prose));
+}
+
+/* Return link. Ink, not gold: gold is reserved for the eyebrow directly beneath
+   it and for the one filled CTA that closes the page, and two gold tracked-caps
+   lines stacked on each other spend the accent on page furniture. --ink-3 is
+   5.43:1, which clears AA at this size; the hairline underline carries the
+   affordance at rest and both go gold on hover and focus.
+
+   line-height is 1.5rem rather than 1, and that is a target-size fix rather
+   than a typographic one. This is a standalone block-level navigation control,
+   not a link inside a sentence, so WCAG 2.2 SC 2.5.8's inline exception does
+   not apply to it and its measured 121x12 box failed. A fixed 24px line box
+   gives the <a> a 24px border box at every step of --fs-eyebrow's clamp without
+   flex, padding or a second box model, and leaves the underline - positioned
+   from the baseline - exactly where it was. The added half-leading below the
+   text is subtracted from the margin so the gap under the link is unchanged.
+
+   The :hover rule is (0,2,0) on purpose: globals.css has
+   `a:hover { color: var(--color-bg-highlight) }` at (0,1,1), which would
+   otherwise recolour this link, and a plain .backLink at (0,1,0) loses to it.
+   .viewAllButton in ContentLandingLayout.module.css documents the same trap. */
+.backLink {
+  display: inline-block;
+  margin-bottom: calc(var(--space-l) - (1.5rem - 1em) / 2);
+  font-size: var(--fs-eyebrow);
+  font-weight: 600;
+  line-height: 1.5rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-decoration-color: var(--hairline);
+  text-underline-offset: 0.6em;
+  transition:
+    color var(--dur-fast) ease,
+    text-decoration-color var(--dur-fast) ease;
+}
+
+.backLink:hover,
+.backLink:focus-visible {
+  color: var(--color-accent-gold);
+  text-decoration-color: var(--color-accent-gold);
+}
+
+.backLink:focus-visible {
+  outline: 2px solid var(--color-accent-gold);
+  outline-offset: 4px;
+}
+
+/* The page's typographic peak, and it carries its own display measure rather
+   than borrowing the body's.
+
+   --measure-prose is 44ch computed for 19px prose at 66 characters; applied to
+   a 52px <h1> the same token rendered ~24 characters a line, which broke a
+   real 49-character title into three lines with one word alone on the last.
+   22ch resolves against this element's own --fs-title: 22 x 0.663em x 52px =
+   758px, or 22 x 1.50 = 33 rendered characters, which is the display band the
+   measured references sit in (Imbibe 44px, Linear 48px over 624px, Aeon 72px
+   over 882px) and close to the landing .heading's own 18ch/764px. The two page
+   types now share a display measure instead of one of them borrowing a prose
+   measure. min() rather than the bare cap so the title is viewport-bound below
+   ~1100px, where 22ch would exceed the column.
+
+   This does put a second right edge in the masthead. It is deliberate and it is
+   bounded: the masthead is furniture above the copper rule, which resets the
+   container, and the single right edge the composition actually rests on is the
+   one shared by the cover, the prose, its figures, the ingredient list and the
+   method - everything below the rule.
+
+   1.08, not the landing heading's 1.04: .heading caps at 18ch and sets one or
+   two words, while this carries an arbitrary article or cocktail name across
+   two or three lines at 52px, where 1.04 leaves the descenders of one line
+   about 2px off the ascenders of the next. Weight 600 is the system ceiling;
+   hierarchy is size and ink tier. margin restated because globals.css gives
+   every h1-h6 a 0.5em bottom. */
+.title {
+  margin: 0;
+  max-width: min(100%, 22ch);
+  font-family: var(--font-primary);
+  font-size: var(--fs-title);
+  font-weight: 600;
+  line-height: 1.08;
+  letter-spacing: -0.02em;
+  color: var(--ink-1);
+}
+
+/* --- Section head ---------------------------------------------------------
+   One rank under .title, on every page that has sections: --fs-h2 (24 -> 32px),
+   the system's section-head role, not --fs-card. These heads are how a reader
+   standing over a shaker - or scanning a class schedule - finds their place
+   again, so they are signposts rather than the quiet in-prose subheads
+   --fs-card would give. Against --fs-title's 52px ceiling the drop is 1.63:1
+   and against the 19px body it is 1.68:1: the head outranks the body by about
+   as much as the title outranks the head, which is what keeps the three levels
+   evenly spaced instead of bunching two of them together. margin restated
+   because globals.css gives every h1-h6 a 0.5em bottom.
+
+   Consumed by /classes and /recipes/[id], which compose it and declare NOTHING
+   of their own - that is what makes it safe, per the disjointness rule in the
+   header. A page needing a different margin above its heads is not a consumer
+   and must not compose-and-override it.
+
+   /blogs/[id] IS NOT A CONSUMER, and that is a finding rather than an
+   oversight. Its heads are `.prose h2` on HTML emitted by `marked`, so they
+   carry no class for `composes` to attach to - `composes` is only legal on a
+   single local class selector - and they take margin-block
+   `calc(var(--space-prose) * 2)` above rather than this rule's `0`, because a
+   head inside flowing prose must open its own gap where a head opening a
+   laid-out <section> gets one from the section. Two honest rules, not a third
+   copy: do not "fix" this by forcing them together. */
+.sectionHeading {
+  margin: 0 0 var(--space-s);
+  font-family: var(--font-primary);
+  font-size: var(--fs-h2);
+  font-weight: 600;
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+  color: var(--ink-1);
+}
+
+/* --- Byline block ---------------------------------------------------------
+   Author, date and whatever else the page can honestly derive - a reading time
+   on an article, an ingredient and a step count on a recipe. Tracked caps at
+   the quietest ink tier (5.43:1, which clears AA at 13-14px). --ink-3 has no
+   headroom: do not put it on anything smaller than this role.
+
+   Flush right against the spine, stacked, sitting on the copper rule. Right
+   alignment is confined to METADATA BLOCKS OCCUPYING THE RIGHT EDGE THE RULES
+   DECLARE - a rule with a reason rather than a count of one. The reason is the
+   one this block was given when it was built: what earns that edge is furniture
+   that exists on every record of its kind, so it can hold the edge the copper
+   rule and the closing hairline both declare without inventing content. The
+   byline is that furniture on an article and on a recipe.
+
+   AMENDED for /classes. A session row is a date and a time with nothing else to
+   its name, and left alone it renders as the same hole this masthead was built
+   to fix: full-width rules with a 300px stack between them. A session's
+   `location` is the same kind of candidate for the same job, so the schedule
+   reuses this two-up (see ClassSessions.module.css). What the amendment does
+   NOT license is right-aligning anything that is not such a block; everything
+   else stays on the left spine.
+
+   Below 900px the block stops being a column and becomes the horizontal strip
+   it used to be - see the breakpoint. */
+.meta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: var(--space-2xs);
+  padding: 0;
+  list-style: none;
+  text-align: right;
+  font-size: var(--fs-meta);
+  font-weight: 500;
+  line-height: 1.4;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+
+/* --- Close ----------------------------------------------------------------
+   Hairline rule, then the gold filled CTA, on the same left spine as the
+   masthead - byte for byte the row that closes all three landing pages, so a
+   reader who arrives here from one of them leaves by the same door. Hairline
+   and not copper: copper opens a page, a hairline closes it. */
+.closeRow {
+  composes: viewAllRow from "./ContentLandingLayout.module.css";
+}
+
+.closeButton {
+  composes: viewAllButton from "./ContentLandingLayout.module.css";
+}
+
+/* --- Responsive -----------------------------------------------------------
+   One structural change, at the same 900px the card row and both detail pages
+   already use. The masthead collapses to one column and the byline goes back to
+   being a horizontal strip under the title, because a right-aligned column in a
+   350px viewport would be a second alignment in a space too small to read it as
+   a decision. The grid's own row-gap supplies the separation, so no margin is
+   introduced here that has to be unwound above the breakpoint. */
+@media (max-width: 899px) {
+  .masthead {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .meta {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: var(--space-2xs) var(--space-m);
+    text-align: start;
+    /* Clips the separator of whichever item happens to start a wrapped line -
+       see the ::before below. Nothing else in this row can overflow. */
+    overflow: hidden;
+  }
+
+  .meta > * {
+    position: relative;
+  }
+
+  /* The separator is drawn INSIDE the gap by an absolutely positioned rule
+     rather than as a border on the item itself, and that is a fix for a defect
+     caught at a render rather than a flourish. A border-inline-start travels
+     with its item, so the first item on a wrapped second line arrived carrying
+     a rule with nothing to its left - a stray 1px tick hanging at the start of
+     a line. The two pages had answered that with two different breakpoints,
+     each tuned to its own row's content, and a long enough author name defeats
+     either number.
+
+     Positioned half a gap to the item's left, this rule lands outside the
+     container whenever its item starts a line - x = -12px against a content box
+     that begins at 0 - and the overflow clip removes it. Interior separators
+     are unaffected at every width, so the mechanism needs no breakpoint of its
+     own. inset-block: 0 reproduces the border's exact height, the line box,
+     because these items are baseline-aligned and size to their content.
+
+     A hairline rather than a "|" glyph: the rule is the height of the line box
+     and the same ink as every other hairline on the site, where a pipe would be
+     a text-coloured character at a font-dependent height. Half-gap is
+     --space-m/2 = 12px each side: at the 8px one page shipped, the rule sat
+     close enough to its right-hand neighbour to read as attached to it. */
+  .meta > * + *::before {
+    content: "";
+    position: absolute;
+    inset-block: 0;
+    inset-inline-start: calc(var(--space-m) / -2);
+    border-inline-start: 1px solid var(--hairline);
+  }
+}
+
+/* NO prefers-reduced-motion BLOCK HERE, and that is the settled policy rather
+   than an omission - recorded in editorialTokens.module.css so the next detail
+   page does not re-derive it. SC 2.3.3 is about motion and displacement. The
+   only thing on either detail page that moves is the closing CTA's 2px hover
+   lift, and that arrives with the composed .viewAllButton, which
+   ContentLandingLayout.module.css already neutralises under the preference;
+   restating it here would put the same property in two modules whose emission
+   order is not guaranteed. Everything else that transitions - this link's ink
+   and underline, prose link underlines, the ingredient checkbox's border and
+   tick - is a sub-200ms colour or opacity fade with no displacement, which is
+   not what the preference asks to have removed. */

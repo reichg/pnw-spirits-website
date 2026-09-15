@@ -1,0 +1,396 @@
+/* ===========================================================================
+   Content card - "the photograph is the card."
+
+   There is no card surface: no background, no border, no radius and no
+   shadow. The photograph sits directly on the page ground and the text sits
+   beneath it. Text is never placed over the image, and that is a correctness
+   requirement rather than a preference: cover photos are uploaded through
+   /admin, so their brightness, contrast and composition are uncontrolled.
+   Guaranteeing legibility with a scrim would mean permanently dimming the one
+   asset that sells the click.
+
+   The resting veil on .media does not weaken that rule, it depends on it. A
+   scrim is a veil some text needs in order to be read, so it can never be
+   lifted; this one carries nothing above it and lifts entirely on hover and
+   focus. Nothing on this card is legible only while the veil is drawn.
+
+   All tokens are inherited from .root in ContentLandingLayout.module.css.
+   Fallbacks are supplied only for those that would break layout or motion if
+   this card were ever rendered outside that shell.
+   =========================================================================== */
+
+.card {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  font-family: var(--font-primary);
+  color: var(--ink-1);
+  text-decoration: none;
+}
+
+.card:focus-visible {
+  outline: 2px solid var(--color-accent-gold);
+  outline-offset: 3px;
+}
+
+/* --- Media ---------------------------------------------------------------
+   Zero radius, zero border, zero shadow. ONE fixed ratio per page, held at
+   every viewport, so three cards in a row cannot produce ragged tops and so
+   the same photograph is never composed two different ways on the same site.
+   --surface-1 shows through when a record has no cover image, so a missing
+   photo reads as an empty plate rather than as a collapsed box
+   (S3CardBackgroundImage renders nothing while its signed URL is absent).
+
+   The square default is derived in ContentLandingLayout.module.css, which
+   owns the token contract. Short version: the source library is half 2:3
+   portrait and half 3:2 landscape, and square is the ratio that crops the
+   least from whichever one it is handed. */
+.media {
+  position: relative;
+  width: 100%;
+  aspect-ratio: var(--card-media-ratio, 1 / 1);
+  overflow: hidden;
+  background: var(--surface-1);
+}
+
+.cardImage {
+  /* cover, not contain: the media box is a fixed square and the source library
+     is mixed orientation, so contain letterboxes every photo inside it - the
+     ratio arithmetic in ContentLandingLayout.module.css is derived for cover,
+     as is the deliberate over-serving of `sizes="100vw"` in ContentCard.tsx. */
+  object-fit: cover;
+  transition: transform var(--dur-slow, 600ms)
+    var(--ease-out-soft, cubic-bezier(0.22, 0.61, 0.36, 1));
+}
+
+/* The only transform in the card, and it lives on the image inside the
+   overflow clip. Scaling the card itself would scale the type and cause
+   subpixel reflow. No brightness filter: it clips highlights on bright drink
+   photography and shifts skin tones on people shots. */
+.card:hover .cardImage,
+.card:focus-visible .cardImage {
+  transform: scale(1.04);
+}
+
+/* A resting veil, lifted on hover and focus. It does two jobs, and that is why
+   it is left in place on touch devices where it can never lift: it seats
+   uncontrolled admin-uploaded photography into the warm-dark page ground, and
+   it gives the pointer something to reveal. Were it only the second, it would
+   be dead weight on a phone - the viewport where the media is widest.
+
+   Same gradient as the landing page's four-column tiles, so the two card
+   systems read as one family - but opacity only, with none of their
+   backdrop-filter: blur(14px). Those tiles blur to seat a white label over the
+   photo. Here the photograph IS the product, and blurring it at rest would
+   soften the only thing the card is selling.
+
+   0.38, not the tiles' 0.6. Their veil has to buy contrast for text sitting on
+   top of it; this one only has to carry a state change. Composited over the
+   image, 0.38 takes a highlight at 230 down to 159 - unmistakably dimmed, and
+   still plainly a photograph - where 0.6 takes it to 118 and mud. It lifts to
+   0 rather than the tiles' residual 0.2 because there is no label left to
+   protect once the pointer arrives.
+
+   The veil colour is lighter than --surface-1, so however heavy it gets it
+   cannot push a dark photograph down onto the empty-plate colour and make a
+   present cover read as a missing one.
+
+   No z-index, deliberately. next/image `fill` renders an absolutely positioned
+   <img> at z-index auto, so this pseudo-element - later in tree order, also
+   auto - already paints above it; and staying at auto keeps the whole media
+   box below the kicker's z-index: 1, which must stay legible where it straddles
+   the seam. */
+.media::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    120deg,
+    var(--color-bg-overlay) 70%,
+    var(--color-accent-copper) 100%
+  );
+  opacity: 0.38;
+  pointer-events: none;
+  /* Medium, not the image's --dur-slow: the veil should be gone before the
+     push-in has finished settling, so the photograph is already clean while
+     the scale completes. A 600ms fade on a veil this heavy reads as lag. */
+  transition: opacity var(--dur-medium, 320ms)
+    var(--ease-out-soft, cubic-bezier(0.22, 0.61, 0.36, 1));
+}
+
+.card:hover .media::after,
+.card:focus-visible .media::after {
+  opacity: 0;
+}
+
+/* --- Body ----------------------------------------------------------------
+   Grid items stretch, so all three cards are already the same height, and the
+   free space a short title leaves has to be collected somewhere. It is
+   collected on the byline (.meta { margin-top: auto }), the last element in
+   the column - so every card's byline lands on a shared baseline while the
+   title and its summary stay tight against each other. Collecting it higher
+   up, between the title and its own dek, prises apart the most tightly
+   grouped pair on the card to align a third: slack belongs between
+   information types, not inside one. */
+.content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding-top: var(--space-m);
+}
+
+/* --- Kicker --------------------------------------------------------------
+   An outlined label straddling the photograph's lower edge. It ties the media
+   to the text without putting anything over the image: the badge is an opaque
+   plate in the page ground colour, so its legibility does not depend on what
+   an admin uploaded behind it.
+
+   Geometry. The box is line-height 1em + 2 x 0.5em padding + 2 x 1px border =
+   2em + 2px tall, so half of it is 1em + 1px. Rising by the content's top
+   padding plus that half puts the badge's centre exactly on the seam, and the
+   matching drop restores the gap to the title. The two margins therefore sum
+   to zero: a card with a kicker and a card without are the same height, so a
+   page whose items only sometimes carry one still aligns.
+
+   position/z-index are required because .media is positioned (for next/image
+   `fill`) and would otherwise paint over this non-positioned later sibling. */
+.kicker {
+  align-self: flex-start;
+  position: relative;
+  z-index: 1;
+  margin-top: calc(-1 * (var(--space-m) + 1em + 1px));
+  margin-bottom: calc(var(--space-m) - 1em - 1px);
+  padding: 0.5em 0.75em;
+  border: 1px solid var(--rule-accent);
+  background: var(--surface-0);
+  font-size: var(--fs-eyebrow);
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  /* Gold, not copper: see .eyebrow in ContentLandingLayout.module.css. */
+  color: var(--color-accent-gold);
+}
+
+/* Hierarchy is size and ink tier, never weight: 600 is the ceiling. The 1.2
+   line-height is the single highest-impact value here: a card title set at
+   the ~1.5 body default makes every two-line cocktail name sprawl. */
+.title {
+  margin: 0;
+  /* The underline is painted on the inline .titleText span, not here, so the
+     block does not have to shrink-wrap in order to carry it.
+
+     26ch is a measure cap and it is slack in the 3-up: measured in Geist, the
+     379px column at 1440 is only 25.2ch, so the cap never binds there. It
+     binds in the 600-899px index row, where the text column is far wider than
+     a title wants to be - both 600 and 899 measure the title at exactly
+     26.0ch against a much wider column. Keep it for that state. */
+  max-width: 26ch;
+  font-family: var(--font-primary);
+  font-size: var(--fs-card);
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: -0.005em;
+  color: var(--ink-1);
+}
+
+/* Underline reveal, painted as a background so its width can transition.
+   Driven by :hover and :focus-visible alike, so keyboard users get the same
+   affordance.
+
+   It lives on an inline span rather than on the <h2> block, and that is the
+   fix for a measured defect: on the block, `background-size: 100%` resolved
+   against the widest line, so on a wrapped title the rule ran up to 55px past
+   the end of the last line and read as a stray hairline. An inline box
+   fragments per line, and box-decoration-break:clone gives each fragment its
+   own background box - so every line is underlined at exactly its own width,
+   and the wipe still animates. text-decoration-color would also have been
+   correct per line, but it can only fade, not wipe. */
+.titleText {
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+  background-image: linear-gradient(
+    var(--color-accent-gold),
+    var(--color-accent-gold)
+  );
+  background-repeat: no-repeat;
+  /* The background box is the em box, whose foot sits near the descender
+     line. 0.08em of inline padding drops the rule clear of descenders without
+     touching layout: inline padding does not grow the line box, and at
+     line-height 1.2 there is 0.1em of half-leading below it to absorb. */
+  padding-bottom: 0.08em;
+  background-position: 0 100%;
+  background-size: 0% 1px;
+  transition: background-size var(--dur-medium, 320ms)
+    var(--ease-out-soft, cubic-bezier(0.22, 0.61, 0.36, 1));
+}
+
+.card:hover .titleText,
+.card:focus-visible .titleText {
+  background-size: 100% 1px;
+}
+
+/* Clamped in CSS, never truncated in JS: the full text stays in the DOM for
+   assistive technology and for search, and the clamp adapts to the rendered
+   width at every breakpoint. No min-height reservation and no auto margin:
+   cross-card alignment is the byline's job, so the dek simply sits under the
+   title it belongs to. */
+.excerpt {
+  padding-top: var(--space-m);
+  font-size: var(--fs-body);
+  line-height: 1.5;
+  color: var(--ink-2);
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
+}
+
+/* Byline set as masthead-style tracked caps at the quietest ink tier, and the
+   one element that collects the column's free space - so three cards whose
+   titles and deks run to different line counts still close on one baseline.
+   Applies whether or not the item carries a summary, so no modifier class. */
+.meta {
+  margin-top: auto;
+  padding-top: var(--space-m);
+  font-size: var(--fs-meta);
+  font-weight: 500;
+  line-height: 1.4;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+
+/* --- Entrance ------------------------------------------------------------
+   Pure CSS, no IntersectionObserver and no client component: the cards are at
+   or near the fold on a page this short, so an observer buys nothing and
+   would force "use client" across the server-only boundary. The resting state
+   in CSS is the final state; the animation is only ever added, never removed,
+   so nothing can leave the page blank. --card-index is set per grid child by
+   ContentLandingLayout.module.css. */
+@media (prefers-reduced-motion: no-preference) {
+  .card {
+    animation: cardEnter 500ms
+      var(--ease-out-soft, cubic-bezier(0.22, 0.61, 0.36, 1)) both;
+    animation-delay: calc(var(--card-index, 0) * 70ms);
+  }
+
+  @keyframes cardEnter {
+    from {
+      opacity: 0;
+      transform: translateY(12px);
+    }
+  }
+}
+
+/* --- Responsive ----------------------------------------------------------
+   State 2 of 3: below the 3-up row the card becomes a horizontal index row,
+   media left, text right, separated by hairlines. Far more scannable and far
+   shorter than three stacked full-width cards.
+
+   The media keeps the page's crop and gets narrower instead of being
+   re-cropped to a landscape ratio here. Re-cropping would stop the photograph
+   governing the row height, but it cuts the stem and base off every vertical
+   drink shot - the exact damage a fixed ratio exists to prevent.
+
+   Narrowing buys back nearly the same text governance. 26% is the narrowest
+   column at which the thumbnail still reads as a photograph rather than an
+   icon. Measured against real copy, media height vs the tallest text block
+   beside it:
+     34% -> 275 vs 185 at 899 (115px of void)
+     30% -> 243 vs 185 at 899  (90px)
+     26% -> 210 vs 185 at 899  (25px), and at or below parity by 600
+   So the row is not strictly text-governed at the top of the range; it is
+   close enough that the residual is invisible, and no glass loses its base.
+   The dek measure survives the wider text column: 51.2ch at 899, in the same
+   band as the page lede's 48ch. */
+@media (max-width: 899px) {
+  .card {
+    display: grid;
+    grid-template-columns: 26% 1fr;
+    column-gap: var(--space-m);
+    align-items: start;
+    padding-bottom: var(--space-l);
+  }
+
+  .card + .card {
+    padding-top: var(--space-l);
+    border-top: 1px solid var(--hairline);
+  }
+
+  .content {
+    padding-top: 0;
+  }
+
+  .excerpt {
+    padding-top: var(--space-xs);
+  }
+
+  /* Cross-card alignment is meaningless when there is one card per row, so
+     the space-collecting auto margin is released - otherwise a short summary
+     would strand the byline on a baseline nothing else shares. */
+  .meta {
+    margin-top: 0;
+    padding-top: var(--space-s);
+  }
+}
+
+/* State 3 of 3: fully stacked. The media returns to full width - same crop,
+   bigger plate - so the photograph is the dominant element on a phone. */
+@media (max-width: 599px) {
+  .card {
+    display: flex;
+    flex-direction: column;
+    /* Restated because the 600-899px block above turned the card into a grid
+       and set `align-items: start`; without this, flipping `display` back to
+       flex leaves .content shrink-to-fit - measured at 183px inside a 350px
+       card at 390, so the line-clamp resolves against a measure the CSS
+       never intended. */
+    align-items: stretch;
+    /* More air around the separator than the 600-899px row gets: a full-width
+       photograph needs it, or the hairline reads as an underline on the
+       byline above it. */
+    padding-bottom: var(--space-l);
+  }
+
+  .card + .card {
+    padding-top: var(--space-l);
+  }
+
+  .content {
+    padding-top: var(--space-m);
+  }
+
+  .excerpt {
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
+  }
+}
+
+/* The kicker straddles a seam only where the media sits above the text. In the
+   600-899px index row the media is beside the text, so there is no seam and
+   the badge becomes a plain label above the title. Scoped to the range rather
+   than to max-width so the stacked state below 600px keeps the base straddle
+   without having to restate it. */
+@media (min-width: 600px) and (max-width: 899px) {
+  .kicker {
+    margin-top: 0;
+    margin-bottom: var(--space-xs);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* The veil still lifts on hover and focus - it is an affordance, not
+     decoration - it just stops animating across. */
+  .cardImage,
+  .titleText,
+  .media::after {
+    transition-duration: 0.001ms;
+  }
+
+  .card:hover .cardImage,
+  .card:focus-visible .cardImage {
+    transform: none;
+  }
+}

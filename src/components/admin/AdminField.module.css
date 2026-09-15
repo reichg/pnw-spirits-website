@@ -1,0 +1,74 @@
+/* ===========================================================================
+   One labelled form field - the scaffolding, not the control.
+
+   FOUR UNLIKE SURFACES READ THIS: the classes page-content form, the sessions
+   form, the newsletter composer and the login page. It is therefore deliberately
+   shaped around none of them - no width, no column count, no grid. A field is a
+   label, a control and the two kinds of text that can hang off one, and how many
+   of them share a line is the form's decision, not the field's.
+
+   THE LABEL TAKES THE EYEBROW REGISTER, which is not a new treatment: it is the
+   same role --fs-eyebrow already serves everywhere in this system - "name
+   something without competing with it" - and the same one AdminCard uses for
+   its metadata labels. One label treatment across the admin, so a field label
+   and a record's "AUTHOR" read as the same kind of thing, because they are.
+   Ghost's dark admin sets its table column heads exactly this way; the
+   convention was confirmed there rather than invented here.
+
+   WHAT THIS REPLACES: four different label treatments, one of them
+   var(--color-accent-secondary) #3d4a3a - a dark green set on a light panel on
+   the login page, which is illegible the moment that panel becomes the admin
+   ground.
+   =========================================================================== */
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2xs);
+  min-width: 0;
+}
+
+.label {
+  font-size: var(--fs-eyebrow);
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+
+/* Gold, and aria-hidden at the markup. The asterisk is a sighted convention;
+   the `required` attribute on the control is what a screen reader reads, so
+   announcing the glyph as well would say "required" twice. Gold rather than
+   --danger because a field that has not been filled in yet has not failed. */
+.required {
+  margin-inline-start: 0.25em;
+  color: var(--color-accent-gold);
+}
+
+/* ABOVE the control, not below it. A hint is read before typing ("The public
+   album shows the first 12 photos in album order"); an error is read after. Put
+   the hint underneath and it becomes the thing the admin reads once they have
+   already done it wrong. */
+.hint {
+  margin: 0;
+  max-width: 56ch;
+  font-size: var(--fs-meta);
+  line-height: 1.4;
+  color: var(--ink-3);
+}
+
+/* --danger at --fs-meta measures 5.60:1 on --surface-0 and 5.30:1 on
+   --surface-1, clearing AA on either ground a form can sit on. This is a failed
+   write anchored to the control that failed, which is exactly the role
+   --danger names - the compact, per-field spelling of what AdminStatus does for
+   the screen. Colour is not the sole carrier: the message is a sentence, and
+   the control carries aria-invalid. */
+.error {
+  margin: 0;
+  max-width: 56ch;
+  font-size: var(--fs-meta);
+  font-weight: 500;
+  line-height: 1.4;
+  color: var(--danger);
+}

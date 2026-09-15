@@ -1,5 +1,8 @@
 import { mapClassServiceError } from "@/services/classes/classErrors";
-import { photoInputSchema } from "@/services/classes/classSchemas";
+import {
+  classBodyErrorMessage,
+  photoInputSchema,
+} from "@/services/classes/classSchemas";
 import { createPhoto } from "@/services/classes/classService";
 import { requireAdmin } from "@/utils/auth";
 import { logger } from "@/utils/logger";
@@ -20,7 +23,10 @@ export async function POST(req: NextRequest) {
   const parsed = photoInputSchema.safeParse(body);
   if (!parsed.success) {
     return NextResponse.json(
-      { error: "Invalid input", details: parsed.error.issues },
+      {
+        error: classBodyErrorMessage(parsed.error),
+        details: parsed.error.issues,
+      },
       { status: 400 },
     );
   }

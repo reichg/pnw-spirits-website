@@ -1,3 +1,4 @@
+import { getJwtSecret } from "@/utils/jwtSecret";
 import jwt from "jsonwebtoken";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -24,10 +25,13 @@ function checkAdminToken(req: NextRequest): AdminTokenStatus {
     return "missing";
   }
   try {
-    // Verification secret must match the admin login service's signing secret.
-    // The "secret" fallback keeps local dev working when JWT_SECRET is unset;
-    // production MUST set JWT_SECRET (a default secret is forgeable).
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || "secret");
+    // Shared with the admin login service's signing secret. getJwtSecret throws
+    // in production when JWT_SECRET is unset; that lands in the catch below and
+    // fails closed, so a misconfigured deployment denies rather than accepting
+    // tokens signed with a publicly-known fallback. Anonymous callers never
+    // reach here (they return "missing" above), so a public endpoint consuming
+    // isAdmin still serves them normally.
+    const decoded = jwt.verify(token, getJwtSecret());
     if (typeof decoded === "object" && decoded !== null && decoded.role === "admin") {
       return "admin";
     }

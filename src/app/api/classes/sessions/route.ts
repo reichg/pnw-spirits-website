@@ -1,9 +1,12 @@
 import { mapClassServiceError } from "@/services/classes/classErrors";
-import { sessionInputSchema } from "@/services/classes/classSchemas";
 import { createSession } from "@/services/classes/classService";
 import { requireAdmin } from "@/utils/auth";
 import { logger } from "@/utils/logger";
 import { NextRequest, NextResponse } from "next/server";
+import {
+  sessionBodyErrorMessage,
+  sessionRequestSchema,
+} from "./sessionRequestSchema";
 
 const CONTEXT = "api.classes.sessions";
 
@@ -17,10 +20,13 @@ export async function POST(req: NextRequest) {
   if (authResult) return authResult;
 
   const body = await req.json();
-  const parsed = sessionInputSchema.safeParse(body);
+  const parsed = sessionRequestSchema.safeParse(body);
   if (!parsed.success) {
     return NextResponse.json(
-      { error: "Invalid input", details: parsed.error.issues },
+      {
+        error: sessionBodyErrorMessage(parsed.error),
+        details: parsed.error.issues,
+      },
       { status: 400 },
     );
   }

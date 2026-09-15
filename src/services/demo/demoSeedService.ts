@@ -98,7 +98,10 @@ const DEMO_BLOGS: readonly DemoBlog[] = [
         name: "Harper Lane",
         comment: "The fir-tip gin at your last tasting was unreal.",
       },
-      { name: "Marcus Bell", comment: "Would love a map of local distilleries!" },
+      {
+        name: "Marcus Bell",
+        comment: "Would love a map of local distilleries!",
+      },
     ],
     reactions: [
       { type: "like", count: 24 },
@@ -142,7 +145,10 @@ const DEMO_BLOGS: readonly DemoBlog[] = [
     content:
       "Bittersweet, herbaceous, and deeply local: Northwest amaro is having a moment. We taste through five bottles built on regional roots and barks and explain how to use them behind your home bar.",
     comments: [
-      { name: "Lena Voss", comment: "Added three of these to my cart already." },
+      {
+        name: "Lena Voss",
+        comment: "Added three of these to my cart already.",
+      },
     ],
     reactions: [
       { type: "like", count: 12 },
@@ -154,7 +160,10 @@ const DEMO_BLOGS: readonly DemoBlog[] = [
     content:
       "When the marine layer settles in, we reach for richer, warmer drinks. This roundup covers spiced toddies, barrel-aged Manhattans, and a smoky riff on the hot buttered rum.",
     comments: [
-      { name: "Theo Marsh", comment: "The toddy recipe saved my rainy weekend." },
+      {
+        name: "Theo Marsh",
+        comment: "The toddy recipe saved my rainy weekend.",
+      },
       { name: "Ivy Chen", comment: "More cold-weather drinks please!" },
     ],
     reactions: [
@@ -321,10 +330,13 @@ async function invalidateSeededCaches(): Promise<void> {
       invalidateRecipeCache(),
     ]);
   } catch (error) {
-    logger.warn("Demo seed cache invalidation failed; seed data is still written", {
-      context: CONTEXT,
-      data: { error: (error as Error).message },
-    });
+    logger.warn(
+      "Demo seed cache invalidation failed; seed data is still written",
+      {
+        context: CONTEXT,
+        data: { error },
+      },
+    );
   }
 }
 

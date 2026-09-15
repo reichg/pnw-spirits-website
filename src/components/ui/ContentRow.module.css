@@ -1,0 +1,376 @@
+/* ===========================================================================
+   Archive row - "the same design at a different density."
+
+   The archive pages are not a second visual language. They are the landing
+   language with the hairline, rather than the photograph, doing the structural
+   work: a reader who followed "View All" has already chosen, so the page's job
+   is now to be scannable rather than to persuade.
+
+   Four decisions define it, and all four are departures from ContentCard that a
+   variant flag could not have expressed:
+
+   1. THE RULE CARRIES THE METADATA. Every row opens on a hairline with its date
+      at the left end and its category at the right. That one line separates the
+      rows, places the date and places the kicker - and it removes the card's
+      straddling badge, which exists to bridge the seam between a photo above
+      and text below. A row has no such seam.
+   2. NO RESTING VEIL. Justified on the card, where the media is large and
+      uncontrolled. Twelve dimmed 140-160px thumbnails in a column read as
+      twelve disabled rows.
+   3. NO ENTRANCE STAGGER. The card's 70ms cascade is right for three items at
+      the fold. Twelve items either fire at once, which is not a stagger, or
+      cascade for 840ms down a page the reader is already scrolling past.
+   4. NO ARROW AFFORDANCE. The whole row is the link, so a chevron would be
+      redundant, and it would compete with the gold underline that already
+      signals the target.
+
+   Tokens are inherited from the shell (ContentArchiveLayout.module.css ->
+   editorialTokens.module.css) and none are declared here. Fallbacks appear only
+   where their absence would break layout or motion.
+   =========================================================================== */
+
+/* The grid is two columns and two rows: the metadata rule spans both columns,
+   the media leads the second row and the text sits beside it. One element, no
+   wrapper - a wrapper would put the rule and the body in separate boxes, and
+   the hover tint would then have to be painted on whichever of them was the
+   anchor.
+
+   align-items: start is the single most important property here. Top-aligning
+   the text against the media gives every row one shared reading start-point, so
+   the eye runs down a single left edge of copy instead of re-aiming per row.
+   Centring would start every row at a different height and remove the reason to
+   use a row at all.
+
+   The negative inline margin is what keeps the hover tint from reading as a
+   table cell. Content stays on the 1200px spine - the padding puts it back -
+   while the tint bleeds --space-s past the rules on both sides. Flush to the
+   hairline ends, the hairlines become the cell's top and bottom borders and the
+   list becomes a table; overshooting them makes the tint a band that the rules
+   sit inside. The bleed is bounded by the gutter's own floor (20px), so it
+   never reaches the viewport edge - and where a list puts two rows on a line it
+   is what sets that list's column gap, because two bleeds meeting in the middle
+   would merge the two tints into one band. See .list in
+   ContentArchiveLayout.module.css.
+
+   THE MEDIA COLUMN: a percentage, floored and capped, and every one of the
+   three numbers is a measurement rather than a taste pick.
+
+   --row-media-col is 26%, measured by ContentCard inside a container of at
+   most ~809px. At the 1200px spine that same 26% is 312px, and it was rendered
+   at 1440 before the cap was written: a 312px square governed every row, while
+   the text beside it measured ~129px on a recipe, 62-88px on an article and
+   26-53px on a video, which carries neither a dek nor a byline. Roughly 180px
+   of void per row, repeated down twelve rows - worse than the 34% case
+   ContentCard's own measurements rejected at a single breakpoint.
+
+   10rem = 160px is the ceiling, and cutting 312 -> 160 was the right move: it
+   took ~25% off the page and it is the width at which a 160px square of a
+   cocktail is still an identifiable drink, verified in a render at 1440 and
+   1024.
+
+   THE CEILING DOES NOT ACHIEVE PARITY WITH THE TEXT, AND AN EARLIER VERSION OF
+   THIS COMMENT CLAIMED IT DID. That claim was derived from an estimated ~182px
+   recipe row - two lines of title and three of dek - and the render does not
+   support it. Measured at 1440 across all three pages, the content box is 129px
+   on a recipe (real titles are one line, and the dek clamps to two, not three),
+   62-88px on an article and 26-53px on a video. The media governs 20 of 20 rows
+   at every viewport from 1440 down to 600, and row height is therefore a
+   constant 249px. So the honest statement of what this value does:
+
+     the media sets the row height on every row, and the ceiling exists to stop
+     that height being absurd - not to hand the job to the text.
+
+   Reaching real parity would mean a ~130px square on /recipes and a ~30px one
+   on /videos, and 30px is not a photograph. The alternative to a governing
+   photograph is no photograph, which is the index row this system rejected
+   because the photograph is its thesis. What the two-up list on /videos does
+   (see ContentArchiveLayout.module.css) is narrow the COLUMN rather than the
+   plate, which is the only lever that reduces the void without shrinking the
+   thing that sells the click.
+
+   8.75rem = 140px is the floor, and it is needed only because of that two-up:
+   26% of a 429px column at 1024 is 111px, and 26% of a 373px column at 900 is
+   97px. 140px is not a round number chosen to stop that - it is 140.391px, the
+   exact width ContentCard renders its own media at a 600px viewport, which is
+   the narrowest this system has ever shipped a media-leading thumbnail. The
+   floor therefore never engages in a single-column archive: measured, this
+   expression resolves identically to the previous min() at 1440, 1024, 899, 750
+   and 600 on /blogs and /recipes. */
+.row {
+  display: grid;
+  grid-template-columns: clamp(8.75rem, var(--row-media-col, 26%), 10rem) 1fr;
+  column-gap: var(--space-m);
+  align-items: start;
+  min-width: 0;
+  margin-inline: calc(-1 * var(--space-s));
+  padding-inline: var(--space-s);
+  padding-bottom: var(--space-l);
+  font-family: var(--font-primary);
+  color: var(--ink-1);
+  text-decoration: none;
+  transition: background-color var(--dur-fast, 200ms)
+    var(--ease-out-soft, cubic-bezier(0.22, 0.61, 0.36, 1));
+}
+
+/* Hover only where a pointer can actually leave again: on touch the tint
+   latches on after a tap and stays until something else is tapped. */
+@media (hover: hover) {
+  .row:hover {
+    background-color: var(--surface-1);
+  }
+}
+
+/* Identical to .card:focus-visible - deliberately the same treatment, not a
+   second one invented for the archive. The tint is repeated here so a keyboard
+   user gets the same target feedback a pointer gets. */
+.row:focus-visible {
+  background-color: var(--surface-1);
+  outline: 2px solid var(--color-accent-gold);
+  outline-offset: 3px;
+}
+
+/* --- The metadata rule ---------------------------------------------------
+   Date at the left end, category at the right, both hanging under a hairline
+   that states the container width. It is one tier quieter than the copper rule
+   closing the header above it, which is what keeps the two from reading as the
+   same mark.
+
+   Rendered inside the anchor rather than between anchors, so the whole row
+   including its rule is one link target. The date is a real <time> element; the
+   link's accessible name comes from aria-label, so neither the tracked date nor
+   the tracked kicker is announced as the link's name. */
+.rule {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-s);
+  padding-top: var(--space-xs);
+  padding-bottom: var(--space-m);
+  border-top: 1px solid var(--hairline);
+}
+
+.date,
+.kicker {
+  font-size: var(--fs-eyebrow);
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+/* The quietest ink tier: the date is the row's leading column, not its loudest
+   element. It is also what a numbered index would have been, except that it
+   carries real information and stays stable across pagination. */
+.date {
+  color: var(--ink-3);
+}
+
+/* Gold, matching .kicker on the card and .eyebrow on the header: copper is the
+   colour of rules in this system and never the colour of text.
+
+   margin-inline-start: auto rather than justify-content: space-between on the
+   parent, so a row whose source carried no usable date still sets its category
+   at the right end of the rule instead of sliding it to the left. */
+.kicker {
+  margin-inline-start: auto;
+  color: var(--color-accent-gold);
+}
+
+/* The only glyph in the system, and the back-link's arrow is its precedent - a
+   text character carrying a direction, not an icon. It marks a row that leaves
+   the site, at the same size and colour as the kicker it trails, so it reads as
+   the end of that mark rather than as a second one. 0.4em rather than a spacing
+   rung: it is inter-character space inside a label, and it has to track the
+   type if --fs-eyebrow moves.
+
+   No transform on hover. The back-link's arrow travels because the whole
+   back-link is a short target the eye rests on; twelve of these animating down
+   a scanned list would be exactly the decorative motion this system refuses. */
+.external {
+  margin-inline-start: 0.4em;
+}
+
+/* --- Media ---------------------------------------------------------------
+   Same crop as every other surface in this system, at a smaller size: the page
+   class sets --card-media-ratio once and nothing re-frames per breakpoint.
+   --surface-1 shows through when a record has no cover, so a missing photo
+   reads as an empty plate rather than a collapsed box. */
+.media {
+  position: relative;
+  width: 100%;
+  aspect-ratio: var(--card-media-ratio, 1 / 1);
+  overflow: hidden;
+  background: var(--surface-1);
+}
+
+.rowImage {
+  object-fit: cover;
+  transition: transform var(--dur-slow, 600ms)
+    var(--ease-out-soft, cubic-bezier(0.22, 0.61, 0.36, 1));
+}
+
+/* The only transform in the row, and it lives on the image inside the overflow
+   clip. Scaling the row itself would scale the type and reflow twelve rows. */
+.row:hover .rowImage,
+.row:focus-visible .rowImage {
+  transform: scale(1.04);
+}
+
+/* --- Text ----------------------------------------------------------------
+   No auto margins and no space collection. On the landing grid the byline
+   collects a card's free space so three cards close on one baseline. Here the
+   media governs the row height on every row measured, so there is no free space
+   left over to collect - and where a list does put two rows on a line, the grid
+   already stretches them to a shared height without the byline having to reach
+   for it. Collecting would only strand a byline under a short summary. */
+.content {
+  min-width: 0;
+}
+
+/* Two measures, not one, and the ragged right between them is intended: the
+   left edges align on the spine and the change of measure marks the change of
+   voice. The same reasoning is recorded for --measure-prose in
+   editorialTokens.module.css.
+
+   26ch is the card's cap, and it matters more here than it ever did there. The
+   card records that it binds only in the 600-899px index row "where the text
+   column is far wider than a title wants to be" - and the archive row is that
+   state at every width, against an 864px text column at the 1200px spine. */
+.title {
+  margin: 0;
+  max-width: 26ch;
+  font-family: var(--font-primary);
+  font-size: var(--fs-card);
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: -0.005em;
+  color: var(--ink-1);
+}
+
+/* Underline reveal painted as a background so its width can transition, on an
+   inline box so a wrapped title is underlined per line at each line's own
+   width. Identical to .titleText on the card; see that file for why a block
+   element and text-decoration-color were both rejected. */
+.titleText {
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+  background-image: linear-gradient(
+    var(--color-accent-gold),
+    var(--color-accent-gold)
+  );
+  background-repeat: no-repeat;
+  padding-bottom: 0.08em;
+  background-position: 0 100%;
+  background-size: 0% 1px;
+  transition: background-size var(--dur-medium, 320ms)
+    var(--ease-out-soft, cubic-bezier(0.22, 0.61, 0.36, 1));
+}
+
+.row:hover .titleText,
+.row:focus-visible .titleText {
+  background-size: 100% 1px;
+}
+
+/* 48ch, the measure this system already uses for a lede - not the ~76ch that an
+   864px text column would otherwise hand a 17px dek. Capping it leaves the
+   right of the row deliberately empty, which is the same asymmetry the landing
+   header states with its empty right side, and it is what lets the row carry a
+   wide column without the column reading as slack.
+
+   Three lines, where the landing card clamps at two. The card's two-line clamp
+   is a cross-card alignment device - three cards in a grid row have to stay the
+   same height and a variable dek would break that. A row does not need it: the
+   media sets the height, so a third line costs nothing and simply fills space
+   that was empty. An archive is also a scan-and-select surface rather than a
+   persuasion surface, so more of the summary is the cheapest help it can give.
+   (This holds equally where a list puts two rows on a line - grid items stretch
+   to a shared height, so the clamp is still not what aligns them.)
+
+   Clamped in CSS, never truncated in JS: the full text stays in the DOM for
+   assistive technology and for search. */
+.excerpt {
+  max-width: 48ch;
+  padding-top: var(--space-s);
+  font-size: var(--fs-body);
+  line-height: 1.5;
+  color: var(--ink-2);
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  overflow: hidden;
+}
+
+/* Byline only. The card prints the timestamp here when an item has no author;
+   the row placed the date on its rule already, so the same fallback would set
+   one date twice in one row. */
+.meta {
+  padding-top: var(--space-s);
+  font-size: var(--fs-meta);
+  font-weight: 500;
+  line-height: 1.4;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+
+/* --- Responsive ----------------------------------------------------------
+   Two states, not three. Between 600 and 899px the row needs no rules of its
+   own, and it is the band this composition is closest to ContentCard's own
+   index row in.
+
+   AN EARLIER VERSION OF THIS COMMENT SAID THE TWO WERE "EXACTLY" THE SAME
+   OBJECT ACROSS THAT WHOLE BAND. They are not, and the claim was never checked
+   in the band it described. Measured, media widths are:
+
+     600px viewport   card 140.391px   row 140.391px   identical
+     684px viewport   card ~160px      row ~160px      the break-even
+     750px viewport   card 176px       row 160px
+     899px viewport   card 210px       row 160px
+
+   The 10rem ceiling engages as soon as the container passes ~615px, which is a
+   ~684px viewport - well inside the band. So the two are provably one object
+   from 600px to ~684px and merely siblings above it. The divergence is not
+   visually harmful (a 160px and a 210px square both read at 899px) and the
+   excerpt differs in the same band anyway - the card clamps to 2 lines at no
+   max-width, the row to 3 at 48ch - so this is recorded rather than fixed. The
+   600px identity is the one that carries the continuity argument, and it holds
+   exactly.
+
+   Below 600px the row stops being a row. Both references checked at 390px agree
+   that a media-leading row does not survive a phone: the media returns to full
+   width - same crop, bigger plate - with the text beneath it. The metadata rule
+   is kept above the stack, because once the media is full-bleed it is the only
+   thing separating one entry from the next. Two entries per line, where a page
+   asks for them, are also given up here and in the 600-899 band: that is a
+   property of the list and is declared on it, not here. */
+@media (max-width: 599px) {
+  .row {
+    grid-template-columns: 1fr;
+    /* A full-width photograph needs more air under it than a 160px thumbnail
+       does, or the next row's hairline reads as an underline on this row's
+       byline. */
+    padding-bottom: var(--space-xl);
+  }
+
+  .content {
+    padding-top: var(--space-m);
+  }
+}
+
+/* Reused verbatim from ContentCard.module.css rather than re-derived. Sub-200ms
+   colour and underline fades with no displacement are not what the preference
+   asks to have removed; the image push-in is. */
+@media (prefers-reduced-motion: reduce) {
+  .row,
+  .rowImage,
+  .titleText {
+    transition-duration: 0.001ms;
+  }
+
+  .row:hover .rowImage,
+  .row:focus-visible .rowImage {
+    transform: none;
+  }
+}

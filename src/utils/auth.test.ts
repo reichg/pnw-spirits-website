@@ -4,8 +4,10 @@ import type { NextRequest } from "next/server";
 
 import { isAdmin, requireAdmin } from "./auth";
 
-// Both checks verify with process.env.JWT_SECRET || "secret"; pin the secret so
-// the suite never depends on (or leaks) the real .env value.
+// Both checks verify through getJwtSecret(), which reads process.env.JWT_SECRET
+// — falling back to a dev secret outside production and throwing inside it. Pin
+// the value so the suite never depends on (or leaks) the real .env; the
+// production-throw path is exercised separately below.
 const TEST_JWT_SECRET = "test-jwt-secret";
 
 beforeEach(() => {
@@ -86,5 +88,32 @@ describe("requireAdmin", () => {
     const res = requireAdmin(bearer(userToken()));
     expect(res?.status).toBe(403);
     await expect(res?.json()).resolves.toEqual({ error: "Forbidden" });
+  });
+});
+
+describe("production without JWT_SECRET", () => {
+  // getJwtSecret throws here rather than returning the publicly-known dev
+  // fallback. Both checks must fail closed: accepting a fallback-signed token
+  // in production would make every admin endpoint unauthenticated.
+  beforeEach(() => {
+    vi.stubEnv("JWT_SECRET", "");
+    vi.stubEnv("NODE_ENV", "production");
+  });
+
+  const fallbackSigned = (): string => jwt.sign({ role: "admin" }, "secret");
+
+  it("denies a token signed with the dev fallback secret", async () => {
+    expect(isAdmin(bearer(fallbackSigned()))).toBe(false);
+    const res = requireAdmin(bearer(fallbackSigned()));
+    expect(res?.status).toBe(401);
+    await expect(res?.json()).resolves.toEqual({ error: "Invalid token" });
+  });
+
+  // isAdmin backs public endpoints (GET /api/classes), so a misconfigured
+  // deployment must degrade to "not an admin", never to a thrown 500 for
+  // anonymous visitors.
+  it("does not throw for a caller with no Authorization header", () => {
+    expect(() => isAdmin(reqWithAuth(undefined))).not.toThrow();
+    expect(isAdmin(reqWithAuth(undefined))).toBe(false);
   });
 });

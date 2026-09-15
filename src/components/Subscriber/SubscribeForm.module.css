@@ -1,9 +1,12 @@
-
 .subscribeForm {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 1.2em;
+  /* Named so the idle status rule below can give exactly this back. The value
+     is unchanged; `em` resolves identically on .subscribeMsg, which inherits
+     this element's font-size and restates it as 1em. */
+  --subscribe-row-gap: 1.2em;
+  gap: var(--subscribe-row-gap);
   background: var(--color-bg-overlay);
   border-radius: 14px;
   box-shadow: 0 2px 8px rgba(35, 66, 54, 0.07);
@@ -13,11 +16,57 @@
   margin: 0 auto;
 }
 
-.subscribeLabel {
+/* Was .subscribeLabel, and was a real <label> pointing at the first-name
+   field. Renamed with the element: it is the form's heading, not any field's
+   name. Every declaration is the one it already had. */
+.subscribeHeading {
   color: var(--color-accent-gold);
   font-size: 1.1em;
   font-weight: 600;
   margin-bottom: 0.2em;
+}
+
+/* Visually hidden, not absent. The visible affordance for these three fields is
+   their placeholder, and a placeholder is not an accessible name: it is erased
+   the moment the field has a value, which is exactly when a screen-reader user
+   re-reads the control. This is the same clip-path/1px pattern that
+   ContentArchiveSearch.module.css and AdminSearchField.module.css already carry
+   for the same reason - display:none and visibility:hidden would take the label
+   out of the accessibility tree along with the pixels.
+
+   VISIBLE LABELS WERE PREFERRED AND BUILT FIRST, per the work order, and
+   declined on the measurement. Built as a third variant and measured in
+   Chromium at a 16px root: this form is 332.02px tall, and three visible label
+   rows take it to 393.80px - +61.78px, +19%. On the landing page it is
+   centred beside .landingTwoColImg, a fixed 320px photograph, in an
+   `align-items: center` flex row, so the labelled form would stand ~74px
+   taller than the picture it is set against. That is a composition change to a
+   page this task is scoped OUT of re-theming, and it would need a field-label
+   size, weight and colour this component has no business inventing.
+
+   It also reads worse: the placeholders stay (they are the field's visible
+   affordance and removing them is the redesign this task excludes), so every
+   field would show its own name twice, stacked - "First name" over a box
+   saying "First name".
+
+   The accessible-name defect is fixed identically either way; only the sighted
+   placeholder-disappears-on-type weakness survives, which is the same trade
+   the two search fields above already made. Reopen this if the landing page is
+   ever brought onto the editorial system, where the labels can be designed
+   rather than bolted on.
+
+   `position: absolute` also takes these out of flow, so they are not flex items
+   and none of them emits --subscribe-row-gap. The fix costs zero layout. */
+.subscribeFieldLabel {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
 }
 
 .subscribeInput {
@@ -55,9 +104,27 @@
   color: var(--color-accent-light);
 }
 
+/* Unchanged while it has something to say: the gap above it plus this margin is
+   the 1.7em the message already sat at whenever it was rendered. */
 .subscribeMsg {
   font-size: 1em;
   color: var(--color-accent-dark);
   margin-top: 0.5em;
   text-align: center;
+}
+
+/* The live region is now always in the markup, which is what makes it
+   announceable - but an always-present flex item is an always-present flex GAP,
+   so idling it would otherwise have added 1.7em of dead space under the button
+   on every landing-page render. An empty block box is already zero-height; this
+   gives back its own margin and the row gap above it, so the region is free
+   until it has something to say. ContactForm.module.css neutralises the same
+   pattern with `.status:empty { margin-block-start: 0 }` - it needs only the
+   margin half because its container spaces with margins rather than `gap`.
+
+   Verified rather than reasoned: rendered against the pre-change markup in
+   Chromium, the form is 332.02px in both, and 377.20px in both once a message
+   is showing. The region is free at idle and moves nothing when it fills. */
+.subscribeMsg:empty {
+  margin-top: calc(-1 * var(--subscribe-row-gap));
 }

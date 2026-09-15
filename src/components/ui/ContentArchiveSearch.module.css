@@ -1,0 +1,126 @@
+/* ===========================================================================
+   Archive search - a bare underlined field.
+
+   No box, no fill, no radius, no icon. A boxed input is a card by another name,
+   and this system's founding decision is that it has no surfaces: the content
+   cards have no background, the kicker is an outline, the filter pill was
+   rejected for being a filled shape. A single hairline under the text is the
+   only search treatment consistent with that.
+
+   No magnifier glyph either, which is a departure from the reference this
+   field is drawn from. There is not one icon anywhere else in this system - not
+   on a card, not in a header, not on the pager - so a magnifier would be the
+   first, and it would be carrying no information the placeholder does not
+   already carry. The field's affordance is its placeholder and its rule.
+
+   No in-field clear button, for the same reason and one more: the archive pages
+   render their own "Clear search" link beside this control, and two clear
+   affordances on one baseline is one of them too many.
+   =========================================================================== */
+
+/* A fixed 20rem, not `flex: 1`, and the fixed part is the point. Flexing, the
+   field filled the controls block and then shrank 320px -> 233px the instant
+   "Clear search" appeared beside it - a resize under the reader's cursor, in the
+   middle of typing. A control the reader is actively using must not change size
+   because a sibling appeared. .controls reserves the slot; this holds the width
+   inside it. max-width keeps it honest wherever 20rem does not fit. */
+.form {
+  display: flex;
+  flex: none;
+  width: 20rem;
+  max-width: 100%;
+  min-width: 0;
+}
+
+/* Full width once the header stops being a two-ended baseline and becomes two
+   stacked lines. 20rem is 320px against a 350px content box at 390px, which
+   would leave a 30px ragged edge under a count that runs the full width. */
+@media (max-width: 599px) {
+  .form {
+    width: 100%;
+  }
+}
+
+/* Visually hidden, not absent. The visible affordance is the placeholder, and a
+   placeholder is not an accessible name: it disappears the moment the field has
+   a value, which is exactly when a screen-reader user re-reads the control.
+   The clip-path/1px pattern rather than display:none or visibility:hidden,
+   which remove the element from the accessibility tree as well. */
+.label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Every box property is stated, not inherited: a UA gives an <input> a border,
+   a background, a radius, a font and a colour of its own, and on this ground
+   the defaults would render a white box in the middle of the header.
+
+   The 2px bottom padding is what puts the rule clear of the descenders in a
+   typed "g" or "y" without moving the baseline the count aligns to. */
+.input {
+  width: 100%;
+  min-width: 0;
+  padding: var(--space-2xs) 0 calc(var(--space-2xs) + 2px);
+  border: 0;
+  border-bottom: 1px solid var(--hairline);
+  border-radius: 0;
+  background: transparent;
+  font-family: var(--font-primary);
+  font-size: var(--fs-body);
+  line-height: 1.4;
+  color: var(--ink-1);
+  appearance: none;
+}
+
+.input::placeholder {
+  color: var(--ink-3);
+  opacity: 1;
+}
+
+/* type="search" earns the right semantics and the mobile keyboard's Search key,
+   and costs a UA-drawn cancel button that inherits none of this - on a dark
+   ground Chromium paints it as a near-black glyph on a near-black field. The
+   page's own "Clear search" link is the affordance it would have duplicated. */
+.input::-webkit-search-cancel-button,
+.input::-webkit-search-decoration {
+  appearance: none;
+}
+
+/* GOLD, NOT COPPER, and the earlier copper was a real defect rather than a
+   preference. Copper is tier 1 in this page's rule hierarchy - the single
+   "container starts here" mark under the header - and the focused field sits
+   40px above it. A 2px copper rule there put a heavier mark in tier 1's own
+   colour immediately over tier 1, flattening the three-tier argument the header
+   is built around, in the one state where the reader is looking straight at it.
+   Gold is this system's colour for accent text and for focus: it is already the
+   row ring, the pager ring, the back-link ring and the title underline, so the
+   field's focus now matches every other focus on the page instead of competing
+   with the page's structure.
+
+   The box-shadow doubles the rule to 2px WITHOUT changing the border width,
+   because growing the border would move the field's own baseline, and the
+   result count aligned to it, by 1px on every focus.
+
+   outline: none is safe only because of that: the replacement indicator is a
+   2px gold rule running the full width of the control, which is a larger change
+   of appearance than the UA ring it replaces.
+
+   :focus as well as :focus-visible, and that pairing is deliberate rather than
+   belt-and-braces. Everywhere else in this system the indicator is scoped to
+   :focus-visible, because a clicked link does not need to shout. A text field
+   is the exception: clicking one focuses it without making it focus-visible in
+   Chromium, and a field with a caret blinking in it has to show which field the
+   caret is in. */
+.input:focus,
+.input:focus-visible {
+  outline: none;
+  border-bottom-color: var(--color-accent-gold);
+  box-shadow: 0 1px 0 0 var(--color-accent-gold);
+}

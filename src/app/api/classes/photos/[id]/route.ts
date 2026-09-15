@@ -1,11 +1,12 @@
 import { mapClassServiceError } from "@/services/classes/classErrors";
 import {
-  idParamSchema,
+  classBodyErrorMessage,
   photoInputSchema,
 } from "@/services/classes/classSchemas";
 import { deletePhoto, updatePhoto } from "@/services/classes/classService";
 import { requireAdmin } from "@/utils/auth";
 import { logger } from "@/utils/logger";
+import { rowIdParamSchema } from "@/utils/rowId";
 import { NextRequest, NextResponse } from "next/server";
 
 const CONTEXT = "api.classes.photos.id";
@@ -23,25 +24,28 @@ export async function PUT(
   if (authResult) return authResult;
 
   const { id: idRaw } = await params;
-  const idParsed = idParamSchema.safeParse({ id: Number(idRaw) });
+  // The raw segment goes in unconverted: the `Number(idRaw)` that used to
+  // stand here is the defect, not the parser after it. `details` is dropped
+  // with it - one short message is all `readAdminError` will surface anyway.
+  const idParsed = rowIdParamSchema.safeParse(idRaw);
   if (!idParsed.success) {
-    return NextResponse.json(
-      { error: "Invalid photo id", details: idParsed.error.issues },
-      { status: 400 },
-    );
+    return NextResponse.json({ error: "Invalid photo id" }, { status: 400 });
   }
 
   const body = await req.json();
   const parsed = photoInputSchema.safeParse(body);
   if (!parsed.success) {
     return NextResponse.json(
-      { error: "Invalid input", details: parsed.error.issues },
+      {
+        error: classBodyErrorMessage(parsed.error),
+        details: parsed.error.issues,
+      },
       { status: 400 },
     );
   }
 
   try {
-    const photo = await updatePhoto(idParsed.data.id, parsed.data);
+    const photo = await updatePhoto(idParsed.data, parsed.data);
     logger.info("Class photo updated", {
       context: CONTEXT,
       data: { id: photo.id },
@@ -66,19 +70,19 @@ export async function DELETE(
   if (authResult) return authResult;
 
   const { id: idRaw } = await params;
-  const idParsed = idParamSchema.safeParse({ id: Number(idRaw) });
+  // The raw segment goes in unconverted: the `Number(idRaw)` that used to
+  // stand here is the defect, not the parser after it. `details` is dropped
+  // with it - one short message is all `readAdminError` will surface anyway.
+  const idParsed = rowIdParamSchema.safeParse(idRaw);
   if (!idParsed.success) {
-    return NextResponse.json(
-      { error: "Invalid photo id", details: idParsed.error.issues },
-      { status: 400 },
-    );
+    return NextResponse.json({ error: "Invalid photo id" }, { status: 400 });
   }
 
   try {
-    await deletePhoto(idParsed.data.id);
+    await deletePhoto(idParsed.data);
     logger.info("Class photo deleted", {
       context: CONTEXT,
-      data: { id: idParsed.data.id },
+      data: { id: idParsed.data },
     });
     return NextResponse.json({ success: true });
   } catch (err) {

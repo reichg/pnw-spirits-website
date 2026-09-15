@@ -1,128 +1,282 @@
+/* ===========================================================================
+   Contact form - the first form this system has put on a public surface.
+
+   THE FIELDS ARE BARE RULES, AND THE RULE IS COPPER. A bare underlined field's
+   underline IS its boundary: it is the only thing saying a control is there,
+   which puts it under WCAG 2.2 SC 1.4.11 (3:1 for information required to
+   identify a user interface component). --hairline is ink at 0.14 and measures
+   1.43:1 on --surface-0 - it is a content separator, and adminTokens.module.css
+   already records that it is "far below the 3:1 WCAG 1.4.11 asks of a boundary
+   that makes a control perceivable." --rule-accent is 3.59:1 and passes. So the
+   form is drawn in the same copper that opens every page in this system, gold
+   stays the colour of accent text and of the one filled control, and the page
+   ends up built from two structural colours and nothing else.
+
+   NO FILLED FIELDS, which is the same invariant the page module states: this
+   system has one filled surface in total. A filled, rounded input is a surface
+   by another name, and the panels are what this redesign removed.
+
+   NO PLACEHOLDER TEXT ANYWHERE, and that is measured rather than stylistic.
+   The ink tier below --ink-3 (0.55 / 5.41:1) is 0.45, which is 4.02:1 and
+   fails AA, so a placeholder would have to be set at the same tier as its own
+   label and would compete with it. Every field is labelled above instead.
+
+   VALIDATION IS THE SERVER'S. The form is noValidate and useContactForm.ts
+   duplicates no field rules; contactMessageSchema is the single source of
+   truth. Nothing here implies otherwise - there is no error styling on a field,
+   only on the one status line the server's answer produces.
+
+   This module consumes editorial tokens by INHERITANCE from <main> and
+   composes editorialSurface not at all, per the precedent
+   ContentCard.module.css states in one line.
+   =========================================================================== */
+
+/* A paired row where the data is genuinely short, which is what keeps this
+   from reading as a five-row support ticket.
+
+   The cap is --measure-prose (44ch), and `ch` resolves against the font-size
+   of the element it is declared on - so the 44ch is stated here, on an element
+   deliberately set to --fs-body: 44 x 0.6630em x 17px = 496px at the scale
+   ceiling, using the repo's own measured Geist advance. A --measure-form token
+   was considered and declined: its clean derivation came out at 576px against
+   this 554/496px, a 4% difference, i.e. two names for one decision. The token
+   is unchanged, and the cap is not what broke.
+
+   ROW ONE AND ROW TWO ARE UNPAIRED, AND THAT IS A MEASUREMENT RATHER THAN A
+   PREFERENCE. Two tracks inside 496px with --col-gap between them leave each
+   paired field about 230px, which is ~31 rendered characters at the measured
+   1.50 characters per ch, and this file used to argue from that figure that a
+   longer address "scrolls inside its own input, which is ordinary
+   non-destructive single-line behaviour". Rendered, it is not ordinary. With
+   firstname.lastname@company.com typed in - 30 characters, and an entirely
+   common shape of address - the email input measured scrollWidth 272 against
+   clientWidth 232 at 1440px, so 40px of the address sat outside a field that
+   has NO FILL and therefore no visible container to explain the clip, no
+   ellipsis and no scroll cue. It reads as a layout error rather than as a
+   scrolled input, on the one field that has to be transcribed correctly for an
+   enquiry to be answerable at all, and the start of which has scrolled out of
+   view at exactly the moment the visitor wants to proofread it.
+
+   So name and email take the full 496px - about 62 rendered characters, which
+   holds that address outright with room to spare - and phone and the category
+   stay paired, because a phone number and a four-option select are genuinely
+   short. Four field rows, not five: still not the support-ticket queue the
+   pairing was avoiding.
+
+   Capped HERE rather than on the spine child: that element is a direct child
+   of <main>, where .root > * already declares width, max-width and
+   margin-inline at equal specificity. Capping an inner element instead is the
+   .emptyMessage > span pattern. */
 .form {
-  display: flex;
-  flex-direction: column;
-  gap: clamp(14px, 2.2vw, 18px);
-  width: 100%;
-  text-align: left;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: var(--col-gap);
+  row-gap: var(--space-m);
+  max-width: var(--measure-prose);
+  font-size: var(--fs-body);
 }
 
 .field {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
+  display: grid;
+  gap: var(--space-2xs);
+  min-width: 0;
 }
 
+/* Spans both tracks. Name, email and the message take it - the three fields
+   whose content is not reliably short - so the pairing is spent only on the
+   phone number and the category. See .form for the measurement that moved name
+   and email onto this rule. */
+.fieldWide {
+  grid-column: 1 / -1;
+}
+
+/* Tracked caps at the quietest legal ink, which is this system's established
+   furniture register (.meta, .backLink) rather than a new one. --ink-3 and not
+   gold: five gold labels would spend the accent five times in one form, on a
+   page whose single gold moment should be the button that sends it. */
 .label {
-  font-size: 0.9rem;
+  font-size: var(--fs-eyebrow);
   font-weight: 600;
-  letter-spacing: 0.02em;
-  color: var(--color-accent-gold);
+  line-height: 1rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-3);
 }
 
+/* font-family: inherit is not optional here and not cosmetic: Chromium's UA
+   sheet sets a family on the control itself, and a UA declaration on the
+   element beats an inherited value, so a field that asks for nothing renders
+   in UA Arial next to Geist. globals.css records this exact trap.
+
+   Vertical padding is derived rather than tokenised, because one form is one
+   consumer and editorialTokens.module.css declines to add a rung nothing else
+   reads: a 24px line box, plus 8px above and 8px below, plus the 1px rule, is
+   a 41px border box - clear of WCAG 2.2 SC 2.5.8's 24px minimum target with
+   room left at the scale's floor.
+
+   EVERY LEADING IN THIS FILE IS A rem RATHER THAN A RATIO, and that is what
+   makes the 41px above a fact instead of an estimate. --fs-body is a clamp, so
+   a unitless leading gives the control a different fractional height at every
+   viewport (measured: 42.50px at 1440, 40.21px at 390) and the target-size
+   derivation would have to be restated per width. A 24px line box makes the
+   box 41px at every step of the clamp, the label 16px and the row advance a
+   whole 89px, so the derivation holds once. Verified by sampling the rendered
+   raster at 320, 390, 768 and 1440: every field rule lands on a single device
+   pixel at rgb(151,95,44), which is 3.58:1 on the ground - the figure this
+   file's header depends on, confirmed as painted rather than as specified. */
 .input,
 .select,
 .textarea {
   width: 100%;
-  padding: 0.7em 0.9em;
-  font-size: 1rem;
+  min-width: 0;
+  padding: var(--space-2xs) 0;
   font-family: inherit;
-  color: var(--color-text-primary);
-  background: rgba(255, 248, 236, 0.95);
-  border: 1px solid rgba(190, 152, 95, 0.4);
-  border-radius: var(--radius-sm);
-  transition:
-    border-color 0.2s ease,
-    box-shadow 0.2s ease;
+  font-size: var(--fs-body);
+  line-height: 1.5rem;
+  color: var(--ink-1);
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid var(--rule-accent);
+  border-radius: 0;
+  transition: border-color var(--dur-fast) ease;
 }
 
-.textarea {
-  resize: vertical;
-  min-height: 7.5em;
-}
-
-/* Make the category dropdown read clearly as an interactive selector,
-   distinct from the plain text inputs, with an on-theme gold chevron. */
-.select {
-  appearance: none;
-  -webkit-appearance: none;
-  -moz-appearance: none;
-  padding-right: 2.6em;
-  cursor: pointer;
-  border-width: 2px;
-  border-color: rgba(190, 152, 95, 0.75);
-  background-color: rgba(250, 238, 216, 0.95);
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23a9772f' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 0.9em center;
-  background-size: 14px 14px;
-  transition:
-    border-color 0.2s ease,
-    box-shadow 0.2s ease,
-    background-color 0.2s ease;
-}
-
-.select:hover:not(:disabled) {
+.input:hover,
+.select:hover,
+.textarea:hover {
   border-color: var(--color-accent-gold);
-  background-color: rgba(252, 241, 223, 1);
-  box-shadow: 0 0 12px rgba(226, 176, 126, 0.28);
 }
 
-/* Ensure the focus ring wins over the hover glow when both are active
-   (specificity matches the hover rule and follows it in source order). */
-.select:focus-visible:not(:disabled) {
-  border-color: var(--color-accent-gold);
-  box-shadow: 0 0 0 3px rgba(226, 176, 126, 0.3);
-}
+/* The system's existing focus contract, unmodified: a 2px gold ring at 3px
+   offset. Gold at 9.66:1 is the strongest signal this palette has, and an
+   offset ring around a boxless field is unambiguous about which field is live.
 
+   The rule goes gold too, but its WIDTH does not change. Thickening a 1px
+   border to 2px on focus grows the field's border box by 1px and reflows every
+   row under it; the ring already carries the emphasis the extra pixel was
+   for. */
 .input:focus-visible,
 .select:focus-visible,
 .textarea:focus-visible {
-  outline: none;
+  outline: 2px solid var(--color-accent-gold);
+  outline-offset: 3px;
   border-color: var(--color-accent-gold);
-  box-shadow: 0 0 0 3px rgba(226, 176, 126, 0.3);
 }
 
+/* Last, so it outranks the :hover rule above at equal specificity when a
+   pointer sits over a field mid-send.
+
+   The form no longer drops to opacity 0.6 while sending. Dimming five fields
+   to say that one button is busy put the signal in the wrong place - the
+   button already swaps its own label to "Sending..." - and a blanket opacity
+   also dims the labels, which are the part a reader may still want to read.
+   Instead the ink steps down one tier and the copper rule goes to --hairline,
+   so the whole form visibly goes quiet without anything becoming unreadable.
+   --hairline is legal here precisely because it is not legal anywhere else in
+   this file: an inactive control is exempt from both 1.4.3 and 1.4.11. */
 .input:disabled,
 .select:disabled,
 .textarea:disabled {
-  opacity: 0.6;
+  color: var(--ink-2);
+  border-color: var(--hairline);
   cursor: not-allowed;
 }
 
-.submit {
-  margin-top: 4px;
-  align-self: flex-start;
-  padding: 0.8em 2.2em;
-  font-size: 1.05rem;
-  font-weight: 700;
-  letter-spacing: 0.02em;
-  color: var(--color-bg-soft);
-  background: linear-gradient(
-    135deg,
-    var(--color-accent-gold) 0%,
-    var(--color-accent-primary) 100%
-  );
-  border: 1px solid rgba(190, 152, 95, 0.5);
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-sm);
+/* --- The select -----------------------------------------------------------
+   Exactly one distinguishing mark, a chevron. It had three at once - a 2px
+   border, a lighter fill and a hover glow - which is three distinctions for
+   one difference. The chevron's stroke is #b87333, the same copper as the rule
+   it sits on, so it reads as part of the field rather than as an accent word;
+   it is the raw hex because a data URI is an opaque string to CSS and cannot
+   interpolate a custom property.
+
+   background-image rather than the background shorthand: the shared rule above
+   sets `background: transparent`, and this rule follows it in the same
+   stylesheet, so only the image is replaced and the field stays unfilled. */
+.select {
+  appearance: none;
+  -webkit-appearance: none;
   cursor: pointer;
-  transition:
-    transform 0.2s ease,
-    filter 0.2s ease,
-    box-shadow 0.2s ease;
+  padding-inline-end: 1.75rem;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23b87333' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right center;
+  background-size: 14px 14px;
 }
 
-.submit:hover:not(:disabled) {
-  transform: translateY(-2px);
-  filter: brightness(1.05);
-  box-shadow:
-    var(--shadow-sm),
-    0 0 16px rgba(226, 176, 126, 0.4);
+/* The native option list is painted by the platform, not by this page. With a
+   transparent select the UA falls back to its own light listbox, and the
+   options would inherit the select's near-white ink onto it. Naming both ends
+   puts the popup on the same ground as the page. */
+.select option {
+  color: var(--ink-1);
+  background-color: var(--surface-0);
 }
 
-.submit:focus-visible {
-  outline: 2px solid var(--color-accent-gold);
-  outline-offset: 3px;
+/* --- The message ----------------------------------------------------------
+   The one field that is a box rather than a rule, because a multi-line control
+   has to declare its own extent - the reader needs to see how much room they
+   have before they start. Same copper, same 1px, closed on four sides instead
+   of one, and still unfilled. The `border` shorthand replaces the shared rule's
+   border/border-bottom pair outright. */
+.textarea {
+  padding: var(--space-xs);
+  border: 1px solid var(--rule-accent);
+  /* Opened up from the single-line 24px, because this is the one field a
+     visitor writes a paragraph into: 28px against 17px is 1.65, next to
+     --lh-prose's 1.7, which editorialTokens derives from the measured Geist
+     x-height for exactly this kind of reading. In rem, with min-height to
+     match, for the reason stated above. rows={5} is 5 x 28 + 24px of padding
+     + 2px of rule = 166px, so 12rem (192px) opens it by a sixth line and the
+     control still resizes vertically from there. */
+  line-height: 1.75rem;
+  min-height: 12rem;
+  resize: vertical;
+}
+
+/* --- Send -----------------------------------------------------------------
+   The same control that closes every other page in this system, so the visitor
+   leaves /contact by the door they have already used on /recipes-landing,
+   /blogs-landing, /videos-landing and both detail pages. Composing it also
+   brings its 599px full-width rule and its prefers-reduced-motion
+   neutralisation, both of which this file used to hand-roll at its own
+   breakpoint and its own duration.
+
+   That deletes the 135deg gold-to-brown gradient, the 16px gold glow and the
+   --radius-md this button used to carry alone. */
+.actions {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  margin-block-start: var(--space-s);
+}
+
+.submit {
+  composes: viewAllButton from "../../../components/ui/ContentLandingLayout.module.css";
+}
+
+/* globals.css `button:hover` is (0,1,1) and sets `background` as a SHORTHAND,
+   which would flatten this control's gold to --color-accent-dark under the
+   pointer. .viewAllButton's own :hover restates only `color`, because it was
+   written for an <a>, which has no background of its own to lose.
+
+   UNCONDITIONAL on purpose. A disabled button under the pointer still matches
+   button:hover, and this button is disabled for the whole duration of a send -
+   so gating the paint on :not(:disabled), as this file used to, is precisely
+   how a submit turns brown mid-request. Modal.module.css hit the same bug from
+   the other side and had to add a :disabled:hover restatement to undo it. */
+.submit:hover {
+  background: var(--color-accent-gold);
+}
+
+/* The motion is the half that must NOT survive being disabled. The composed
+   :hover lifts and brightens unconditionally, which is correct for an <a> -
+   an anchor is never disabled - and wrong for a button that is busy. (0,3,0)
+   over its (0,2,0), so the source settles it rather than emission order. */
+.submit:disabled:hover {
+  transform: none;
+  filter: none;
 }
 
 .submit:disabled {
@@ -130,42 +284,73 @@
   cursor: not-allowed;
 }
 
+/* --- Status ---------------------------------------------------------------
+   No panel. The previous success and error plates introduced #1f5133,
+   rgba(120,200,150,0.2), #7a2020 and rgba(210,110,90,0.18) - two colour
+   families this palette does not contain - onto a page that now has two
+   structural colours. What is left is one line of body text behind a short
+   vertical rule, which is the accent tick this system already uses.
+
+   The WORDING states the outcome, so colour is never the only signal
+   (SC 1.4.1); the ink is the second signal, not the first.
+
+   Rendered unconditionally and empty when idle, so the live region is already
+   in the accessibility tree before its text changes rather than being inserted
+   along with it. An empty <p> generates no line box, so it costs no height,
+   and :empty takes its margin back - the region is free until it has something
+   to say. */
 .status {
-  margin: 0;
-  padding: 0.7em 0.9em;
-  font-size: 0.95rem;
-  font-weight: 600;
-  border-radius: var(--radius-sm);
-  text-align: center;
+  margin-block-start: var(--space-m);
+  border-inline-start: 2px solid currentColor;
+  padding-inline-start: var(--space-s);
+  font-size: var(--fs-body);
+  line-height: 1.55;
+  color: var(--ink-1);
 }
 
+.status:empty {
+  margin-block-start: 0;
+}
+
+/* Gold is the affirmative end of a status line in this palette. There is no
+   success ink and deliberately never was: a green would be a third hue on a
+   one-hue-plus-ink palette, introduced to separate two states their own wording
+   already separates. --danger is the failed-write ink, promoted out of
+   adminTokens.module.css into the public contract for exactly this line -
+   #e2645f, 5.60:1 on --surface-0, 20 degrees off the ground and 27 off copper.
+   Both derivations are recorded at the tokens themselves.
+
+   currentColor puts the tick in the same ink as the sentence it marks, so the
+   pair is one declaration and cannot drift. --danger as a rule and as text, not
+   as a fill, which is the constraint the token records. */
 .statusSuccess {
-  color: #1f5133;
-  background: rgba(120, 200, 150, 0.2);
-  border: 1px solid rgba(60, 150, 100, 0.45);
+  color: var(--color-accent-gold);
 }
 
 .statusError {
-  color: #7a2020;
-  background: rgba(210, 110, 90, 0.18);
-  border: 1px solid rgba(180, 70, 50, 0.45);
+  color: var(--danger);
 }
 
-@media (max-width: 600px) {
-  .submit {
-    align-self: stretch;
-    text-align: center;
-  }
-}
+/* --- Responsive -----------------------------------------------------------
+   One structural change, and after the unpairing above it reaches exactly one
+   row. The pairing is what the 496px measure affords, and below 599px there is
+   no second column to give: noma's measured mobile behaviour is this same
+   collapse. Stated on .form rather than on the one pair it now moves, because
+   the grid is the thing that stops being a grid and a rule per surviving pair
+   would have to be revisited every time a field moved. The submit needs
+   nothing here - the
+   composed .viewAllButton already goes full width to a 22rem cap at exactly
+   this breakpoint, and declaring width or max-width alongside it would be an
+   equal-specificity contest even at the same value.
 
-@media (prefers-reduced-motion: reduce) {
-  .input,
-  .select,
-  .textarea,
-  .submit {
-    transition-duration: 0.001ms;
-  }
-  .submit:hover:not(:disabled) {
-    transform: none;
+   NO prefers-reduced-motion BLOCK, and that is the settled policy rather than
+   an omission. The only displacement on this page is the submit's 2px hover
+   lift, which is neutralised where .viewAllButton is declared; restating it
+   would put one property in two modules whose emission order is not
+   guaranteed. Everything else that transitions here is a sub-200ms colour fade
+   with no displacement, which is not what SC 2.3.3 asks to have removed. */
+@media (max-width: 599px) {
+  .form {
+    grid-template-columns: minmax(0, 1fr);
   }
 }

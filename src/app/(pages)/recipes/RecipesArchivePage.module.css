@@ -1,0 +1,27 @@
+/*
+ * Page-specific art direction only. Structure, tokens, page ground, grain and
+ * spine live in ContentArchiveLayout.module.css and cascade onto the same
+ * element, exactly as RecipesLandingPage.module.css relates to the landing
+ * shell.
+ */
+.recipesArchiveRoot {
+  /*
+   * The archive is a new SIZE of the same page, not a new framing, so it states
+   * the same crop its landing page states. One ratio per page at every
+   * viewport: the row’s media is 160px where the card’s is 379px, and only the
+   * size changed.
+   *
+   * The measured case for 1 / 1 over 4 / 5 and 5 / 4 lives in
+   * ContentLandingLayout.module.css and is deliberately not repeated here.
+   */
+  --card-media-ratio: 1 / 1;
+}
+
+/*
+ * The look is declared once, on the archive shell, and referenced here. The
+ * link itself has to be built by the page - only the page knows how to spell
+ * its own base URL - but its appearance must not be re-typed per archive.
+ */
+.clearSearch {
+  composes: clearSearch from "../../../components/ui/ContentArchiveLayout.module.css";
+}

@@ -1,0 +1,134 @@
+/* The admin panel treatment, laid over Modal's own.
+
+   THE COMPOSE RULE AND THE DOUBLED RULE ARE TWO RULES ON PURPOSE, and the split
+   is load-bearing.
+
+   `composes` has to sit in a plain single-class rule, and it is what carries
+   the admin token set across the portal: Modal renders into document.body, so
+   this panel is not a descendant of AdminPageLayout.root and would otherwise
+   resolve every --ink-*, --surface-*, --space-* and --control-min to nothing.
+
+   The declarations then have to OUTRANK Modal.module.css `.panel`, which lands
+   on the same element via the merged className at the same (0,1,0) specificity -
+   where the winner is decided by stylesheet emission order, i.e. by build
+   output. `.panel.panel` is (0,2,0) and settles it in the source instead. The
+   admin layer already uses this doubling to beat globals.css `button:hover`;
+   this is the same device against a different neighbour. */
+
+.panel {
+  composes: adminSurface from "./adminTokens.module.css";
+}
+
+.panel.panel {
+  /* Top padding clears Modal's absolutely-positioned close control (0.5rem
+     inset, --control-min tall - the same token set below). */
+  padding: calc(var(--control-min) + var(--space-2xs)) var(--space-m)
+    var(--space-m);
+
+  /* MODAL'S CLOSE CONTROL, RETINTED BY VALUE RATHER THAN BY SELECTOR.
+     This was a `.panel.panel > button` descendant rule - a structural coupling
+     to "the panel's only direct-child <button>", which is true today and is not
+     a contract, and which had to restate Modal's hover pair as well because
+     (0,2,1) outranked it into silence. Modal now reads these six properties off
+     the panel, so the admin declares values and inherits them down; there is no
+     specificity contest left to win and nothing here breaks if Modal ever
+     renders a second child button.
+
+     Square, ruled, unfilled - the vocabulary of every other control in this
+     portal. The size binds --control-min rather than repeating a number,
+     because "every admin control is at least --control-min in both axes" is the
+     admin's rule and this control is now inside the admin. */
+  --modal-close-size: var(--control-min);
+  --modal-close-bg: none;
+  --modal-close-rule: var(--hairline-strong);
+  --modal-close-radius: 0;
+  --modal-close-ink: var(--ink-2);
+  --modal-close-rule-hover: var(--color-accent-copper);
+  --modal-close-ink-hover: var(--ink-1);
+  background: var(--surface-0);
+  /* Copper at 0.8 alpha measures 3.60:1 on --surface-0 - the one pre-existing
+     token that can legally bound a surface floating over a scrim, and the same
+     rule that runs under the page header. */
+  border: 1px solid var(--rule-accent);
+  border-radius: 0;
+  box-shadow: none;
+  font-family: var(--font-primary);
+  color: var(--ink-1);
+}
+
+/* A question: wide enough for two lines of prose at a comfortable measure and
+   no wider, so the two buttons beneath it are never far from the sentence they
+   answer. */
+.compact {
+  --modal-max-width: 32rem;
+}
+
+/* An editor: wide enough that a two-column field row is honest and that a
+   content textarea holds a paragraph without becoming a scroll port. Driven
+   through Modal's own custom property rather than by setting `width`, which its
+   max-width would clamp - the property is read on this same element, so it
+   resolves deterministically whatever the file order. */
+.form {
+  --modal-max-width: 60rem;
+}
+
+/* THE ADMIN'S BACKDROP, and the one thing a merged panel className cannot
+   reach: the backdrop is the panel's PARENT, so no custom property declared
+   above travels to it. Modal takes a `backdropClassName` for exactly this.
+
+   What it changes is the blur. `backdrop-filter: blur(3px)` was the only one
+   left anywhere in this portal - the admin's whole vocabulary is flat ground,
+   hairlines and one copper rule, and a glass effect is the single most
+   expensive paint a full-viewport fixed layer can ask for. The scrim stays: it
+   is what separates the dialog from a working surface that is still legible
+   behind it. The public dialogs keep the blur they were designed with. */
+.backdrop {
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+
+.heading {
+  margin: 0 0 var(--space-m);
+  font-size: var(--fs-h3);
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: -0.005em;
+  color: var(--ink-1);
+}
+
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-m);
+  min-width: 0;
+}
+
+/* Prose inside a dialog - the question a confirmation asks. Typed here rather
+   than in each caller so a dialog cannot be shipped with an unstyled paragraph;
+   an editor passes a <form> and never reaches these. */
+.body p {
+  margin: 0;
+  max-width: 56ch;
+  font-size: var(--fs-body);
+  line-height: 1.5;
+  color: var(--ink-2);
+}
+
+/* The record being acted on, lifted one ink tier out of the sentence around it.
+   Hierarchy by opacity, not by hue - the system's founding mechanism - so the
+   name is unmistakable without a second colour appearing in a dialog that
+   already has a --danger control in it. */
+.body strong {
+  font-weight: 600;
+  color: var(--ink-1);
+}
+
+.actions {
+  display: flex;
+  /* Wraps rather than overflowing: two 40px controls with uppercase labels do
+     not fit a 320px panel on one line. */
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--space-2xs);
+  margin-top: var(--space-m);
+}

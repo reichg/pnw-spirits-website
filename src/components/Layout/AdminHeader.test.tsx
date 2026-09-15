@@ -4,6 +4,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 
 import AdminHeader from "./AdminHeader";
 import { ADMIN_NAV_ITEMS } from "./adminNavItems";
+import { AdminTokenProvider } from "@/components/admin/AdminTokenContext";
 
 // NOTE ON COVERAGE SCOPE
 // ----------------------
@@ -15,10 +16,30 @@ import { ADMIN_NAV_ITEMS } from "./adminNavItems";
 // `typeof window === "undefined"` is true, so AdminHeader always emits the
 // desktop links branch (every ADMIN_NAV_ITEMS link), which is exactly the
 // markup these tests observe. The active-state assertion targets the
-// `aria-current="page"` attribute rather than a CSS-module class name, because
-// CSS module imports resolve to an empty object in this environment (so
-// styles.linkActive would be undefined) while aria-current is set directly by
-// the component and is therefore the stable, observable contract.
+// `aria-current="page"` attribute rather than a CSS-module class name. NOT
+// because the class is unavailable - it is: the transform resolves
+// styles.linkActive to a hashed name like `_linkActive_3b9db9`, which does
+// reach the markup (SortablePhotoCard.test.tsx asserts on exactly that shape).
+// It is because a hashed name pins the build's naming scheme rather than this
+// component's contract, and because a class is how the active link LOOKS
+// whereas aria-current is what it IS: set directly by the component, and the
+// half of the state that a keyboard or screen-reader user actually receives.
+
+// The header now reads `signOut` from AdminTokenContext, so it must render
+// inside a provider or the hook throws. Wrapping is safe under
+// renderToStaticMarkup: the provider seeds its state from a `typeof window`-
+// guarded useState initialiser, which returns null in a server render, and its
+// effects (cross-tab storage sync, the expiry timer) do not run in a static
+// render either. The provider therefore adds a context and no behaviour.
+function renderHeader(): string {
+  return renderToStaticMarkup(
+    React.createElement(
+      AdminTokenProvider,
+      null,
+      React.createElement(AdminHeader),
+    ),
+  );
+}
 
 // usePathname is mocked with a mutable value so each test can drive a different
 // active route without re-mocking the module.
@@ -47,7 +68,7 @@ describe("AdminHeader (node / server-render markup contract)", () => {
   });
 
   it("renders the Admin Portal home link and every ADMIN_NAV_ITEMS route", () => {
-    const html = renderToStaticMarkup(React.createElement(AdminHeader));
+    const html = renderHeader();
 
     // Home link.
     expect(html).toContain("Admin Portal");
@@ -61,10 +82,22 @@ describe("AdminHeader (node / server-render markup contract)", () => {
     }
   });
 
+  it("renders a real Sign out button in the desktop branch", () => {
+    const html = renderHeader();
+
+    // A <button>, not a link: signing out is an action on the session, not a
+    // destination. Asserted on the tag and the label rather than on a CSS
+    // module class, which resolves to undefined in this environment.
+    expect(html).toContain("Sign out");
+    expect(new RegExp('<button[^>]*type="button"[^>]*>Sign out').test(html)).toBe(
+      true,
+    );
+  });
+
   it("marks the active sub-section with aria-current='page' (prefix match)", () => {
     mockPathname = "/admin/classes";
 
-    const html = renderToStaticMarkup(React.createElement(AdminHeader));
+    const html = renderHeader();
     const classesLink = sliceAnchor(html, "/admin/classes");
 
     expect(classesLink).toContain('aria-current="page"');
@@ -77,20 +110,20 @@ describe("AdminHeader (node / server-render markup contract)", () => {
   it("uses exact matching for the Admin Portal home link", () => {
     // On a sub-section the home link must NOT be marked active...
     mockPathname = "/admin/classes";
-    const onSubSection = renderToStaticMarkup(React.createElement(AdminHeader));
+    const onSubSection = renderHeader();
     expect(sliceAnchor(onSubSection, "/admin").includes('aria-current="page"'))
       .toBe(false);
 
     // ...but on /admin exactly it is.
     mockPathname = "/admin";
-    const onHome = renderToStaticMarkup(React.createElement(AdminHeader));
+    const onHome = renderHeader();
     expect(sliceAnchor(onHome, "/admin")).toContain('aria-current="page"');
   });
 
   it("renders nothing on the admin login page", () => {
     mockPathname = "/admin/login";
 
-    const html = renderToStaticMarkup(React.createElement(AdminHeader));
+    const html = renderHeader();
 
     expect(html).toBe("");
   });

@@ -26,19 +26,19 @@ export default function Home() {
             style={{ backgroundImage: "url('/images/Martini.jpg')" }}
             aria-label="Blogs"
           >
-            {/* Glassy overlay for cozy speakeasy effect, matches FeaturedBlog */}
+            {/* Glassy overlay: darkens the photo so the card label stays legible */}
             <div className={landingStyles.landingFourColGlassOverlay} />
             <span className={landingStyles.landingFourColCardLabel}>Blogs</span>
           </Link>
           <Link
-            href="/videos-landing"
+            href="/recipes-landing"
             className={landingStyles.landingFourColCard}
-            style={{ backgroundImage: "url('/images/Daq.jpg')" }}
-            aria-label="Videos"
+            style={{ backgroundImage: "url('/images/Bottles.jpg')" }}
+            aria-label="Recipes"
           >
             <div className={landingStyles.landingFourColGlassOverlay} />
             <span className={landingStyles.landingFourColCardLabel}>
-              Videos
+              Recipes
             </span>
           </Link>
           <Link
@@ -50,6 +50,17 @@ export default function Home() {
             <div className={landingStyles.landingFourColGlassOverlay} />
             <span className={landingStyles.landingFourColCardLabel}>
               Classes
+            </span>
+          </Link>
+          <Link
+            href="/videos-landing"
+            className={landingStyles.landingFourColCard}
+            style={{ backgroundImage: "url('/images/Daq.jpg')" }}
+            aria-label="Videos"
+          >
+            <div className={landingStyles.landingFourColGlassOverlay} />
+            <span className={landingStyles.landingFourColCardLabel}>
+              Videos
             </span>
           </Link>
           <Link
@@ -79,7 +90,6 @@ export default function Home() {
       <section className={landingStyles.landingTwoColSection}>
         <div className={landingStyles.landingTwoColRow}>
           <div className={landingStyles.landingTwoColImg}>
-            {/* Preload background images for four-column section */}
             <Image
               src="/images/Improved.jpg"
               alt="Sign up"
@@ -93,7 +103,9 @@ export default function Home() {
               }}
               priority
             />
-            {/* Hidden preloads for background images */}
+            {/* Hidden preloads for the four-column cards' CSS background images,
+                which Next cannot discover or prioritise on its own. One entry per
+                card, in card order - the two lists must stay in step. */}
             <div style={{ display: "none" }}>
               <Image
                 src="/images/Martini.jpg"
@@ -103,15 +115,22 @@ export default function Home() {
                 priority
               />
               <Image
-                src="/images/Daq.jpg"
-                alt="Preload Daq"
+                src="/images/Bottles.jpg"
+                alt="Preload Bottles"
                 width={10}
                 height={10}
                 priority
               />
               <Image
-                src="/images/Bottles.jpg"
-                alt="Preload Bottles"
+                src="/images/AmaronFloat.jpg"
+                alt="Preload AmaronFloat"
+                width={10}
+                height={10}
+                priority
+              />
+              <Image
+                src="/images/Daq.jpg"
+                alt="Preload Daq"
                 width={10}
                 height={10}
                 priority

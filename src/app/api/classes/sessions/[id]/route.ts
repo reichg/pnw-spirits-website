@@ -1,15 +1,13 @@
 import { mapClassServiceError } from "@/services/classes/classErrors";
-import {
-  idParamSchema,
-  sessionInputSchema,
-} from "@/services/classes/classSchemas";
-import {
-  deleteSession,
-  updateSession,
-} from "@/services/classes/classService";
+import { deleteSession, updateSession } from "@/services/classes/classService";
 import { requireAdmin } from "@/utils/auth";
 import { logger } from "@/utils/logger";
+import { rowIdParamSchema } from "@/utils/rowId";
 import { NextRequest, NextResponse } from "next/server";
+import {
+  sessionBodyErrorMessage,
+  sessionRequestSchema,
+} from "../sessionRequestSchema";
 
 const CONTEXT = "api.classes.sessions.id";
 
@@ -26,25 +24,28 @@ export async function PUT(
   if (authResult) return authResult;
 
   const { id: idRaw } = await params;
-  const idParsed = idParamSchema.safeParse({ id: Number(idRaw) });
+  // The raw segment goes in unconverted: the `Number(idRaw)` that used to
+  // stand here is the defect, not the parser after it. `details` is dropped
+  // with it - one short message is all `readAdminError` will surface anyway.
+  const idParsed = rowIdParamSchema.safeParse(idRaw);
   if (!idParsed.success) {
-    return NextResponse.json(
-      { error: "Invalid session id", details: idParsed.error.issues },
-      { status: 400 },
-    );
+    return NextResponse.json({ error: "Invalid session id" }, { status: 400 });
   }
 
   const body = await req.json();
-  const parsed = sessionInputSchema.safeParse(body);
+  const parsed = sessionRequestSchema.safeParse(body);
   if (!parsed.success) {
     return NextResponse.json(
-      { error: "Invalid input", details: parsed.error.issues },
+      {
+        error: sessionBodyErrorMessage(parsed.error),
+        details: parsed.error.issues,
+      },
       { status: 400 },
     );
   }
 
   try {
-    const session = await updateSession(idParsed.data.id, parsed.data);
+    const session = await updateSession(idParsed.data, parsed.data);
     logger.info("Class session updated", {
       context: CONTEXT,
       data: { id: session.id },
@@ -69,19 +70,19 @@ export async function DELETE(
   if (authResult) return authResult;
 
   const { id: idRaw } = await params;
-  const idParsed = idParamSchema.safeParse({ id: Number(idRaw) });
+  // The raw segment goes in unconverted: the `Number(idRaw)` that used to
+  // stand here is the defect, not the parser after it. `details` is dropped
+  // with it - one short message is all `readAdminError` will surface anyway.
+  const idParsed = rowIdParamSchema.safeParse(idRaw);
   if (!idParsed.success) {
-    return NextResponse.json(
-      { error: "Invalid session id", details: idParsed.error.issues },
-      { status: 400 },
-    );
+    return NextResponse.json({ error: "Invalid session id" }, { status: 400 });
   }
 
   try {
-    await deleteSession(idParsed.data.id);
+    await deleteSession(idParsed.data);
     logger.info("Class session deleted", {
       context: CONTEXT,
-      data: { id: idParsed.data.id },
+      data: { id: idParsed.data },
     });
     return NextResponse.json({ success: true });
   } catch (err) {

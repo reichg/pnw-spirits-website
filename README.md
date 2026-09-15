@@ -6,11 +6,12 @@ The PNW Spirits is a modern, cozy, and professional website inspired by the spea
 
 ### Key Features
 
-- **Blog System:** Modular blog pages with rich content, admin editing, and mini blog lists for easy navigation.
+- **Blog & Recipe System:** Landing pages and full archives for blogs and recipes, with admin editing.
 - **Video Gallery:** Curated video lists and integration with YouTube API for dynamic content.
-- **Commenting & Reactions:** Interactive comment sections and reaction bars to foster community engagement.
-- **Subscriber Management:** Elegant subscribe forms and admin tools for managing subscribers.
-- **Admin Dashboard:** Secure login, blog editor, comment moderation, and subscriber management.
+- **Classes:** Session scheduling, photo albums, and a contact form for enquiries.
+- **Subscriber Management:** Subscribe forms and a newsletter composer that broadcasts to subscribers.
+- **Admin Dashboard:** Secure login, plus sections for blogs, recipes, classes, and the newsletter.
+- **Commenting & Reactions:** _Not currently mounted._ `CommentSection` and `ReactionBar` exist alongside `/api/comments` and `/api/reactions`, but no page renders them today.
 - **Contact Page:** Professional contact form for inquiries and feedback.
 - **Media Uploads:** S3 integration for secure media uploads and management.
 - **Responsive Layout:** All UI elements adapt gracefully to any screen size.
@@ -30,11 +31,11 @@ The PNW Spirits is a modern, cozy, and professional website inspired by the spea
 - **AWS S3:** Media storage and uploads.
 - **Redis:** Caching and performance optimization.
 - **Postman:** API testing and documentation.
-- **Docker:** Containerized development and deployment.
+- **Docker:** `docker-compose.yml` runs the local PostgreSQL and Redis services. There is no application Dockerfile; the app itself is not containerized.
 
 ### Toolchain & Developer Setup
 
-This project uses a pinned, modern toolchain. All dependencies are pinned to exact versions and kept current by a weekly Dependabot update cadence.
+This project uses a pinned, modern toolchain. All dependencies are pinned to exact versions — no `^` or `~` ranges — and the package manager, runtime, and CI action versions are pinned too. There is no automated dependency bot configured; updates arrive as explicit, reviewable version bumps.
 
 - **Node 24 LTS** — pinned via `.nvmrc` and the `engines` field in `package.json`. Run `nvm use` (or `nvm install`) to match the expected version.
 - **pnpm 10** — the only supported package manager (`pnpm-lock.yaml` is committed; there is no `package-lock.json`). Use `pnpm` for all commands. Install dependencies with:
@@ -48,28 +49,36 @@ This project uses a pinned, modern toolchain. All dependencies are pinned to exa
 
 #### Available Scripts
 
-| Command | Description |
-| --- | --- |
-| `pnpm dev` | Start the development server (listens on 0.0.0.0). |
-| `pnpm build` | Build the production app. |
-| `pnpm start` | Run the production build. |
-| `pnpm lint` | Lint the codebase with ESLint. |
-| `pnpm typecheck` | Type-check with `tsc --noEmit`. |
-| `pnpm test` | Run the test suite with Vitest (`vitest run`). |
-| `pnpm format` | Format the codebase with Prettier. |
-| `pnpm format:check` | Check formatting without writing changes. |
+| Command             | Description                                                                                                                                                    |
+| ------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `pnpm dev`          | Start the development server (listens on 0.0.0.0).                                                                                                             |
+| `pnpm build`        | Build the production app.                                                                                                                                      |
+| `pnpm start`        | Run the production build.                                                                                                                                      |
+| `pnpm lint`         | Lint the codebase with ESLint.                                                                                                                                 |
+| `pnpm typecheck`    | Type-check with `tsc --noEmit`.                                                                                                                                |
+| `pnpm test`         | Run the test suite with Vitest (`vitest run`).                                                                                                                 |
+| `pnpm format`       | Format the codebase with Prettier.                                                                                                                             |
+| `pnpm format:check` | Check formatting without writing changes.                                                                                                                      |
+| `pnpm db:seed`      | Seed the database.                                                                                                                                             |
+| `pnpm db:seed:demo` | Seed the database with demo content.                                                                                                                           |
+| `pnpm screenshot`   | Capture screenshots from a running dev server, for design review — the public pages, or the admin set with `--admin`. Requires `pnpm dev` in another terminal. |
+
+`pnpm screenshot --admin` captures the `/admin` route set instead. Those pages sit behind a client-side auth gate, so the run needs an admin JWT — supply it through the `SCREENSHOT_ADMIN_TOKEN` environment variable rather than the `--admin-token` flag, which lands in shell history. Run `pnpm screenshot --help` for the full flag list and a worked example of minting a token from the running dev server; a real token must never be pasted into a command you will print, share, or commit.
 
 #### Prisma Commands
 
 ```
-pnpm prisma validate    # validate the schema
-pnpm prisma generate    # generate the Prisma client
-pnpm prisma migrate     # run database migrations
+pnpm prisma validate         # validate the schema
+pnpm prisma generate         # generate the Prisma client
+pnpm prisma migrate dev      # create and apply a migration in development
+pnpm prisma migrate deploy   # apply pending migrations (production/staging)
 ```
+
+`prisma migrate` requires one of those subcommands; on its own it only prints help.
 
 #### Continuous Integration
 
-A CI workflow runs on changes and executes install, typecheck, lint, build, and test. Run `pnpm typecheck`, `pnpm lint`, `pnpm build`, and `pnpm test` locally before pushing to catch failures early.
+A CI workflow (`.github/workflows/ci.yml`) runs on pushes and pull requests to `master` and `dev`, and executes install, `prisma generate`, typecheck, lint, build, and test. Run `pnpm typecheck`, `pnpm lint`, `pnpm build`, and `pnpm test` locally before pushing to catch failures early.
 
 ### Local Network Access
 
@@ -90,14 +99,19 @@ Replace `<your-local-ip>` with your computer's IP address (e.g., 192.168.1.100).
 ### Project Structure
 
 - `src/app/` — Main app pages, layouts, and global styles.
-- `src/components/` — Modular UI components (Blog, Admin, Layout, Video, etc.).
+- `src/app/api/` — API routes for admin, blogs, classes, comments, contact, media, reactions, recipes, subscribers, uploads, and videos. Routes stay thin and call into `src/services/`.
+- `src/services/` — Backend business logic and domain rules (admin, classes, contact, content, demo, media). All business logic lives here rather than in route handlers.
+- `src/components/` — Modular UI components (Class, Comment, Layout, Media, Reaction, Subscriber, and the shared `ui/` set).
+- `src/hooks/` — Reusable React hooks.
+- `src/config/` — Shared configuration values.
 - `src/models/` — TypeScript models for videos and APIs.
-- `src/utils/` — Utility functions (auth, email, logger, prisma, redis).
-- `src/api/` — API routes for admin, blogs, comments, media, reactions, subscribers, uploads, and videos.
+- `src/utils/` — Utility functions (auth, email, logger, prisma, redis, s3, pagination, content helpers).
 - `prisma/` — Database schema and migrations.
 - `public/images/` — Static assets and images.
 - `generated/prisma/` — Generated Prisma client files.
 - `postman/` — API collections for testing.
+- `docs/testing.md` — How the test suite is set up, what it can and cannot observe, and the conventions for writing assertions. Read before writing a component test.
+- `docs/decision-log.md` — Why the architecture is the way it is, including alternatives that were considered and rejected.
 
 ### Styling & UI
 
@@ -167,7 +181,7 @@ If you are not familiar with coding, you can still get the PNW Spirits website r
 
 - Go to `/admin` in your browser (e.g., `http://localhost:3000/admin`).
 - Log in with the credentials provided by your project maintainer.
-- You can now add blogs, videos, moderate comments, and manage subscribers.
+- You can now manage blogs, recipes, and classes, and send a newsletter to subscribers.
 
 ### 8. Uploading Media
 

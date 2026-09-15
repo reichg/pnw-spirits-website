@@ -1,4 +1,7 @@
-import { classContentSchema } from "@/services/classes/classSchemas";
+import {
+  classBodyErrorMessage,
+  classContentSchema,
+} from "@/services/classes/classSchemas";
 import {
   getClassPage,
   upsertClassContent,
@@ -44,7 +47,10 @@ export async function PUT(req: NextRequest) {
   const parsed = classContentSchema.safeParse(body);
   if (!parsed.success) {
     return NextResponse.json(
-      { error: "Invalid input", details: parsed.error.issues },
+      {
+        error: classBodyErrorMessage(parsed.error),
+        details: parsed.error.issues,
+      },
       { status: 400 },
     );
   }

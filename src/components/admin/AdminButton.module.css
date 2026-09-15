@@ -1,0 +1,220 @@
+/* ===========================================================================
+   The admin's standalone control: "New Blog", "Save", "Send Newsletter",
+   "Delete recipe", "Sign in".
+
+   RULED, NEVER FILLED - and this system has exactly one filled control in it,
+   the gold CTA that closes a public reading page, which is a documented
+   exception on a conversion element. An admin has no conversions. What it has
+   is a page full of controls, and filling them would turn a working surface
+   into a field of coloured rectangles.
+
+   The edge is what identifies the control, and the tier it is drawn at is what
+   ranks it:
+
+     primary    --rule-accent   copper at 0.8, composited 3.60:1 on --surface-0
+                                and 3.47:1 on --surface-1. The ONLY pre-existing
+                                token that clears WCAG 1.4.11's 3:1 on both
+                                grounds, which means the admin's primary action
+                                gets a brand-native edge and the system needs no
+                                new colour for it at all.
+     secondary  --hairline-strong  3.20:1. Neutral, and the default.
+     danger     --danger        the confirming control of a destructive dialog.
+
+   WHY DANGER IS RED AT REST IN A DIALOG AND NEUTRAL IN A LIST. AdminCard's
+   Delete is --ink-2 at rest and only reddens under the pointer, because eight
+   rows of red Delete is eight alarms on a page where nothing is wrong. A
+   dialog's confirming control is the opposite case: it appears once, in a
+   dialog the admin opened on purpose, as the single highest-consequence control
+   in the application, next to a neutral "Keep recipe". There it should be red
+   before it is touched.
+
+   The criterion is REPETITION, NOT SEVERITY - and it is the context, not the
+   component, that decides. One tone, one token, and a list that says so: see
+   the .danger rule below and AdminCardGrid.module.css .grid.
+
+   NO FILL EVEN THERE. A filled --danger button would need dark text on it and
+   would be the second filled surface in the system, invented for the rarest
+   control in the admin. A red-ruled, red-lettered control beside a neutral one
+   is already unmistakable.
+
+   Every tone sets custom properties ONLY. .button declares the border and the
+   colour once and reads them through var(), so the two class names landing on
+   this element have no real declaration to contest - the constraint
+   editorialTokens.module.css states, applied one level down.
+   =========================================================================== */
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2xs);
+  min-block-size: var(--control-min);
+  min-inline-size: var(--control-min);
+  padding-inline: var(--space-m);
+  border: 1px solid var(--admin-button-rule, var(--hairline-strong));
+  border-radius: 0;
+  background: none;
+  font-family: var(--font-primary);
+  font-size: var(--fs-meta);
+  font-weight: 600;
+  line-height: 1.2;
+  /* 0.08em, one notch under the eyebrow's 0.12em. A button label is read as a
+     word and acted on; an eyebrow is read as a mark. Tracking that far on a
+     word the admin has to parse quickly slows it down. */
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--admin-button-ink, var(--ink-2));
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    color var(--dur-fast, 200ms) ease,
+    border-color var(--dur-fast, 200ms) ease;
+}
+
+.primary {
+  --admin-button-rule: var(--rule-accent);
+  --admin-button-ink: var(--ink-1);
+}
+
+.secondary {
+  --admin-button-rule: var(--hairline-strong);
+  --admin-button-ink: var(--ink-2);
+}
+
+/* RED AT REST, UNLESS THE CONTEXT SAYS THE CONTROL IS REPEATED.
+
+   The paragraph at the head of this file says the criterion is repetition, not
+   severity - and for one render this file only implemented half of it. A
+   standalone danger button in a dialog got red at rest, correctly; the photo
+   album then put the same button on EVERY tile, and /admin/classes shipped a
+   red-at-rest Delete on twelve tiles beside a neutral-at-rest Delete on every
+   session row above them (.screenshots/slice-b/admin-classes-1440x900.png).
+   Two Delete treatments, one screen, same word, same consequence.
+
+   The fix is not a prop. "Am I repeated?" is not something a control can
+   answer, and a "repeated" boolean would be a second place to state a fact the
+   page's shape already states - the same argument AdminCard.module.css makes
+   for taking its density from the list rather than from a prop. So the answer
+   arrives the way every other contextual decision in this layer arrives: the
+   list sets --admin-danger-rule / --admin-danger-ink and they inherit down.
+   AdminCardGrid sets them on .grid, so ANY danger control inside ANY list of
+   records is neutral at rest; the confirmation dialog is portalled into
+   document.body, outside every list, and keeps its red.
+
+   The alarm still arrives at the moment of commitment - the hover and
+   focus-visible rules below restore --danger on the element itself, and an
+   own declaration beats an inherited one regardless of specificity. That is
+   the same contract AdminCard.module.css .actionDanger describes at length, so
+   a row's Delete and a tile's Delete are now one behaviour with one
+   explanation. */
+.danger {
+  --admin-button-rule: var(--admin-danger-rule, var(--danger));
+  --admin-button-ink: var(--admin-danger-ink, var(--danger));
+}
+
+/* THE DOUBLED CLASS IS LOAD-BEARING. globals.css declares
+   `button:hover { background: var(--color-accent-dark) }` at (0,1,1), and a
+   single class is (0,1,0) - it loses. A rule at (0,1,1) merely ties, and a tie
+   between a CSS Module and globals.css is settled by stylesheet emission order,
+   which is not guaranteed. (0,2,1) wins outright.
+
+   Measured rather than assumed: without this every admin button painted
+   rgb(116,86,52) under the pointer - a brown fill, on a design layer whose
+   stated rule is that it has none. The custom properties below could not have
+   fixed it, because the global rule sets `background` directly. */
+.button.button:hover {
+  background: none;
+}
+
+/* Copper at full alpha (4.98:1) is the resting --rule-accent brought up rather
+   than a new colour: the edge the admin is already looking at gets more
+   present, which is the least a hover can say. Neutral buttons borrow it too,
+   so every non-destructive control answers the pointer the same way, and the
+   destructive one does not - it keeps its own red and gains nothing, because a
+   Delete should not become more inviting under the pointer. */
+/* EVERY TINT RULE BELOW IS GUARDED AGAINST AN UNAVAILABLE CONTROL, and that
+   guard is new. A busy control is now `aria-disabled` rather than `disabled`
+   (see AdminButton.tsx), which means it is FOCUSABLE - so without the guard a
+   keyboard admin landing on a busy Save would watch it brighten to the full
+   copper of a live control, and :focus-visible would out-specify the
+   unavailable rule below ((0,3,0) against (0,2,0)) while doing it. The pointer
+   case was already wrong for the same reason - :hover matches a disabled
+   element - and is fixed here rather than left as the one state that still
+   promises an action that is not there. Pagination.module.css states the same
+   rule as :not(.pageButtonDisabled) on its hover.
+
+   Written as a :not() on each tint rather than by out-specifying them from the
+   unavailable rule, because a specificity race between "how it reacts" and
+   "whether it reacts at all" is settled once here and re-argued forever there. */
+@media (hover: hover) {
+  .primary.primary:hover:not(:disabled, [aria-disabled="true"]),
+  .secondary.secondary:hover:not(:disabled, [aria-disabled="true"]) {
+    --admin-button-rule: var(--color-accent-copper);
+    --admin-button-ink: var(--ink-1);
+  }
+
+  /* Red arrives at the pointer in a repeated context, and is already there in
+     a singular one. Declared on the element, so it wins over the list's
+     inherited neutral without needing to out-specify anything. Doubled for the
+     reason its neighbours are: globals.css "button:hover" is (0,1,1). */
+  .danger.danger:hover:not(:disabled, [aria-disabled="true"]) {
+    --admin-danger-rule: var(--danger);
+    --admin-danger-ink: var(--danger);
+  }
+}
+
+.primary:focus-visible:not(:disabled, [aria-disabled="true"]),
+.secondary:focus-visible:not(:disabled, [aria-disabled="true"]) {
+  --admin-button-rule: var(--color-accent-copper);
+  --admin-button-ink: var(--ink-1);
+}
+
+/* Keyboard users are warned at the same point in the interaction that pointer
+   users are - the card's Delete states the same rule. */
+.danger:focus-visible:not(:disabled, [aria-disabled="true"]) {
+  --admin-danger-rule: var(--danger);
+  --admin-danger-ink: var(--danger);
+}
+
+/* DELIBERATELY UNGUARDED. The ring is the one thing a busy control must keep:
+   it is now the only element that CAN hold focus while a request is in flight,
+   and a focusable control with no visible focus indicator is WCAG 2.4.7 on
+   precisely the control the admin is standing on. Gold at full strength,
+   independent of --admin-button-ink, so dimming the label does not dim the
+   ring - measured 5.06:1 on a busy control against 5.06:1 on an enabled one.
+   Pagination hit the opposite case and had to stop using `opacity` for the
+   dimming; this file never used one, which is why its treatment needed no
+   change beyond the selector. */
+.button:focus-visible {
+  outline: 2px solid var(--color-accent-gold);
+  outline-offset: 2px;
+}
+
+/* Dropping the boundary back to the separator tier IS the signal - a control
+   whose edge has stopped being a control's edge. A disabled control is exempt
+   from the contrast minimum, which is what makes that legal; an opacity
+   multiplier would have dimmed the focus ring with it and left the button
+   looking broken rather than unavailable.
+
+   TWO SPELLINGS, ONE TREATMENT, because the admin now has two kinds of
+   unavailable and they must be indistinguishable to the eye: `disabled` for a
+   standing precondition (no token yet, page content not saved) and
+   `aria-disabled` for the transient in-flight state of a control that must keep
+   its focus. Selected off the attribute rather than off a class AdminButton
+   would have to remember to pass, so the state the screen reader announces and
+   the state the eye reads are the same fact. */
+.button:disabled,
+.button[aria-disabled="true"] {
+  --admin-button-rule: var(--hairline);
+  --admin-button-ink: var(--ink-3);
+  cursor: not-allowed;
+}
+
+/* Full width, for the one composition that needs it: a submit control at the
+   foot of a narrow form - the login page, and the newsletter composer on a
+   phone - where a 120px button floated left of 400px of empty ground reads as
+   unfinished rather than as restrained. .button declares no inline-size, so
+   there is nothing here for the second class name to contest. */
+.fullWidth {
+  inline-size: 100%;
+}

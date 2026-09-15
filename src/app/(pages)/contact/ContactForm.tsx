@@ -42,8 +42,20 @@ const ContactForm = () => {
   };
 
   return (
-    <form className={styles.form} onSubmit={handleSubmit} noValidate>
-      <div className={styles.field}>
+    // aria-label, and it is the page's only section name rather than a second
+    // one. The <h2> that used to name this block from the page module read
+    // "Send a message" above a button reading SEND MESSAGE, so it was deleted;
+    // a named <form> is a `form` landmark, which is a truer statement about
+    // this block than the generic region an aria-labelledby <section> made of
+    // it, and it keeps the accessible name the heading was providing.
+    <form
+      className={styles.form}
+      onSubmit={handleSubmit}
+      noValidate
+      aria-label="Send a message"
+    >
+      {/* Rows one and two are unpaired - see .fieldWide. */}
+      <div className={`${styles.field} ${styles.fieldWide}`}>
         <label className={styles.label} htmlFor="contact-name">
           Name
         </label>
@@ -60,7 +72,7 @@ const ContactForm = () => {
         />
       </div>
 
-      <div className={styles.field}>
+      <div className={`${styles.field} ${styles.fieldWide}`}>
         <label className={styles.label} htmlFor="contact-email">
           Email
         </label>
@@ -114,7 +126,7 @@ const ContactForm = () => {
         </select>
       </div>
 
-      <div className={styles.field}>
+      <div className={`${styles.field} ${styles.fieldWide}`}>
         <label className={styles.label} htmlFor="contact-message">
           Message
         </label>
@@ -130,21 +142,34 @@ const ContactForm = () => {
         />
       </div>
 
-      <button className={styles.submit} type="submit" disabled={isLoading}>
-        {isLoading ? "Sending..." : "Send message"}
-      </button>
+      <div className={styles.actions}>
+        <button className={styles.submit} type="submit" disabled={isLoading}>
+          {isLoading ? "Sending..." : "Send message"}
+        </button>
 
-      {statusMessage && (
+        {/* Always rendered, and empty until there is something to say: a live
+            region has to be in the accessibility tree BEFORE its text changes,
+            or the change is an insertion the screen reader may not announce.
+            The CSS keeps an empty one at zero height, so it costs no layout.
+
+            role and aria-live follow AdminStatus.tsx, which settled both for
+            this codebase: a failed write is an `alert` (implicitly assertive)
+            because the visitor's message was not delivered and what they do
+            next depends on knowing, everything else is a polite `status`, and
+            the politeness is stated alongside the role rather than left
+            implicit because screen readers honour the implication
+            inconsistently. This form previously announced its FAILURES
+            politely, under role="status". */}
         <p
           className={`${styles.status} ${
             status === "error" ? styles.statusError : styles.statusSuccess
           }`}
-          role="status"
-          aria-live="polite"
+          role={status === "error" ? "alert" : "status"}
+          aria-live={status === "error" ? "assertive" : "polite"}
         >
           {statusMessage}
         </p>
-      )}
+      </div>
     </form>
   );
 };

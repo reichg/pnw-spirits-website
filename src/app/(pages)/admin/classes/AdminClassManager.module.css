@@ -1,473 +1,361 @@
-/* Shared admin sub-page shell — mirrors AdminRecipeList / AdminBlogList so the
-   classes manager sits on the same blurred Bottles.jpg background. Portal
-   navigation now lives in the dedicated AdminHeader, so this page renders only
-   its own heading and section cards. */
-.adminPageBg {
-  width: 100%;
-  min-height: 100vh;
-  background: url("/images/Bottles.jpg") center center/cover no-repeat;
+/* ===========================================================================
+   The classes manager - the ONLY styles this screen owns that the shared admin
+   design layer does not.
+
+   WHAT IS NOT HERE, AND WHY THAT IS THE POINT. The page shell, the section
+   panels, the record line, the album tile, the buttons, the inputs, the field
+   scaffolding, the status messages and the empty state are all
+   `src/components/admin/`. This file previously carried its own copies of every
+   one of them - a blurred Bottles.jpg backdrop, a `--radius-lg` panel with a
+   `--shadow-md`, three button variants, an input, a photo tile - 473 lines of a
+   second design system. What remains below is the three things a shared layer
+   cannot know: how this screen's form fields share a line, how its upload
+   control is shaped, and the positioned wrapper a sortable album tile needs.
+
+   NO TOKEN VALUE IS RESTATED HERE. Every colour, size, space and duration is
+   read through a custom property that `AdminPageLayout.module.css`'s `.root`
+   brings in by composing `.adminSurface`, which composes `.editorialSurface`.
+   This file declares no rule that composes anything, so there is no
+   `composes`-ordering hazard in it at all.
+
+   THE THREE PARTS OF THIS SCREEN GET THREE ANSWERS, and the album is the one
+   that breaks a naive rollout:
+
+     Page Content        a form. Fields, labels, a submit. No record anatomy.
+     Class Dates & Times a row list. AdminCardGrid density="rows", and the
+                         inline edit is the same card with its fields in the
+                         body slot.
+     Photo Album         MUST STAY A GRID. Spatial order IS the information the
+                         admin came to change; rows would destroy it.
+   =========================================================================== */
+
+/* --- Shared vertical rhythm ----------------------------------------------
+   One flow for the contents of every panel. AdminPanel owns the space between
+   sections (--space-xl) and above its own body (--space-m); this owns the space
+   between the parts WITHIN a section, one rung down at --space-m, so the
+   "between groups > within a group" ratio the panel states holds inside it too. */
+.stack {
   display: flex;
   flex-direction: column;
+  align-items: stretch;
+  gap: var(--space-m);
+  min-width: 0;
+}
+
+/* The one form on this screen whose fields hold PROSE - a title, and the
+   statement that opens the public page. Uncapped, the textarea is 1044px of the
+   1200px spine: about 120 characters a line, past every measure this system
+   declares (--measure-prose at 44ch, the 56ch instruction cap) and past the
+   point where the eye reliably finds the start of the next line. 44rem is
+   deliberately wider than a READING measure, because an editor benefits from
+   seeing more of the paragraph at once than a reader does.
+
+   A second class name on the element rather than a `composes`, declaring only a
+   property .stack does not: two class names with nothing to contest cannot be
+   settled by stylesheet emission order. The sessions form is deliberately NOT
+   capped - its three side-by-side fields want the width. */
+.contentForm {
+  max-inline-size: 44rem;
+}
+
+/* --- Action rows ---------------------------------------------------------
+   EVERY action row in this file wraps, without exception. Measured in the
+   design harness: a bare `display: flex` row of five controls overflowed a
+   390px viewport by 210px, and horizontal overflow on a working surface is a
+   failure, not a cosmetic issue. The controls keep their full --control-min
+   target and take another line instead.
+
+   The children are deliberately NOT given `flex: 1` here: this row usually
+   holds one submit, and a lone "Save content" stretched across a 1200px spine
+   reads as unfinished rather than as restrained. The album tile's row, which
+   holds two controls in a ~180px track, does stretch - see .tileActions. */
+.formActions {
+  display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  padding: 2rem 0;
-  position: relative;
-  overflow: hidden;
+  gap: var(--space-2xs);
 }
 
-.adminPageBg::before {
-  content: "";
-  position: absolute;
-  top: -10;
-  left: -10;
-  width: 103%;
-  height: 103%;
-  background: inherit;
-  filter: blur(4px) brightness(0.2) saturate(1);
-  z-index: 0;
-  pointer-events: none;
-}
-
-.adminPageBg > * {
-  position: relative;
-  z-index: 1;
-}
-
-.container {
-  width: 100%;
-  max-width: 1100px;
-  margin: 0 auto;
+/* --- The failed-read screen ----------------------------------------------
+   A list that did not load costs the admin a refresh - nothing was lost - so
+   this is --ink-2 prose in the empty slot and NOT --danger, which is reserved
+   for a failed write. What it must carry is the way out: an admin stranded on
+   an empty state with no control to leave it is the exact failure the empty
+   state's own contract names. Retry sits directly under the message. */
+.loadFailure {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  padding: 0 1.5rem;
+  align-items: start;
+  gap: var(--space-m);
 }
 
-.heading {
-  font-family: var(--font-primary);
-  font-size: 2rem;
-  font-weight: 700;
-  color: var(--color-accent-gold);
-  margin: 0 0 2rem;
-  letter-spacing: 0.04em;
-  text-align: center;
+/* --- Sessions ------------------------------------------------------------
+   Start, End and Location on one line where there is room for three, stacking
+   to one where there is not - and the seam is the CONTENT's, not a viewport
+   breakpoint I would have had to pick. 13rem is what a `datetime-local`
+   control needs before its own segments start colliding, so the fields break
+   at the width where they would otherwise be unusable, at any viewport.
+
+   `min(100%, 13rem)` rather than a bare `13rem`: inside a card body on a 390px
+   phone the track would otherwise be wider than its container and push the
+   album's own grid into horizontal overflow. */
+.sessionFields {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 13rem), 1fr));
+  gap: var(--space-s) var(--space-m);
+  min-width: 0;
 }
 
-.manager {
+/* Whitespace, not a rule. AdminCardGrid's `rows` density already closes the
+   list with a hairline, and a second line here would read as a double rule with
+   a gap in it. --space-l is a clear rung above the --space-m the panel's parts
+   sit at, and the "Add a session" heading does the rest of the separating. */
+.sessionForm {
   display: flex;
   flex-direction: column;
-  gap: 2rem;
-  width: 100%;
-  padding-bottom: 1.5rem;
-  font-family: var(--font-primary);
+  gap: var(--space-m);
+  margin-top: var(--space-l);
 }
 
-.section {
-  display: flex;
-  flex-direction: column;
-  gap: 1.35rem;
-  padding: 2rem;
-  background: var(--color-bg-secondary);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-md);
-}
-
-.sectionHeading {
-  font-size: 1.4rem;
-  font-weight: 700;
-  letter-spacing: 0.02em;
-  color: var(--color-accent-secondary);
+/* The <h3> under AdminPanel's <h2>. Set at --fs-body/600/--ink-2 rather than in
+   the eyebrow register, because the eyebrow register is already spoken for
+   twice on this screen - AdminField's labels and AdminCard's metadata keys -
+   and a sub-head that looked like a field label would read as one. Size and ink
+   tier carry the rank, which is this system's mechanism; 600 is its weight
+   ceiling and the <h2> above already uses it. */
+.subheading {
   margin: 0;
-  padding-bottom: 0.7rem;
-  border-bottom: 1px solid var(--color-border);
+  font-family: var(--font-primary);
+  font-size: var(--fs-body);
+  font-weight: 600;
+  line-height: 1.2;
+  color: var(--ink-2);
 }
 
-/* Stack each form's fields with consistent vertical rhythm. */
-.section form {
+/* THE HEADING IS A FOCUS TARGET, so it needs the ring every other focus target
+   on this screen has. It carries tabIndex={-1} because deleting the last
+   session leaves no row to return focus to, and a heading naming the region the
+   admin has landed in is the answer; see AdminClassManager.tsx.
+
+   Measured without this rule: Chrome's own `outline: 1px auto rgb(16, 16, 16)`,
+   which is near-black on --surface-0 and indicates nothing. The same 2px gold
+   at 2px offset the buttons and inputs use - 9.66:1 on this ground - so a
+   programmatic landing looks exactly like every other focused thing here rather
+   than like a browser default nobody chose.
+
+   :focus-visible, NOT :focus, matching the rest of the layer: the ring is for
+   the keyboard user this restore exists for, and clicking a heading should not
+   leave one behind. */
+.subheading:focus-visible {
+  outline: 2px solid var(--color-accent-gold);
+  outline-offset: 2px;
+}
+
+/* --- The album's control band --------------------------------------------
+   THIS BAND MUST NEVER UNMOUNT, including over an empty album and over a failed
+   upload. It is the only way to put the first photograph in, and the empty
+   state's contract is explicit that the controls which reach a state have to
+   survive it. `position: relative` anchors the clipped file input below. */
+.albumControls {
+  position: relative;
   display: flex;
   flex-direction: column;
-  gap: 1.1rem;
+  gap: var(--space-s);
+  min-width: 0;
 }
 
-.field {
+/* A caption is a phrase, not a paragraph. Capping the field keeps the control's
+   width honest about what goes in it; the upload band below is deliberately NOT
+   capped, because it is the target new photographs land on and it sits directly
+   above the grid they land in. */
+.captionField {
+  max-inline-size: 32rem;
+}
+
+/* VISUALLY HIDDEN, NOT `display: none` - and this is a real accessibility fix,
+   not a restyle. The previous markup set `style={{ display: "none" }}` on the
+   file input and put a bare <label> beside it, which removes the input from the
+   tab order: uploading a photograph was reachable by pointer only. Clipped, the
+   input keeps its focus, its label association and its disabled state, and the
+   band below reacts to all three through the sibling combinator. */
+.uploadInput {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  margin: -1px;
+  padding: 0;
+  border: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* The band is DASHED, and it is the only dashed line in the admin. A solid
+   --hairline-strong is the boundary of a control you operate in place; a dashed
+   one is the long-standing convention for a region something is dropped into,
+   and the distinction earns its keep here because this band sits immediately
+   above a grid of solid-edged tiles and must not read as another one.
+
+   No fill, no radius, no shadow - the rules of the system, unchanged. 5rem is
+   two --control-min stacked, which is what stops a full-spine band from reading
+   as a stray rule. */
+.uploadArea {
   display: flex;
-  flex-direction: column;
-  gap: 0.4rem;
-}
-
-.label {
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2xs);
+  min-block-size: 5rem;
+  padding: var(--space-m) var(--space-s);
+  border: 1px dashed var(--hairline-strong);
+  background: none;
+  font-family: var(--font-primary);
+  font-size: var(--fs-meta);
   font-weight: 600;
-  color: var(--color-text-primary);
-}
-
-.input,
-.textarea {
-  width: 100%;
-  padding: 0.6rem 1rem;
-  border-radius: var(--radius-md);
-  border: 1px solid var(--color-input-border);
-  font-size: 1rem;
-  font-family: inherit;
-  background: var(--color-input-bg);
-  color: var(--color-text-primary);
-  transition: border-color var(--transition-fast);
-}
-.input:focus,
-.textarea:focus {
-  outline: none;
-  border-color: var(--color-input-focus);
-}
-.textarea {
-  min-height: 120px;
-  resize: vertical;
-}
-
-.button {
-  background: var(--color-button-bg);
-  color: var(--color-button-text);
-  border: none;
-  border-radius: var(--radius-md);
-  padding: 0.7rem 1rem;
-  font-size: 1rem;
-  font-weight: 600;
-  font-family: inherit;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-align: center;
+  color: var(--ink-2);
   cursor: pointer;
-  transition: background var(--transition-fast);
+  transition:
+    border-color var(--dur-fast, 200ms) ease,
+    color var(--dur-fast, 200ms) ease;
 }
-.button:hover:not(:disabled) {
-  background: var(--color-button-bg-hover);
+
+@media (hover: hover) {
+  .uploadArea:hover {
+    border-color: var(--color-accent-copper);
+    color: var(--ink-1);
+  }
 }
-.button:disabled {
-  opacity: 0.6;
+
+/* The input is the focusable element and the band is the visible one, so the
+   ring has to be forwarded across the sibling seam. The input is rendered
+   BEFORE the label for exactly this reason: `+` works everywhere, `:has()`
+   would be the only alternative, and nesting the input inside its own label is
+   what makes a click on it open the file dialog twice. */
+.uploadInput:focus-visible + .uploadArea {
+  border-color: var(--color-accent-copper);
+  color: var(--ink-1);
+  outline: 2px solid var(--color-accent-gold);
+  outline-offset: 2px;
+}
+
+/* Dropping the boundary back to the separator tier is the signal, matching what
+   AdminButton does when disabled: a control whose edge has stopped being a
+   control's edge. The label text also changes ("Save the page content first"),
+   so the state is never carried by the line alone. */
+.uploadInput:disabled + .uploadArea {
+  border-color: var(--hairline);
+  color: var(--ink-3);
   cursor: not-allowed;
 }
 
-.buttonSecondary {
-  background: transparent;
-  color: var(--color-accent-secondary);
-  border: 1px solid var(--color-accent-secondary);
-  border-radius: var(--radius-md);
-  padding: 0.5rem 1.2rem;
-  font-size: 0.95rem;
-  font-weight: 600;
-  font-family: inherit;
-  cursor: pointer;
-  transition:
-    background var(--transition-fast),
-    color var(--transition-fast);
-}
-.buttonSecondary:hover:not(:disabled) {
-  background: var(--color-accent-secondary);
-  color: var(--color-text-inverse);
-}
+/* --- The album's inventory line ------------------------------------------
+   "12 of 16 photos." The count register the page header uses for a list, spoken
+   inside a panel because this screen's header band belongs to the screen and
+   this count belongs to one of its three sections.
 
-.dangerButton {
-  background: var(--color-error);
-  color: var(--color-text-inverse);
-  border: none;
-  border-radius: var(--radius-md);
-  padding: 0.45rem 1rem;
-  font-size: 0.9rem;
-  font-weight: 600;
-  font-family: inherit;
-  cursor: pointer;
-  transition: filter var(--transition-fast);
-}
-.dangerButton:hover:not(:disabled) {
-  filter: brightness(1.15);
-}
-
-.list {
-  list-style: none;
-  display: flex;
-  flex-direction: column;
-  gap: 0.85rem;
+   NOT --danger WHEN THE CAP IS EXCEEDED, and that is the distinction that keeps
+   --danger meaning one thing. Photos past the public cap are a FACT the admin
+   needs in order to decide what to reorder; nothing failed and nothing is being
+   destroyed. The overflow sentence steps up one ink tier - --ink-3 to --ink-2 -
+   which is this system's founding mechanism for emphasis, and the wording
+   carries the meaning on its own. */
+.albumCount {
   margin: 0;
-  padding: 0;
-}
-
-.listItem {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1.25rem;
-  padding: 1rem 1.2rem;
-  background: var(--color-bg-tertiary);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-}
-
-/* Session summary text grows to fill the row so the action buttons sit flush
-   right and stay vertically centered against the label. */
-.sessionLabel {
-  flex: 1 1 auto;
-  min-width: 0;
+  font-size: var(--fs-meta);
+  font-weight: 500;
   line-height: 1.4;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-3);
 }
 
-/* Shared right-aligned cluster for a row's action buttons (session list rows,
-   the session edit row, and photo cards) so controls align consistently. */
-.rowActions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.6rem;
-}
-.rowActions .button,
-.rowActions .buttonSecondary,
-.rowActions .dangerButton {
-  align-self: center;
+.albumCountNote {
+  color: var(--ink-2);
 }
 
-.sessionRow {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 1rem;
-}
-.sessionRow .field {
-  flex: 1 1 200px;
-  min-width: 0;
-}
-/* Keep the inline Add/Save button aligned to the bottom of the field inputs
-   rather than stretching with the wrapped row. */
-.sessionRow > .button {
-  flex: 0 0 auto;
-}
-/* The edit row's Save/Cancel cluster drops onto its own full-width line once
-   the date fields wrap, keeping the crowded inline row legible. */
-.sessionRow .rowActions {
-  flex: 1 1 100%;
-  justify-content: center;
-}
+/* --- The sortable album tile ---------------------------------------------
+   THE WRAPPER EXISTS BECAUSE AdminCard HAS NO ROOT PASSTHROUGH, which is that
+   contract's central guarantee rather than an omission: with no `className`,
+   `style`, `ref` or `...rest` on the card root, no consumer can spread an
+   `onClick` or a `role="button"` back onto it and re-create the nested-
+   interactive bug the whole overhaul exists to remove. So dnd-kit's sortable
+   node ref and its positional transform go HERE, on an element this screen
+   owns, and only the grip - `setActivatorNodeRef` + attributes + listeners -
+   is handed to the card's `dragHandle` slot.
 
-/* The add-session form follows the existing sessions list; the hairline
-   divider keeps the two areas reading as distinct (the section gap handles
-   the surrounding spacing). */
-.sessionForm {
-  padding-top: 1.35rem;
-  border-top: 1px solid var(--color-border);
-}
-
-/* Row wrapper for the album's caption control; keeps the field aligned with
-   the section's rhythm and allows side-by-side growth if more fields are added. */
-.fieldRow {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1rem;
-}
-.fieldRow .field {
-  flex: 1 1 220px;
-  min-width: 0;
-}
-
-.photoGrid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
-  gap: 1.25rem;
-}
-
-.photoItem {
+   `block-size: 100%` because the tiles density asks the card to fill its
+   stretched list item so the album's controls form a line across the row; the
+   wrapper sits between the two and would otherwise collapse to its content. */
+.sortable {
   position: relative;
-  display: flex;
-  flex-direction: column;
-  gap: 0.6rem;
-  padding: 0.85rem;
-  background: var(--color-bg-tertiary);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-sm);
-  /* The whole card is the drag source: grab affordance + touch-action so
-     pointer drags work on touch without the browser scrolling instead. */
-  cursor: grab;
-  touch-action: none;
-  /* dnd-kit transforms the tile during drag; box-shadow/border-color are the
-     only properties this card animates on its own (see .dragging). */
-  transition:
-    box-shadow var(--transition-fast),
-    border-color var(--transition-fast);
-}
-/* Nested controls opt out of the grab cursor so they read as operable; their
-   pointerdown handlers also stop a drag from starting on the card root. */
-.photoItem .input {
-  cursor: auto;
-}
-.photoItem .buttonSecondary,
-.photoItem .dangerButton {
-  cursor: pointer;
-}
-/* Push the Save/Delete cluster to the bottom edge so cards of differing
-   content heights keep their actions aligned along the grid row. */
-.photoItem .rowActions {
-  margin-top: auto;
-  justify-content: flex-start;
+  block-size: 100%;
+  min-width: 0;
 }
 
-/* Raised, translucent state while a card is being dragged so it reads as
-   detached from the grid. dnd-kit owns the positional transform. */
+/* The tile being held. z-index lifts it over its neighbours as they shuffle
+   under it; the opacity says which one the pointer owns. No shadow and no
+   scale: dnd-kit is already translating this element, and the movement is the
+   feedback - a second, decorative cue on top of it is the "animation for its
+   own sake" this system rules out. */
 .dragging {
   z-index: 2;
   opacity: 0.85;
-  border-color: var(--color-accent-primary);
-  box-shadow: var(--shadow-md);
+}
+
+/* touch-action is REQUIRED, not cosmetic: without it a touch drag beginning on
+   the grip is claimed by the browser as a scroll and the album cannot be
+   reordered by finger at all. It is set here rather than on the whole tile -
+   which is where it used to live - precisely because the tile is no longer the
+   drag source; the caption field inside it must still scroll the page normally.
+
+   AdminCard.module.css owns everything else about this control: the 40px
+   minimum in both axes, the --hairline-strong edge, the opaque --surface-0
+   ground it needs to stay legible over a photograph, the copper hover and the
+   gold focus ring. */
+.grip {
+  touch-action: none;
+}
+
+/* (0,2,0) beats AdminCard's `.dragHandle > button` at (0,1,1), which is what
+   lets a rule in this file reach a control that file styles. */
+.dragging .grip {
   cursor: grabbing;
 }
 
-/* Decorative grip cue in the card's top corner. The card root carries the drag
-   listeners now, so this is a non-interactive, aria-hidden visual hint only. */
-.dragHandle {
-  position: absolute;
-  top: 0.5rem;
-  right: 0.5rem;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0.3rem;
-  border-radius: var(--radius-sm);
-  background: var(--color-bg-soft);
-  color: var(--color-text-secondary);
-  font-size: 1rem;
-  line-height: 0;
-  pointer-events: none;
-}
-
-.photoThumb {
-  width: 100%;
-  aspect-ratio: 4 / 3;
-  object-fit: cover;
-  border-radius: var(--radius-sm);
-  background: var(--color-bg-muted);
-}
-
-/* Over-limit tile: this photo sits past the public album cap, so it is dimmed
-   to read as inactive. Controls stay fully interactive (no pointer-events
-   block) so the admin can still drag, caption, save, or delete it — the goal
-   is to signal the state, not lock the card. */
-.beyondLimit {
-  border-color: var(--color-error);
-}
-.beyondLimit .photoThumb {
-  opacity: 0.45;
-  filter: grayscale(0.4);
-  transition: opacity var(--transition-fast);
-}
-/* Text + a contrasting fill carry the meaning so the cue is not color-only. */
-.limitBadge {
-  position: absolute;
-  top: 0.5rem;
-  left: 0.5rem;
-  z-index: 1;
-  padding: 0.2rem 0.55rem;
-  border-radius: var(--radius-sm);
-  background: var(--color-error);
-  color: var(--color-text-inverse);
-  font-size: 0.72rem;
-  font-weight: 700;
-  letter-spacing: 0.02em;
-  line-height: 1.2;
-  box-shadow: var(--shadow-sm);
-}
-
-/* Editor-level public-limit messaging rendered by AdminClassManager.
-   .publicLimitNote: neutral always-on helper text explaining the cap.
-   .publicLimitWarning: emphasized line shown when the cap is exceeded. */
-.publicLimitNote {
-  color: var(--color-text-secondary);
-  font-size: 0.9rem;
-  line-height: 1.4;
-}
-.publicLimitWarning {
-  color: var(--color-error);
-  font-weight: 600;
-  font-size: 0.9rem;
-  line-height: 1.4;
-}
-
-.uploadArea {
+.tileForm {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  padding: 2rem 1.5rem;
-  border: 2px dashed var(--color-border);
-  border-radius: var(--radius-md);
-  background: var(--color-bg-tertiary);
-  color: var(--color-text-secondary);
-  text-align: center;
-  cursor: pointer;
-  transition:
-    border-color var(--transition-fast),
-    background var(--transition-fast);
-}
-.uploadArea:hover {
-  border-color: var(--color-accent-primary);
-  background: var(--color-bg-soft);
+  gap: var(--space-s);
+  min-width: 0;
 }
 
-.error {
-  color: var(--color-error);
-  font-weight: 500;
+/* The one action row whose children DO stretch. An album tile's track is about
+   180px at the 1200px spine, and two --space-m-padded controls need ~230px, so
+   they wrap - and two ragged buttons of different widths on two lines is worse
+   than two full-width ones. `flex: 1 1 7rem` puts them side by side wherever
+   224px is available (a phone at one tile per line) and stacks them, each
+   filling the track, where it is not. */
+.tileActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2xs);
 }
 
-.success {
-  color: var(--color-success);
-  font-weight: 500;
+.tileActions > * {
+  flex: 1 1 7rem;
 }
 
-.emptyState {
-  padding: 1rem;
-  color: var(--color-text-secondary);
-  text-align: center;
-  font-style: italic;
-}
-
-@media (max-width: 768px) {
-  .container {
-    padding: 0 1rem;
-  }
-  .section {
-    padding: 1.5rem;
-  }
-}
-
-@media (max-width: 600px) {
-  .listItem {
-    flex-direction: column;
-    align-items: stretch;
-  }
-  .sessionRow {
-    flex-direction: column;
-    align-items: stretch;
-  }
-  .sessionRow > .button {
-    align-self: stretch;
-    text-align: center;
-  }
-  /* On narrow screens let the row actions stretch full width and the buttons
-     fill the row so touch targets stay comfortable. */
-  .rowActions {
-    width: 100%;
-  }
-  .rowActions .button,
-  .rowActions .buttonSecondary,
-  .rowActions .dangerButton {
-    flex: 1 1 auto;
-    text-align: center;
-  }
-  .fieldRow {
-    flex-direction: column;
-  }
-}
-
+/* A colour and a border fade with no displacement is not what this preference
+   asks to have removed - the rule both public surfaces record - but the upload
+   band is the one element here that transitions at all, so it is collapsed with
+   the shared layer's own reduced-motion handling rather than left as the single
+   exception on the screen. dnd-kit's drag transform is a direct response to a
+   pointer or a key the admin is holding, not an animation, and neutralising it
+   would break the reorder rather than calm it. */
 @media (prefers-reduced-motion: reduce) {
-  .input,
-  .textarea,
-  .button,
-  .buttonSecondary,
-  .dangerButton,
-  .uploadArea,
-  .photoItem,
-  .beyondLimit .photoThumb {
+  .uploadArea {
     transition-duration: 0.001ms;
   }
 }

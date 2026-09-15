@@ -1,0 +1,645 @@
+/* ===========================================================================
+   The admin card - one manageable record.
+
+   THE CENTREPIECE OF THIS REDESIGN, and the thing it replaces is specific: two
+   near-verbatim copies of a 300 x 320px photographic card in a 3-up grid, at a
+   row pitch of 352px, showing six of a ten-record page. This is a 1-up ruled
+   line with a floor of 80px, showing eight or nine of the same page while
+   GAINING a thumbnail the old list never had. The gain does not come from
+   squeezing; it comes from turning a browsing grid into a scanning list, a 4.3x
+   reduction in the vertical cost of a record.
+
+   80px IS DERIVED, NOT PICKED. The text block a record needs is fixed by tokens
+   this system already owns - title --fs-card 22px x 1.2 = 26.4, gap
+   --space-2xs 8, meta --fs-meta 14px x 1.3 = 18.2, total 52.6px - and
+   --record-thumb (56px) is the smallest round rem step that covers it. Add
+   --space-xs of block padding each side and the line resolves to exactly 80px,
+   which is why the floor below is written as that arithmetic rather than as
+   `5rem`: change the thumbnail and the row follows it instead of clipping it.
+
+   FOUR DELIBERATE DEPARTURES FROM ContentRow, the public sibling. Recorded so
+   none of them reads as an oversight:
+
+   1. THE TITLE IS ONE LINE, nowrap and ellipsised, where the public row caps at
+      26ch and wraps. A wrapping title makes every row a different height, and
+      the moment rows differ in height the trailing action column stops being a
+      column the eye can run down - which is the entire reason to use a row.
+   2. ALIGNMENT IS CENTRE, where the public row is `start`. The public row
+      top-aligns because a 249px row needs one shared reading start-point. In an
+      80px line with a one-line title, centring is what puts the 56px plate, the
+      52.6px text block and the 40px controls on one optical axis.
+   3. THE CARD IS NOT THE LINK. The public row IS an anchor. Here the card is a
+      plain container and every action is a real, individually focusable button -
+      because the thing this replaces was a <div role="button" tabIndex={0}>
+      containing two <button>s, which is invalid, is announced as one ambiguous
+      tab stop, and needed a `closest("button")` guard in every handler to stop
+      the outer click firing. See admin.types.ts for the full argument.
+   4. NO RESTING VEIL AND NO IMAGE SCALE ON HOVER. The public card veils its
+      media and lifts the veil on hover; the public archive already rejected
+      carrying that to a row ("twelve dimmed thumbnails read as twelve disabled
+      rows"), and at 56px across eight rows the argument is stronger. The scale
+      is dropped for a different reason: it sells a click, and there is no click
+      to sell here.
+
+   ACTIONS ARE VISIBLE AT REST, ALWAYS, AT EVERY WIDTH. The strongest argument
+   against hover-reveal comes from the tool that implements it best: WordPress
+   keeps its row actions in the layout flow at all times and hides them by
+   `left: -129987px`, so row height is identical to the decimal at rest, on
+   hover and on focus - and every row still pays 19.9px of height for a block it
+   is not showing. If the space is already spent, hiding the contents buys
+   nothing except a touch device where :hover does not exist, three fresh
+   obligations under WCAG 1.4.13, and an admin who cannot see whether a row has
+   a Delete before committing the pointer. Statamic simply declines the trade
+   (measured: opacity 1 and visibility visible at rest, and hovering changes
+   neither the button nor the row ground). Neither do we.
+
+   HOW THE THREE DENSITIES ARE SWITCHED - inherited custom properties set by
+   AdminCardGrid, never a modifier class. CSS Modules hashes class names per
+   file, so a `.tiles .card` descendant selector cannot be written across two
+   modules; and a second class on the card would land at equal specificity with
+   this one and be settled by emission order. Custom properties inherit down the
+   DOM, are read here with fallbacks, and have no contest to lose. It is the
+   same mechanism --archive-columns uses on the public list, for the same
+   reason.
+   =========================================================================== */
+
+.card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: var(--space-s);
+  min-block-size: var(
+    --admin-card-min-block,
+    calc(var(--record-thumb) + 2 * var(--space-xs))
+  );
+  /* 100% only in the album, where the grid stretches every <li> to its row's
+     tallest and the card must fill that height for the two rules below to have
+     any slack to distribute. Auto everywhere else: a list line stretching to
+     100% of nothing is a no-op, and a landing entry sizing itself to its
+     neighbour would tie two unrelated destinations together. */
+  block-size: var(--admin-card-block, auto);
+  /* The negative inline margin is what keeps the hover tint from reading as a
+     table cell, and it is lifted from ContentRow with its reasoning intact:
+     content stays on the 1200px spine because the padding puts it back, while
+     the tint bleeds --space-s past the rule at both ends. Flush to the rule the
+     hairlines become the cell's top and bottom borders and the list becomes a
+     table; overshooting them makes the tint a band that the rules sit inside.
+     Bounded by the gutter's own 20px floor, so it never reaches the viewport
+     edge. */
+  margin-inline: calc(-1 * var(--space-s));
+  padding: var(--space-xs) var(--space-s);
+  font-family: var(--font-primary);
+  color: var(--ink-1);
+  transition: background-color var(--dur-fast, 200ms)
+    var(--ease-out-soft, cubic-bezier(0.22, 0.61, 0.36, 1));
+}
+
+/* The separating rule is drawn by a pseudo-element inset to the spine rather
+   than as a border on the card, because the card's box is 16px wider than the
+   spine on each side (see the bleed above) and a border would be drawn at that
+   bled width. The rule must state the CONTAINER's edges; the tint must pass
+   them. One element cannot do both with one border.
+
+   One rule, two readings, and it is still not conditional on density: in `rows`
+   it separates one record from the next, in `tiles` it is the frame edge above
+   a plate. (It used to have a third reading - opening a landing entry - but the
+   landing entry is AdminNavCard now and draws its own.)
+
+   THE ONE CASE THAT MUST NOT DRAW IT is the first record of a run that opens a
+   page, because AdminPageLayout's header has already closed on a copper rule
+   and a second horizontal below it with no content between is one rule drawn
+   twice. That case is not decidable here - a card cannot know whether it is
+   first, nor whether its list opens the page - so it is decided in the two
+   places that do know and arrives as --admin-card-rule. See
+   AdminPageLayout.module.css and AdminCardGrid.module.css .rows; unset, which
+   is every other card on every screen, this falls back and nothing changes. */
+.card::before {
+  content: "";
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline: var(--space-s);
+  border-top: 1px solid var(--admin-card-rule, var(--hairline));
+}
+
+/* --surface-1, a measured 1.056:1 against the page ground - a whisper, and
+   intended as one. Its only job is to confirm which record the pointer is on
+   before the admin commits to a Delete two columns to the right.
+
+   Gated on (hover: hover) for the reason ContentRow records: on touch the tint
+   latches after a tap and stays until something else is tapped. */
+@media (hover: hover) {
+  .card:hover {
+    background-color: var(--surface-1);
+  }
+}
+
+/* :focus-within, not :focus-visible. Focus never lands on the card - it is not
+   interactive - it lands on an Edit or a Delete inside it, and a keyboard user
+   tabbing a list needs the same "which record am I on" answer a pointer gets.
+   This is the one behaviour that a non-interactive card has to state explicitly
+   where the public row got it free by being the link. */
+.card:focus-within {
+  background-color: var(--surface-1);
+}
+
+/* The 80px line itself. Direction flips to column for the photo album, where
+   the plate is the subject and spatial order is the information being edited. */
+.main {
+  display: flex;
+  /* Takes the card's leftover height so the body slot below it - the album
+     tile's caption field - sits on the card's bottom edge rather than floating
+     under a short title. In a list line there is no leftover, so this resolves
+     to the 56px content box and changes nothing. */
+  flex: 1 1 auto;
+  flex-direction: var(--admin-card-flow, row);
+  align-items: var(--admin-card-align, center);
+  /* The narrow-viewport stack (see .actions and .content below) is the list's
+     decision, not the card's, so it arrives through the same inherited channel
+     the flow direction does. */
+  flex-wrap: var(--admin-card-wrap, nowrap);
+  gap: var(--space-s);
+  min-width: 0;
+}
+
+/* --- Media ---------------------------------------------------------------
+   Zero radius, deliberately. Statamic rounds its 32px asset thumbnail at 4px;
+   this system's answer is zero everywhere ("Zero radius, zero border, zero
+   shadow" opens ContentCard.module.css), and holding zero in the admin costs
+   nothing and keeps one rule instead of two. */
+.media {
+  position: relative;
+  flex: 0 0 auto;
+  inline-size: var(--admin-card-media, var(--record-thumb));
+  aspect-ratio: var(--admin-card-media-ratio, 1 / 1);
+  overflow: hidden;
+  background: var(--surface-1);
+}
+
+/* A record with no cover holds an empty plate so a list of mostly-illustrated
+   records stays even - the same intent as the public row's --surface-1 media
+   ground, with one correction the public row never needed. There the plate sits
+   on --surface-0 and reads. Here the ROW ground becomes --surface-1 on hover,
+   so an empty plate at --surface-1 would vanish exactly when the admin is
+   pointing at it. The hairline is what keeps the plate a plate on either
+   ground; a filled plate never gets it, because a rule around a photograph is a
+   frame and this system does not frame photographs. */
+.mediaEmpty {
+  border: 1px solid var(--hairline);
+}
+
+.mediaImage {
+  object-fit: cover;
+}
+
+/* A DEAD S3 KEY MUST NOT DRAW CHROMIUM'S BROKEN-IMAGE GLYPH.
+
+   The state: a record whose s3Key points at an object that is no longer in the
+   bucket - deleted out of band, or a demo row seeded against an empty bucket -
+   takes the ILLUSTRATED path above, so it never gets .mediaEmpty, and the
+   browser paints a torn-page icon inside the plate. In a list of photographs
+   that reads as "this tool is broken", which is a much louder claim than the
+   true one, "this photograph is gone".
+
+   WHY A PSEUDO-ELEMENT IS THE WHOLE FIX. A replaced element that renders its
+   content generates no ::after box; one whose content FAILED is no longer
+   replaced content, so the box appears and covers the glyph. That makes "did
+   this image load" a CSS question, with no state, no client component and no
+   second copy of the S3 URL logic.
+
+   MEASURED IN THE RUNNING PAGE, BOTH STATES, because this rule is one step from
+   catastrophic - if the box were generated for loaded images too, every
+   thumbnail in the admin would be a blank plate. Injected live and captured
+   with and without: on /admin/recipes the two records with real covers render
+   identically either way (naturalWidth 239, unchanged), and on /admin/classes
+   the dead-key tiles lose the glyph and gain the plate.
+
+   A NOTE FOR ANYONE READING A SCREENSHOT. The capture script's wait does not
+   always outlast a signed S3 URL round trip, so admin thumbnails are often
+   blank in .screenshots/ whatever this rule does. A blank plate there is a
+   capture artifact; an empty plate in the browser is this rule or a genuinely
+   missing cover. Do not diagnose this from a PNG - it cost one revert already.
+
+   It repaints .mediaEmpty exactly, for the reason stated there: the row ground
+   becomes --surface-1 on hover, so a plate without its rule would vanish under
+   the pointer.
+
+   WHAT IT IS NOT. Safari renders no pseudo-elements on <img> at all, so this
+   covers Chromium and Firefox only, and it does nothing for the public
+   /classes album where the same dead keys draw the same glyph. Both want the
+   same real fix - an onError on the shared S3CardBackgroundImage - which is
+   outside this specialist's boundary and is reported as a gap. */
+.mediaImage::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--surface-1);
+  border: 1px solid var(--hairline);
+}
+
+/* --- Text ---------------------------------------------------------------- */
+.content {
+  /* Two jobs on one declaration, one per flow direction. In a ROW it absorbs
+     the width the fixed plate and the fixed action column leave, which is the
+     measured shape of every admin list examined: a constant trailing column and
+     a text column that flexes. In a COLUMN - the album tile - it absorbs the
+     HEIGHT instead, which is what pushes the action row onto the card's bottom
+     edge so every tile's Delete lands on one line regardless of whether that
+     tile also carries a badge. Rendered before this, two badged tiles sat 18px
+     lower than their three unbadged neighbours. */
+  flex-grow: 1;
+  flex-shrink: 1;
+  /* Zero at narrow widths in a row list, which is what makes the text column
+     yield its intrinsic width so the action row can take the line below it
+     whole. Longhand rather than the `flex` shorthand for the reason recorded on
+     .actions. */
+  flex-basis: var(--admin-card-content-basis, auto);
+  /* Without this the flex item refuses to shrink below its content's intrinsic
+     width and the ellipsis below never engages - the title simply pushes the
+     action column off the spine instead. */
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2xs);
+}
+
+.title {
+  margin: 0;
+  font-size: var(--fs-card);
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: -0.005em;
+  color: var(--ink-1);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Clamped in CSS, never truncated in JS, so the full text stays in the DOM for
+   assistive technology. Two lines, and the list screens should not pass an
+   excerpt at all: title plus meta is what the 80px floor is derived from, and a
+   two-line excerpt adds ~48px to every row and gives back the density this
+   redesign exists to win. The slot is for the album tile's caption and for any
+   screen where a record cannot be identified by its title alone. */
+.excerpt {
+  margin: 0;
+  font-size: var(--fs-meta);
+  line-height: 1.5;
+  color: var(--ink-2);
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
+}
+
+/* Labelled pairs, not the pre-composed strings the old cards emitted ("By
+   Jane"), so a screen reader hears "Author: Jane Doe" rather than a fragment.
+
+   The treatment is the one Ghost's dark admin uses for its table column heads
+   and the one this system ALREADY OWNS: tiny uppercase tracked caps naming the
+   field, full-register text carrying the value. That is exactly --fs-eyebrow's
+   role - "label something without competing with it" - so the label reuses the
+   existing eyebrow rule rather than inventing a column-head style, and only the
+   value sits in the meta register the public bylines use.
+
+   One line, clipped. The whole point of an 80px floor is that nothing in the
+   text column may grow the row, and a record with four metadata pairs would
+   otherwise wrap into a second line and break the action column's alignment. */
+.meta {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-m);
+  margin: 0;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.metaItem {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5em;
+  min-width: 0;
+}
+
+.metaLabel {
+  flex: 0 0 auto;
+  font-size: var(--fs-eyebrow);
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+
+.metaValue {
+  margin: 0;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: var(--fs-meta);
+  font-weight: 500;
+  line-height: 1.4;
+  color: var(--ink-2);
+}
+
+/* An exception notice - "Not shown publicly" on an album photo ordered past the
+   public cap. A MARK, not a pill: a pill is a filled radiused surface and this
+   system's founding decision is that it has no surfaces, which is the same
+   objection that retired the copper-filled .brandBadge and the --color-error
+   .limitBadge this replaces.
+
+   DELIBERATELY NOT --danger, and this is the distinction that keeps that token
+   meaning one thing. The chip reports a fact; nothing failed and nothing is
+   about to be destroyed. It is set at --ink-2 rather than --ink-3 because it
+   outranks ordinary metadata - it is the reason the admin might reorder the
+   album - and marked with --hairline-strong, the neutral control-boundary tier,
+   at 3.20:1. */
+.badge {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2xs);
+  font-size: var(--fs-eyebrow);
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+}
+
+/* A square tick, not a rule and not a dot. Drawn first as a 2px x 1em bar, it
+   rendered as a pipe character - the eye read "| NOT SHOWN PUBLICLY" as
+   punctuation rather than as a mark. Statamic's equivalent is a ~7px filled
+   dot, which is the right idea and the wrong shape here: a circle would be the
+   only radius in a system that states zero radius everywhere. A square at the
+   same optical size is unambiguously a mark and keeps the rule. */
+.badge::before {
+  content: "";
+  flex: 0 0 auto;
+  inline-size: 0.45em;
+  block-size: 0.45em;
+  background: var(--hairline-strong);
+}
+
+/* --- Actions -------------------------------------------------------------
+   A fixed trailing cluster, which is the second half of the measured finding
+   the row is built on: every admin list examined puts its actions at the
+   trailing edge in a column of constant width and lets the text column absorb
+   the rest (Statamic's measured at 53px in one table and 52px in another - the
+   same column across two unlike tables).
+
+   --space-2xs gives 16 + 8 = 24px of clearance from the text column, which is
+   the --space-m the track was derived at, reached without a second gap value on
+   the parent. */
+.actions {
+  flex-grow: 0;
+  flex-shrink: 0;
+  /* 100% at narrow widths in a row list, which takes the cluster onto its own
+     line. Spelled as three longhands rather than `flex: 0 0 auto` because only
+     the basis varies: the shorthand would have to be restated in full wherever
+     one component of it changed, and the two spellings would then disagree the
+     first time anything else moved. */
+  flex-basis: var(--admin-card-actions-basis, auto);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2xs);
+  margin-inline-start: var(--admin-card-actions-offset, var(--space-2xs));
+}
+
+/* LABELLED IN WORDS, NOT ICONS. Statamic can use a bare ellipsis because a
+   Statamic admin is in the control panel daily; this portal is used
+   intermittently across five unlike sections, and an icon-only control would
+   need a tooltip - which is content on hover, which re-opens WCAG 1.4.13 for no
+   gain.
+
+   40px in BOTH axes via --control-min. WCAG 2.2 SC 2.5.8 asks 24 x 24, and the
+   reason for the larger figure is the one editorialTokens already recorded when
+   it derived --step-marker: a target that shrank with the viewport would shrink
+   on exactly the device being held one-handed. It also rules out WordPress's
+   model directly - its inline `Edit | Trash | View` links measure 19.9px of
+   block height, below the standard's floor.
+
+   A boundary rather than bare text. Two words sitting at the end of a row read
+   as metadata; a ruled box reads as a control. --hairline-strong exists for
+   this (3.20:1, clearing WCAG 1.4.11's 3:1 on both the resting ground and the
+   hovered one) - --hairline at 1.42:1 could not legally bound it. */
+.action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-block-size: var(--control-min);
+  min-inline-size: var(--control-min);
+  padding-inline: var(--space-s);
+  border: 1px solid var(--hairline-strong);
+  border-radius: 0;
+  background: none;
+  font-family: var(--font-primary);
+  font-size: var(--fs-meta);
+  font-weight: 500;
+  line-height: 1.2;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+  cursor: pointer;
+  transition:
+    color var(--dur-fast, 200ms) ease,
+    border-color var(--dur-fast, 200ms) ease;
+}
+
+/* FULL INK, NEUTRAL EDGE - and the edge was copper for one render before this.
+
+   --rule-accent is the only pre-existing token that can legally bound an
+   interactive control (3.60:1 on --surface-0, 3.47:1 on --surface-1), so a
+   copper-ruled Edit was the obvious brand-native choice and it is wrong.
+   Rendered at 1440 against six records it puts TWELVE copper marks inside the
+   list region, 40px apart, and ContentArchiveLayout.module.css states the
+   consequence in advance: the copper rule closing the page header is tier one,
+   the list's hairlines are tier two, and "a second copper rule anywhere below
+   the header would flatten tier 1 into tier 2". Twelve of them flatten it
+   completely - and at that repetition the copper stops reading as an accent and
+   starts reading as a selected state, which is a meaning this list does not
+   have.
+
+   So copper is spent once per page, on the primary action in the header, and
+   the row keeps the distinction the research actually settled: Edit at --ink-1
+   against Delete's --ink-2, which is this system's founding hierarchy mechanism
+   ("carried by opacity, not by weight"). Copper returns on :hover, where it is
+   one mark at a time. */
+.actionPrimary {
+  border-color: var(--hairline-strong);
+  color: var(--ink-1);
+}
+
+.actionSecondary {
+  border-color: var(--hairline-strong);
+  color: var(--ink-2);
+}
+
+/* DELETE IS NEUTRAL AT REST AND RED ONLY UNDER THE POINTER, and this is the
+   most considered decision on the card.
+
+   At rest it is --ink-2, one tier under Edit, and it is LAST in the cluster.
+   Position and ink tier are the distinction, exactly as this system separates
+   every other pair of unequal things. Colouring it at rest would put eight
+   alarms on a page where nothing is wrong - and the only colour available for
+   the job used to be --color-error, which measures 3.69:1 here (below AA) at
+   five degrees of hue from the ground it is painted on, so it read as a third
+   accent rather than as a warning.
+
+   The alarm arrives at the moment of commitment instead: on :hover and on
+   :focus-visible alike, so a keyboard user is warned at the same point in the
+   interaction that a pointer user is. Colour is never the sole carrier here -
+   the control says "Delete" - so this satisfies WCAG 1.4.1 without the word
+   having to be shouted for eight rows at a time. */
+.actionDanger {
+  border-color: var(--hairline-strong);
+  color: var(--ink-2);
+}
+
+/* THE DOUBLED CLASS IS LOAD-BEARING, and the reason is recorded in full in
+   AdminButton.module.css: globals.css paints `button:hover` with a brown fill
+   at (0,1,1), which outranks any single class. Rendered without this, hovering
+   a row put rgb(116,86,52) behind its Edit and Delete. */
+.action.action:hover {
+  background: none;
+}
+
+@media (hover: hover) {
+  .actionPrimary.actionPrimary:hover,
+  .actionSecondary.actionSecondary:hover {
+    border-color: var(--color-accent-copper);
+    color: var(--ink-1);
+  }
+
+  .actionDanger.actionDanger:hover {
+    border-color: var(--danger);
+    color: var(--danger);
+  }
+}
+
+.actionPrimary:focus-visible,
+.actionSecondary:focus-visible {
+  border-color: var(--color-accent-copper);
+  color: var(--ink-1);
+}
+
+.actionDanger:focus-visible {
+  border-color: var(--danger);
+  color: var(--danger);
+}
+
+.action:focus-visible {
+  outline: 2px solid var(--color-accent-gold);
+  outline-offset: 2px;
+}
+
+/* --ink-3 and --hairline rather than an opacity multiplier: opacity would dim
+   the focus outline and the border together and leave the control looking
+   broken rather than unavailable. A disabled control is exempt from the
+   contrast minimum, which is what lets the boundary drop back to the separator
+   tier - and that drop is itself the signal. */
+.action:disabled {
+  border-color: var(--hairline);
+  color: var(--ink-3);
+  cursor: not-allowed;
+}
+
+/* --- Drag handle ---------------------------------------------------------
+   Pinned to the card's own corner, over the plate, and PERMANENTLY VISIBLE.
+   This is the one place in the admin where a pointer-only affordance would be a
+   genuine barrier rather than an inconvenience, because in a sortable album the
+   spatial order IS the information being edited - there is no other control
+   that expresses it.
+
+   The consumer passes a bare <button> carrying the drag library's attributes,
+   listeners and activator ref, and this slot styles it. A descendant type
+   selector rather than a class, because the class would have to be exported
+   across two modules and the consumer would then be free to forget it. */
+.dragHandle {
+  position: absolute;
+  z-index: 2;
+  inset-block-start: var(--space-xs);
+  inset-inline-end: var(--space-s);
+}
+
+.dragHandle > button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-block-size: var(--control-min);
+  min-inline-size: var(--control-min);
+  border: 1px solid var(--hairline-strong);
+  border-radius: 0;
+  /* The one opaque ground in the card, and it is required rather than
+     decorative: this control sits ON a photograph, so its boundary has nothing
+     predictable to contrast against without it. --surface-0 is the page ground,
+     not a new surface. */
+  background: var(--surface-0);
+  font-size: var(--fs-meta);
+  line-height: 1;
+  color: var(--ink-1);
+  cursor: grab;
+}
+
+/* (0,1,2) already outranks globals' button:hover at (0,1,1), so this one needs
+   no doubling - but it does have to restate the ground, or the grip would go
+   brown over the photograph it sits on. */
+.dragHandle > button:hover {
+  background: var(--surface-0);
+  border-color: var(--color-accent-copper);
+}
+
+.dragHandle > button:focus-visible {
+  outline: 2px solid var(--color-accent-gold);
+  outline-offset: 2px;
+}
+
+/* --- Body slot -----------------------------------------------------------
+   Content the card cannot express as text: the album tile's caption field, the
+   session card's inline edit form. A sibling of .main, never a descendant of
+   anything interactive, which is the guarantee the whole contract is shaped
+   around. */
+.body {
+  min-width: 0;
+}
+
+/* --- Responsive ----------------------------------------------------------
+   THERE IS NO MEDIA QUERY IN THIS FILE, AND ITS ABSENCE IS THE DECISION.
+
+   A card is one record and knows nothing about how much room it has; the list
+   is what owns the horizontal space. So the narrow-viewport stack is declared
+   in AdminCardGrid.module.css, on .rows, as the same inherited properties the
+   density already travels through - the argument ContentArchiveLayout.module.css
+   makes when it puts its column count on the list rather than on the row.
+
+   This was not the first version. The stack was a plain
+   @media (max-width: 599px) here, and it was WRONG, because flex-basis resolves
+   against the main axis: `flex-basis: 100%` on the actions and `0` on the
+   content mean "own line" in a ROW and "full height" / "no height" in a COLUMN.
+   At 390px it therefore reached into the photo album, which is the one density
+   whose flow is column, and threw every tile's Delete 82px off the right of the
+   viewport. Scoping the stack to the list that wants it makes that class of
+   mistake unavailable rather than merely fixed.
+
+   What the stack does, where it is declared: the plate holds its 56px and the
+   text keeps the line, while the ACTIONS drop to their own row beneath. The
+   photograph is deliberately NOT blown up to full width the way the public card
+   does on a phone - it is a recognition token, not the subject, and a 350px
+   plate per record would restore exactly the browsing grid this replaced, at
+   one record per screen. The actions are the only part of the anatomy 390px
+   genuinely cannot hold: 56 + 16 + text + 8 + two 40px controls leaves the
+   title about 90px, which is not a title. */
+
+/* Colour and border fades with no displacement are not what the preference asks
+   to have removed - the recorded rule on both public surfaces - but the card's
+   background transition is the one thing here that runs across eight rows at
+   once under a moving pointer, so it is collapsed with them. No transform
+   exists on this card to neutralise. */
+@media (prefers-reduced-motion: reduce) {
+  .card,
+  .action {
+    transition-duration: 0.001ms;
+  }
+}

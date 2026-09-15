@@ -106,10 +106,6 @@ html {
   --color-link: #2d2320;
   --color-link-hover: #f7e6c4;
 
-  --font-primary: "Geist", "Inter", Arial, Helvetica, sans-serif;
-  --font-secondary: "Inter", Arial, Helvetica, sans-serif;
-  --font-mono: "Fira Mono", "Menlo", "Monaco", "Consolas", monospace;
-
   --radius-xs: 2px;
   --radius-sm: 4px;
   --radius-md: 8px;
@@ -118,9 +114,45 @@ html {
   --transition-fast: 0.15s cubic-bezier(0.4, 0, 0.2, 1);
   --transition-medium: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   --transition-slow: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
 
-  /* Featured card width (shared across Blog/Recipe/Video) */
-  --featured-card-max-width: min(100%, calc(80vh * 16 / 9));
+/* Declared on `body`, NOT on `:root`, and that is load-bearing. next/font
+   exposes its families through the variables it is asked to define, and
+   LayoutClient puts those variable classes on <body>. `:root` is <html>,
+   body's parent, so --font-geist-sans is out of scope there: a var() that
+   referenced it from :root would be invalid at computed-value time, blanking
+   these tokens document-wide and dropping every consumer to the UA default
+   serif. Declared here they are in scope and inherit to everything rendered. */
+body {
+  --font-primary: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+  --font-secondary: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+  --font-mono: var(--font-geist-mono), "Menlo", "Consolas", monospace;
+
+  /* Those tokens were declared but never applied, so the document's inherited
+     family stayed the UA default - which Chromium resolves to its "standard
+     font", Times New Roman. Every element that looked right did so only
+     because it set a family itself; anything that did not, or that said
+     `font-family: inherit`, painted serif. Measured on the public routes
+     before this line existed: Header's .link and .menuLink anchors, its
+     .trigger buttons (which do say `inherit`) and SubscribeForm's label were
+     all rendering in Times New Roman, next to a wordmark in Geist.
+
+     Applied here rather than on `html` so it stays in the same scope as the
+     variable it reads - see the note above. That also makes its failure mode
+     safe: if --font-geist-sans ever goes missing, the var() is invalid at
+     computed-value time and font-family falls back to its inherited value,
+     which is exactly today's behaviour. This line can only improve on the bug.
+
+     Deliberately NOT paired with `font-family: inherit` on the global `button`
+     rule below. Form controls do not inherit this: Chromium's UA sheet sets a
+     family on the control itself, and a UA declaration on an element beats an
+     inherited value. So a button that declares no family gets UA Arial, not
+     serif - already the first fallback in these tokens, i.e. an inconsistency
+     rather than the defect being fixed here. Forcing it would restyle public
+     buttons that render acceptably today (ContactForm's .submit,
+     SubscribeForm's .subscribeBtn), so it belongs to a task that owns those
+     components. Anything new that must match body text has to ask for it. */
+  font-family: var(--font-primary);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -137,10 +169,57 @@ h4,
 h5,
 h6 {
   color: var(--color-text-primary);
-  font-family: "Geist", Arial, Helvetica, sans-serif;
+  font-family: var(--font-primary);
   margin-bottom: 0.5em;
 }
 
+/* The two :hover rules below are a known specificity trap, INVESTIGATED AND
+   DEFERRED - do not "just scope them" without reading this.
+
+   `a:hover` and `button:hover` are (0,1,1); `.button:hover` is (0,2,0). A CSS
+   Module's single-class rule is (0,1,0) and loses to all of them, so a
+   component that sets a background or a color on its base class has it
+   repainted from here under the pointer. That is why component stylesheets in
+   this repo reach for doubled-class selectors: they are buying specificity,
+   not expressing intent.
+
+   Removing or scoping these would be the root fix, but on the public site they
+   are load-bearing. Measured with CDP forced :hover over all ten public routes
+   at 1440 and 390 - 434 button/.button/a nodes - six components depended on
+   them. The /classes + /contact migration (2026-09-14) freed three; THREE STILL
+   DEPEND, so the rules stay:
+
+     .scrollUpButton         this rule is its ONLY hover feedback; its module
+                             declares no :hover at all
+     .landingFourColCard     each has a :hover rule that styles transform,
+     ContentRow .row         filter, shadow or background but no color, so the
+                             colour half of the hover treatment is coming from
+                             `a:hover` here
+
+   FREED, and recorded so nobody re-adds them to the list:
+     ContactForm .submit     now declares an UNCONDITIONAL `.submit:hover`
+                             background. Unconditional matters: a disabled
+                             button still matches `button:hover`, and this one
+                             is disabled for the whole duration of a send
+     ContactPage .email      no longer the panelled link this list described -
+                             the address is now inline in the lede, and the
+                             rewritten rule restates `color` on :hover itself
+     ClassesPage .closeButton  was .ctaButton; composes .viewAllButton, whose
+                             :hover restates `color` at (0,2,0)
+
+   Every way of keeping these rules off a component keeps them off the
+   remaining three too - :where() or a cascade layer (both lose to the
+   component's own base class), :not([class]) or :not([class*="-module__"])
+   (all three carry module classes). They are the same case as the bug: a
+   module-classed element whose hover paint comes only from here. So this still
+   cannot be fixed from this file alone, and a partial fix would silently
+   restyle the public site. Three fewer dependents is a shorter list, not a
+   different conclusion.
+
+   Unblocking it is component work, outside this file: give .scrollUpButton its
+   own :hover background, and .landingFourColCard and ContentRow .row their own
+   :hover color. Once nothing depends on these, drop them. Until then, a
+   component rule must out-specify (0,1,1) to win. */
 a {
   color: var(--color-bg-deep1);
   text-decoration: underline;

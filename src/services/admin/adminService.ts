@@ -1,3 +1,4 @@
+import { getJwtSecret } from "@/utils/jwtSecret";
 import { logger } from "@/utils/logger";
 import prisma from "@/utils/prisma";
 import bcrypt from "bcryptjs";
@@ -43,7 +44,6 @@ const BCRYPT_ROUNDS = 10;
 const ADMIN_ROLE = "admin";
 
 /** JWT settings, matching the existing /api/admin login route exactly. */
-const JWT_FALLBACK_SECRET = "secret";
 const JWT_EXPIRES_IN = "30m";
 
 /**
@@ -101,11 +101,13 @@ export async function authenticateAdmin(
     return null;
   }
 
-  const token = jwt.sign(
-    { id: user.id, role: user.role },
-    process.env.JWT_SECRET || JWT_FALLBACK_SECRET,
-    { expiresIn: JWT_EXPIRES_IN },
-  );
+  // Signed with the same secret utils/auth verifies against; getJwtSecret is
+  // the single source of truth so signer and verifier cannot drift. In
+  // production with JWT_SECRET unset it throws rather than minting a token
+  // anyone could forge, which the login route maps to a generic 500.
+  const token = jwt.sign({ id: user.id, role: user.role }, getJwtSecret(), {
+    expiresIn: JWT_EXPIRES_IN,
+  });
 
   return {
     token,

@@ -1,0 +1,89 @@
+/* ===========================================================================
+   One titled section within a screen - "Page Content", "Class Dates & Times",
+   "Photo Album".
+
+   NOT A CARD, AND NOT A PANEL IN THE MATERIAL SENSE. What it replaces is three
+   stacked <section>s on --color-bg-secondary with a --color-border box, which
+   is the generic-SaaS answer: draw a rectangle around every group. This system
+   separates with whitespace and rules, and the ordering of those two is a rule
+   in itself - whitespace first, a rule only where whitespace alone would leave
+   two groups ambiguous.
+
+   The classes screen is exactly that case. Three panels of unlike shape (a
+   form, a list, a photo grid) stacked on one page need to be told apart at a
+   glance, and --space-xl of air between them does not do it on its own once the
+   photo grid's own internal gaps are the same order of size. So each section
+   opens on a hairline, at the tier BELOW the copper header rule, and the
+   heading hangs under it.
+   =========================================================================== */
+
+.panel {
+  padding-top: var(--space-m);
+  border-top: 1px solid var(--hairline);
+}
+
+/* EXCEPT THE FIRST ONE, and this answers a real defect rather than a taste.
+   AdminPageLayout's header closes on a copper rule and then leaves --space-l
+   below it; a screen whose first child is a panel therefore opened on TWO
+   horizontal rules 40px apart, carrying no content between them
+   (.screenshots/slice-b/admin-classes-1440x900.png, y=218 and y=252). Two rules
+   with nothing between them is not a hierarchy of two tiers, it is one rule
+   drawn twice - and the copper one is already the stronger and already says
+   "the header ends and the body begins".
+
+   So the first panel takes the header's rule as its own opener and drops both
+   its own and the padding beneath it. The heading rises to 40px under the
+   copper rule, which is the same --space-l every other panel puts between
+   itself and the section above. It also returns 24px to the list, which is the
+   currency this shell is budgeted in.
+
+   :first-of-type, not :first-child - the panel is the second element child of
+   <main>, after the <header>. It matches the first <section> among its
+   siblings, which is what an AdminPanel always renders. A screen that puts a
+   non-panel <section> first would keep its rule here and lose it there; no
+   screen does, and the alternative (a ".header + .panel" selector) cannot be
+   written at all, because CSS Modules hashes those two class names in two
+   different files. */
+.panel:first-of-type {
+  padding-top: 0;
+  border-top: none;
+}
+
+/* --space-xl between sections, --space-m inside one. The ratio is the whole
+   point: the gap between two groups has to be visibly larger than any gap
+   within a group or the groups stop being groups. This is the one place the
+   admin spends a --space-xl, and it is spent on structure rather than on air. */
+.panel + .panel {
+  margin-top: var(--space-xl);
+}
+
+/* The <h2> under the layout's single <h1>. --fs-h3 (20 -> 24px) rather than
+   --fs-h2 (24 -> 32px), which the page heading takes: a section head has to
+   read as a clear rank below the screen title while skimming, and this system
+   carries rank by size and ink tier because 600 is its weight ceiling. */
+.heading {
+  margin: 0;
+  font-family: var(--font-primary);
+  font-size: var(--fs-h3);
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: -0.005em;
+  color: var(--ink-1);
+}
+
+/* Static explanatory copy, present from first paint and never changing. It is
+   deliberately not an AdminStatus: putting a caption in a live region would
+   make an announcement out of a fact the reader is about to encounter anyway.
+
+   56ch, the instruction measure the page intro uses, not the 48ch lede. */
+.description {
+  margin: var(--space-2xs) 0 0;
+  max-width: 56ch;
+  font-size: var(--fs-meta);
+  line-height: 1.5;
+  color: var(--ink-3);
+}
+
+.body {
+  margin-top: var(--space-m);
+}

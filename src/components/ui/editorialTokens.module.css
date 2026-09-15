@@ -1,0 +1,388 @@
+/* ===========================================================================
+   Editorial token contract - visual direction: "warm-dark editorial;
+   the photograph is the card."
+
+   The single declaration site for every custom property this design
+   introduces. Surfaces opt in by composing .editorialSurface; they inherit one
+   set from one file, so per-page drift of the kind hand-tuned page CSS
+   produces (one page at brightness(0.2), the next at (0.25); saturate(1) vs
+   (1.1)) cannot recur.
+
+   WHY NOT globals.css - unchanged from when this block lived on
+   ContentLandingLayout's .root: changing the global --color-bg-deep would
+   reach LandingPage.module.css and Header.module.css, which is out of scope.
+   Composing gives every surface in this system one declaration site while
+   leaving every page outside it untouched.
+
+   WHY NOT .root, which is where these started. .root is a page shell: it also
+   owns position, display, min-height, padding, the page ground and the grain
+   layer. The content detail pages (/blogs/[id], /recipes/[id]) need the same
+   tokens under a different shell, and the only two alternatives were a second
+   copy of the block - which is precisely the drift the paragraph above exists
+   to prevent - or globals.css, rejected above. So the tokens moved out of the
+   shell and the shell composes them back in.
+
+   CUSTOM PROPERTIES ONLY, AND THAT IS LOAD-BEARING. `composes` adds a second
+   class name to the element at the same specificity as the composing class, so
+   any real declaration duplicated across the two would be decided by CSS
+   Modules' stylesheet emission order, which is not guaranteed - the same trap
+   documented for --card-media-ratio in ContentLandingLayout.module.css. A rule
+   that declares only custom properties, and only ones no other rule in the
+   system declares, has no order-dependent contest to lose. A colour, a padding
+   or a font-family added here would be a bug that presents intermittently.
+   Keep this rule to custom properties.
+   =========================================================================== */
+
+.editorialSurface {
+  /* --- Ground and ink -----------------------------------------------------
+     One warm near-black in the same hue family as the copper accent (the
+     global --color-bg-deep #020f05 is green-black and fights copper), and one
+     warm off-white ink at three opacities. Hierarchy is carried by opacity,
+     not by weight.
+
+     Contrast on --surface-0, measured by compositing each alpha against the
+     ground and computing relative luminance on the result - not estimated:
+     ink-1 13.57:1, ink-2 7.38:1, ink-3 5.43:1. ink-3 is the tier with no room
+     to spare: at 0.48 it measures 4.40:1 and fails AA (4.5:1) for the byline,
+     which is normal-size text at 13-14px. 0.55 is the first step up that
+     clears it with margin. */
+  --surface-0: #15100d;
+  --surface-1: #1c1613;
+  --ink: 242 235 227;
+  --ink-1: rgb(var(--ink) / 0.92);
+  --ink-2: rgb(var(--ink) / 0.66);
+  --ink-3: rgb(var(--ink) / 0.55);
+  --hairline: rgb(var(--ink) / 0.14);
+  /* Copper, structural rules only, never text. Alpha set from the rendered
+     page: below about 0.75 the header spine stops reading as a rule at
+     1440px, where it has to carry 1200px of width. */
+  --rule-accent: rgb(184 115 51 / 0.8);
+
+  /* --- Status ink ---------------------------------------------------------
+     THE RULE: --danger marks a destructive commitment or a FAILED WRITE, and
+     nothing else in the system is --danger. It appears at most once on a
+     screen at a time, which is what keeps it an alarm rather than a fourth
+     accent. A destructive control is --ink-2 AT REST, one tier under its
+     neighbour - eight rows of red Delete is eight alarms, and this system's
+     founding mechanism is that hierarchy is carried by opacity, not by weight
+     - so the alarm arrives at the moment of commitment. A failed READ is not
+     --danger either: nothing was lost, so that is --ink-2 prose in the empty
+     slot. The admin readers are enumerated where they are consumed
+     (AdminButton, AdminStatus, AdminField, AdminCardGrid); the public reader
+     is the failed-write line on the /contact form.
+
+     PROMOTED OUT OF adminTokens.module.css, WHERE IT WAS DERIVED, AND IT IS A
+     MOVE RATHER THAN A COPY. That file argued against putting it in the public
+     contract by name, on the ground that it would "hand every public surface
+     two tokens nothing there may use" - an argument whose premise is "nothing
+     there may use", and that premise expired the moment a public page acquired
+     a failed-write state. Because .adminSurface composes this rule, every
+     existing admin reader resolves the token unchanged, and there is still
+     exactly one declaration site. The alternatives were both the drift this
+     file exists to prevent: declaring #e2645f a second time in
+     ContactForm.module.css is a derived colour in two files, and picking some
+     other red is a second unmeasured signal colour on a palette that is one
+     hue plus ink.
+
+     #e2645f, and the derivation is carried across rather than restated from
+     memory. Hue 2.3 degrees; 5.60:1 on --surface-0 and 5.30:1 on --surface-1,
+     so it clears AA for normal text on either ground a message can land on.
+     That is 20 degrees off the ground and 27 off copper - the separation the
+     signal needs - while staying at the red end of the SAME warm family, so it
+     reads as a member of this palette that has gone hot rather than as an
+     import from a generic SaaS error state. Rejected on measurement: #d9635e
+     (5.30 / 5.02 - clears AA by too little on --surface-1, where a dialog may
+     sit), #ef7a72 (6.92:1, ample, but at that lightness it reads as salmon and
+     an alarm that reads as decoration has failed), the global --color-error
+     #c1440e (3.69:1, below AA for normal text outright, and hue 18 against a
+     ground at 22.5 - five degrees from the surface it would be painted on),
+     and any blue or magenta signal, which would open a second hue family.
+
+     NO SUCCESS COUNTERPART, DELIBERATELY. The affirmative end of a status line
+     is --color-accent-gold, which is already this system's one accent and
+     already measured at about 9.1:1 on this ground. A green would be a third
+     hue on a one-hue-plus-ink palette, introduced to distinguish two states
+     that their own wording distinguishes anyway - and the wording is what
+     satisfies SC 1.4.1 here, with colour second. The global --color-success
+     #4e944f was the obvious candidate and is declined on that ground, not on a
+     contrast one.
+
+     NOT USED AS A FILL. This system has one filled surface in total (the gold
+     CTA, a documented exception). --danger appears as a rule and as text on a
+     control whose neighbour is neutral, which is unmistakable without
+     inventing a second button anatomy. */
+  --danger: #e2645f;
+
+  /* --- Type scale ---------------------------------------------------------
+     ~1.22 ratio at text sizes widening to ~1.6 at display. Display-to-body at
+     1440px is 64:17, about 3.8:1. */
+  /* Floors at 11px on purpose: the eyebrow and the card kicker are the only
+     roles tracked at 0.12-0.14em, and below 11px that tracking stops being
+     legible and starts reading as damage. */
+  --fs-eyebrow: clamp(0.6875rem, 0.66rem + 0.14vw, 0.75rem);
+  --fs-meta: clamp(0.8125rem, 0.79rem + 0.12vw, 0.875rem);
+  --fs-body: clamp(1rem, 0.97rem + 0.16vw, 1.0625rem);
+  --fs-lede: clamp(1.0625rem, 1rem + 0.31vw, 1.25rem);
+  --fs-card: clamp(1.125rem, 1.04rem + 0.42vw, 1.375rem);
+  --fs-page: clamp(2.25rem, 1.45rem + 4vw, 4rem);
+
+  /* --- Prose scale (content detail pages) ---------------------------------
+     The landing pages are read in bursts: a two-line dek, a byline, a 48ch
+     lede. /blogs/[id] and /recipes/[id] are read continuously for minutes,
+     which is a different optical problem, so the long-form roles get their own
+     steps instead of borrowing the card roles.
+
+     Every figure below is measured, not estimated. The latin subset of Geist
+     Sans that next/font actually serves (LayoutClient.tsx) was loaded into
+     headless Chromium and probed at weight 400:
+       1ch (advance of "0") = 0.6630em
+       x-height             = 0.5313em   - large, and it is what sets the leading
+       word space           = 0.2500em
+     and across three long-form English corpora in this site's register the
+     mean advance came to 0.4429em, i.e. 1.50 rendered characters per 1ch of
+     measure (per-corpus spread 1.489-1.524). The ch unit is the width of a
+     digit, not of an average letter, so a measure set in ch renders half again
+     as many characters as the number suggests. Every ch figure here is derived
+     through that 1.50 - and so is the existing 48ch lede, which is about 72
+     characters, not 48.
+
+     Ramp endpoints follow the family above: each clamp reaches its floor near
+     320px and its ceiling near 1280px, the band the six tokens above already
+     sit in (floors at 300-324px, ceilings at 925-1290px). */
+
+  /* 66 characters - the optimum for continuous reading - divided by the
+     measured 1.50 = 44ch. That renders 554px at 1440px/19px, comfortably
+     inside the 1200px spine and 82px short of the lede's right edge at
+     48ch/20px (636px). The ragged right between a standfirst and the column
+     under it is intended: left edges align on the spine, and the change of
+     measure is what marks the change of voice. Do not widen this to square the
+     two edges up. 50ch is the value that would do it, and it would also put
+     the body at 75 characters - the very top of the 45-75 band, on the ground
+     where it costs most. Light ink on a dark one irradiates: strokes bloom,
+     the channel between lines narrows, and the return sweep at the end of a
+     long line is where a reader pays for it. */
+  --measure-prose: 44ch;
+
+  /* 17 -> 19px. Not a new rung on the ratio; it is --fs-body (16 -> 17px)
+     optically re-sized for text the reader stays inside, which is why the step
+     is 1.12 rather than the scale's ~1.22. The scale already tolerates steps
+     that tight where two roles sit close - 17/18 at the floor, 20/22 at the
+     ceiling. Held one step under --fs-lede (20px) on purpose, so a detail
+     page's standfirst still outranks its own body by size and not by ink tier
+     and measure alone. The floor is 17px rather than --fs-body's 16px: a phone
+     is where the longest uninterrupted reading actually happens. */
+  --fs-prose: clamp(1.0625rem, 1.02rem + 0.21vw, 1.1875rem);
+
+  /* 32 -> 52px: the <h1> of a content DETAIL page, and a different role from
+     --fs-page (36 -> 64px), which titles a landing page. The distinction is
+     what the two titles have to do. A landing heading is one or two words
+     inside an 18ch cap with nothing above it but an eyebrow, so it can be a
+     poster. A detail heading carries an arbitrary article name over a column
+     the reader is about to enter, so its job is to open the column, not to
+     out-shout it.
+
+     52 is derived from that relationship rather than chosen: 52/19 = 2.74:1
+     against --fs-prose at the ceiling, against a measured reference median of
+     2.75:1 (Imbibe 44/16) and 2.8:1 (Linear 48/17). --fs-page over the same
+     prose would be 64/19 = 3.37:1, a landing page's ratio applied to a body of
+     text.
+
+     The ramp co-terminates with --fs-prose - floor at 320px, ceiling at
+     1280px - so the ratio climbs monotonically to its target instead of
+     arriving early and overshooting:
+       320px   32.0 / 17.00 = 1.88
+       390px   33.4 / 17.14 = 1.95
+       768px   41.3 / 17.93 = 2.30
+       1024px  46.7 / 18.47 = 2.53
+       1280px+ 52.0 / 19.00 = 2.74
+     Slope (52-32)/(1280-320) = 2.0833vw; intercept 32 - 0.020833*320 =
+     25.33px = 1.5833rem. A steeper ramp that capped at ~990px would read
+     2.82:1 at 1024 - past the target on the width where a laptop actually
+     sits. */
+  --fs-title: clamp(2rem, 1.5833rem + 2.0833vw, 3.25rem);
+
+  /* Section heads. 19 -> 24 -> 32px at 1440px: steps of 1.26 then 1.33,
+     widening toward display exactly as the scale above says it should.
+     --fs-h2 is 1.63x under --fs-title at the ceiling (52/32) - wider than any
+     step in the scale, so a section head reads as a clear rank below the
+     article title while skim-reading, and it is still the same 2:1 under
+     --fs-page where these heads are used on a landing-scale page. h3
+     takes 1.26 rather than the scale's ~1.22 because it has to clear a body
+     that was itself enlarged, and because weight cannot help it: 600 is this
+     system's ceiling and hierarchy is carried by size and ink tier. */
+  --fs-h3: clamp(1.25rem, 1.17rem + 0.42vw, 1.5rem);
+  --fs-h2: clamp(1.5rem, 1.33rem + 0.83vw, 2rem);
+
+  /* No blockquote size token, deliberately. A markdown blockquote is set at
+     prose size with a --space-l indent and nothing else - no rule, no italic,
+     no size change - which is the most restrained of the measured treatments
+     (Aeon sets its blockquote at exactly body size with a 44px indent and
+     border-left: 0). An indent alone reads as emphasis here precisely because
+     nothing else in this system is indented, and a size token consumed by
+     nothing would be scaffolding the next person had to guess the intent of. */
+
+  /* 1.7, and the measured x-height is what sets it. The interline gap is
+     (line-height - 1) x font-size, and the channel a reader tracks along has
+     to stay wider than the x-height or the lines close up. At 19px the
+     x-height is 10.09px:
+       1.50 -> 9.50px gap  = 0.94 x-heights  (channel narrower than the type)
+       1.55 -> 10.45px     = 1.04            (the landing lede value: at parity)
+       1.65 -> 12.35px     = 1.22
+       1.70 -> 13.30px     = 1.32
+     1.55 is right for a three-line dek and wrong for a thousand-word column,
+     and light-on-dark spends part of any margin on irradiation before the
+     reader sees it. 1.32 x-heights is the first round step that still reads as
+     open after paying that. Geist's x-height is large for a grotesque, which
+     is why the usual 1.5 feels tight here - and why this number is not
+     portable to another face. */
+  --lh-prose: 1.7;
+
+  /* --- Spacing scale ------------------------------------------------------
+     Six rungs, and every one of them has a reader. The scale is not kept
+     symmetrical for its own sake: a 0.25rem rung below --space-2xs and a 6rem
+     rung above --space-xl were both declared and never consumed, and this file
+     twice declines to add a token on exactly that ground (no blockquote size
+     token, no caption token). A rung nothing reads is scaffolding the next
+     person has to guess the intent of, and guessing wrong is how a system
+     grows two values for one decision. Add the rung when the rule that needs
+     it is written. */
+  --space-2xs: 0.5rem;
+  --space-xs: 0.75rem;
+  --space-s: 1rem;
+  --space-m: 1.5rem;
+  --space-l: 2.5rem;
+  --space-xl: 4rem;
+
+  /* Paragraph separation, and the one spacing value that is derived rather
+     than chosen. Prose here is set unindented, so the blank between paragraphs
+     is the only signal that a paragraph ended, and the canonical size for it
+     is one line. Expressing that as a calc, instead of adding a 2rem rung
+     between --space-m and --space-l, means it tracks --fs-prose's clamp for
+     free - resolved in Chromium: 28.9px at 320px, 29.1px at 390px, 32.3px from
+     1280px up, one line at every width between, and no second clamp to keep in
+     sync with the first. Heading space is
+     composed from it where it is used - twice above, --space-s below, so a
+     head belongs to the section it opens - rather than tokenised, because
+     those are single-consumer values. */
+  --space-prose: calc(var(--fs-prose) * var(--lh-prose));
+
+  /* Diameter of the numbered-step disc on the recipe detail page - a geometry
+     value rather than a spacing rung, which is why it is named for its role
+     and not for its size. 40px, and the floor is set by use rather than by
+     taste: the discs sit in a method list read at arm's length over a shaker,
+     and 40px is the point where the numeral inside one is still legible at
+     that distance. It also clears the WCAG 2.2 minimum target size (24x24)
+     with room to spare, so a step can become interactive - checked off
+     mid-build - without the geometry being re-derived. The measured reference
+     (PUNCH, ~22px filled discs) is a desktop-only size and fails both tests.
+     Expressed in rem, not in the fluid scale: a target size that shrank with
+     the viewport would shrink on exactly the device being held one-handed. */
+  --step-marker: 2.5rem;
+
+  /* --- Containers --------------------------------------------------------- */
+  --container: 1200px;
+  --gutter: clamp(1.25rem, 5vw, 5rem);
+  --col-gap: clamp(1.25rem, 2.2vw, 2.25rem);
+
+  /* Width of the media column in a media-leading index row. A geometry value
+     rather than a spacing rung, so it is named for its role and not for its
+     size - the same reason --step-marker is spelled the way it is.
+
+     The rung earns its place by the rule this file states above: "add the rung
+     when the rule that needs it is written." That rule now exists twice. The
+     landing card becomes a horizontal index row between 600 and 899px
+     (ContentCard.module.css), and the archive row is that same composition at
+     every width (ContentRow.module.css).
+
+     The value is not re-derived here, because ContentCard.module.css already
+     measured it against real copy and recorded the result: at a 899px viewport
+     34% leaves 115px of void beside the text, 30% leaves 90px and 26% leaves
+     25px - and 26% is the narrowest column at which the thumbnail still reads
+     as a photograph rather than an icon.
+
+     Deliberately the bare percentage, with no ceiling on it. A percentage
+     measured inside a container of at most ~809px does not survive a 1200px
+     one, and the archive row caps it for exactly that reason - but the cap is
+     declared in ContentRow.module.css, where it is derived and where it has one
+     consumer. Putting it here would silently re-crop the landing card the day
+     ContentCard adopted the token, which is the opposite of what a shared value
+     is for. */
+  --row-media-col: 26%;
+
+  /* --- Grain ---------------------------------------------------------------
+     The brand's one tactile mark, and a TOKEN because it had become a
+     duplicated literal: the same ~1kB data URI was declared in
+     ContentLandingLayout.module.css and again in AdminPageLayout.module.css,
+     which is the drift this file exists to prevent - a second shell copying a
+     third time is how one surface ends up at baseFrequency 0.8 and the next at
+     0.9 with nobody able to say which is right.
+
+     A url() is a legal custom-property value and a data URI has no relative
+     path to resolve, so it cannot pick up the base URL of whichever stylesheet
+     happens to read it. Both shells paint it the same way - a position: fixed
+     ::after at inset 0 - and only the image and the alpha are shared, because
+     the LAYER is shell geometry (z-index, pointer-events, which pseudo is
+     free) and the MARK is brand.
+
+     fractalNoise at 0.8 / 3 octaves, desaturated, tiled at 200px: fine enough
+     to read as film grain rather than as noise, coarse enough to survive a 1x
+     display. 0.035 is where it is perceptible on --surface-0 without lifting
+     the ground - at 0.05 the near-black measurably greys.
+
+     Keeping it on the admin was a decision, not an oversight: see the argument
+     recorded at .root::after in AdminPageLayout.module.css. */
+  --grain-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23g)'/%3E%3C/svg%3E");
+  --grain-opacity: 0.035;
+
+  /* --- Motion -------------------------------------------------------------
+     Decelerating ease-out for entrance and image motion. The global
+     --transition-* tokens are a symmetric ease-in-out, which is right for a
+     150ms colour swap and wrong for a 500ms entrance; adding a token here
+     avoids re-pointing tokens the header depends on. */
+  --ease-out-soft: cubic-bezier(0.22, 0.61, 0.36, 1);
+  --dur-fast: 200ms;
+  --dur-medium: 320ms;
+  --dur-slow: 600ms;
+}
+
+/* ===========================================================================
+   DETAIL-PAGE DECISIONS ON RECORD
+
+   Not tokens - settled answers, recorded here because this file is the one
+   place both content detail pages already read, and because both of these were
+   independently re-derived once and came out different. A third detail page
+   (a video detail page is the obvious next one) should consume the answer
+   rather than re-derive it. The implementations live in
+   ContentDetailShell.module.css, which is the shared masthead and close.
+
+   1. THE BYLINE SEPARATOR. Won by the absolutely positioned `::before` drawn
+      inside the flex gap at calc(--space-m / -2), inside a container with
+      `overflow: hidden`. Lost: `border-inline-start` on the item. A border
+      travels with its item, so the first item on a wrapped line carries a rule
+      with nothing to its left - a stray 1px tick - and the only cure is a
+      breakpoint tuned to one particular row content, which is a guess for any
+      other row and which a long enough author name defeats anyway. The
+      positioned rule lands outside the container whenever its item starts a
+      line and the clip removes it, so it is correct at every width with no
+      breakpoint at all. The two pages shipped one mechanism each, at 32px and
+      16px of total optical space; the unified half-gap is --space-m / 2 = 12px
+      each side, because at 8px the rule read as attached to its right-hand
+      neighbour.
+
+   2. PREFERS-REDUCED-MOTION. Won by having no block on a detail page at all.
+      SC 2.3.3 is about motion and displacement. The only displacement on either
+      page is the closing CTA 2px hover lift, and that is already neutralised
+      where the CTA is declared (ContentLandingLayout.module.css) - restating it
+      on a detail page would put one property in two modules whose emission
+      order is not guaranteed. Sub-200ms colour, underline and opacity fades
+      with no displacement are not what the preference asks to have removed, so
+      they stay. One page had collapsed its link transitions to 1e-06s and the
+      other had not; the other was right.
+   =========================================================================== */
+
+/* No caption token, deliberately. A figure caption or a photo credit is
+   meta-register text at 13-14px, which is exactly --fs-meta - the same role at
+   the same size - and the landing bylines already prove that tier reads on
+   this ground (--ink-3 at 5.43:1). A --fs-caption identical to --fs-meta would
+   be two names for one decision, and the next person to retune captions would
+   move only one of them. */

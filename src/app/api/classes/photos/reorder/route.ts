@@ -1,5 +1,8 @@
 import { mapClassServiceError } from "@/services/classes/classErrors";
-import { photoReorderSchema } from "@/services/classes/classSchemas";
+import {
+  classBodyErrorMessage,
+  photoReorderSchema,
+} from "@/services/classes/classSchemas";
 import { reorderPhotos } from "@/services/classes/classService";
 import { requireAdmin } from "@/utils/auth";
 import { logger } from "@/utils/logger";
@@ -20,7 +23,10 @@ export async function POST(req: NextRequest) {
   const parsed = photoReorderSchema.safeParse(body);
   if (!parsed.success) {
     return NextResponse.json(
-      { error: "Invalid input", details: parsed.error.issues },
+      {
+        error: classBodyErrorMessage(parsed.error),
+        details: parsed.error.issues,
+      },
       { status: 400 },
     );
   }

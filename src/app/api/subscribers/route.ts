@@ -1,17 +1,40 @@
 // API route for /api/subscribers
 
+import { requireAdmin } from "@/utils/auth";
 import { sendSubscribeEmail } from "@/utils/email";
+import { logger } from "@/utils/logger";
 import prisma from "@/utils/prisma";
 import { NextRequest, NextResponse } from "next/server";
 
-export async function GET() {
-  // List subscribers (admin)
-  const subscribers = await prisma.subscriber.findMany({
-    orderBy: { subscribedAt: "desc" },
-  });
-  return NextResponse.json({ subscribers });
+/**
+ * List every subscriber. Admin-only: the rows carry subscribers' names and
+ * email addresses, so this is a bulk read of personal data and must never be
+ * reachable anonymously.
+ */
+export async function GET(req: NextRequest) {
+  const authResult = requireAdmin(req);
+  if (authResult) return authResult;
+  try {
+    const subscribers = await prisma.subscriber.findMany({
+      orderBy: { subscribedAt: "desc" },
+    });
+    return NextResponse.json({ subscribers });
+  } catch (error) {
+    logger.error("Failed to list subscribers", {
+      context: "api/subscribers",
+      data: error,
+    });
+    return NextResponse.json(
+      { error: "Failed to list subscribers" },
+      { status: 500 },
+    );
+  }
 }
 
+/**
+ * Public subscribe endpoint, backing the site's subscribe form. Intentionally
+ * ungated: anonymous visitors are the only callers.
+ */
 export async function POST(req: NextRequest) {
   // Add subscriber
   try {

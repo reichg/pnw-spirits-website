@@ -1,140 +1,148 @@
+/* ===========================================================================
+   /classes - page-specific art direction only.
+
+   The shell arrives by composing .root: ground, grain, 1200px spine, page
+   padding, and the "every direct child shares one left-aligned spine" rule.
+   Nothing here may restate a property .root or .root > * already declares -
+   `composes` puts both class names on the same element at equal specificity,
+   so a property declared twice is settled by CSS Modules' stylesheet emission
+   order, which is not guaranteed. What that removed from this file: the
+   blurred Vermouth.jpg backdrop and its brightness(0.2) ::before, the --vh
+   min-height calc, a bespoke padding clamp, the .page > * lift, the .main box
+   and its max-width: min(1000px, 100%), a hand-rolled 600px CTA breakpoint and
+   a hand-rolled prefers-reduced-motion block. All of them now arrive composed,
+   from one declaration site.
+
+   WHY THIS PAGE IS NOT A LANDING PAGE WEARING A NEW GROUND. A ClassSession is
+   startTime / endTime? / location? and nothing else - no title, no image, no
+   destination - and there is exactly one CocktailClass, so every session is
+   the same class on a different night. The page is one offering and N dates,
+   which is why the card grid went: a grid of cards asserts N offerings. The
+   full direction record, including what was overruled, is in
+   .claude/research/classes-contact-direction.md.
+   =========================================================================== */
+
 .page {
-  display: flex;
-  min-height: calc(var(--vh, 1vh) * 100);
-  font-family: var(--font-primary);
-  background: url("/images/Vermouth.jpg") center center/cover no-repeat;
-  /* Smoothly scales from ~20px on phones to 64px on large screens, removing the
-     abrupt 64px -> 12px cliff that left a heavy step in the 600-900px range. */
-  padding: clamp(1.25rem, 4vw, 4rem);
-  justify-content: center;
-  position: relative;
-  overflow: hidden;
+  composes: root from "../../../components/ui/ContentLandingLayout.module.css";
 }
 
-.page::before {
-  content: "";
-  position: absolute;
-  top: -10px;
-  left: -10px;
-  width: 103%;
-  height: 103%;
-  background: inherit;
-  filter: blur(4px) brightness(0.2) saturate(1);
-  z-index: 0;
-  pointer-events: none;
+/* --- Header ---------------------------------------------------------------
+   The landing header verbatim - eyebrow, title, lede, copper rule - so
+   /classes opens on the same mark as /recipes-landing and /blogs-landing. */
+.header {
+  composes: header from "../../../components/ui/ContentLandingLayout.module.css";
 }
 
-.page > * {
-  position: relative;
-  z-index: 1;
+.eyebrow {
+  composes: eyebrow from "../../../components/ui/ContentLandingLayout.module.css";
 }
 
-.main {
-  flex: 1;
-  /* min-width:0 overrides the default min-width:auto on flex children so .main
-     can shrink below a wide child's min-content instead of forcing overflow.
-     max-width:100% keeps it inside the padded page content box. */
-  min-width: 0;
-  max-width: min(1000px, 100%);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 2em 0;
+/* THE <h1> IS --fs-title / 22ch, NOT THE LANDING .heading's --fs-page / 18ch,
+   and the content is what decides it. editorialTokens derives --fs-page for a
+   heading that "is one or two words inside an 18ch cap with nothing above it
+   but an eyebrow, so it can be a poster", and --fs-title for "an arbitrary
+   article name" over a column. This <h1> is cocktailClass.title - admin-
+   editable, and uncapped in both schema.prisma and classSchemas - so it is the
+   second kind of content, not the first.
+
+   The arithmetic, using the measured 1.50 rendered characters per ch this
+   system derives everywhere else: 18ch at 64px renders about 27 characters a
+   line. The seeded "Cocktail Classes" fits on one; the first title an admin
+   types that does not - "Private Cocktail Classes in Portland" is 36 - would
+   set a 64px fragment alone on a second line at line-height 1.04, which is
+   exactly the case ContentDetailShell measured 1.04 as wrong for (descenders
+   about 2px off the next line's ascenders). --fs-title caps at 52px with
+   line-height 1.08 and 22ch = 33 rendered characters, both derived for a title
+   that may run to two or three lines.
+
+   .title is portable by construction - it declares type properties only, no
+   layout - so composing it adopts the display measure without adopting the
+   detail shell. It also carries min(100%, 22ch), which is viewport-bound, so
+   this page needs no 599px cap of the kind .heading carries.
+
+   The rank below still works: --fs-h2 is 1.63x under --fs-title at the
+   ceiling, which is the ratio editorialTokens derives and both detail pages
+   already run, so title / section head / body stay evenly spaced. */
+.title {
+  composes: title from "../../../components/ui/ContentDetailShell.module.css";
 }
 
-.heading {
-  font-size: 2.4em;
-  font-weight: 700;
-  color: var(--color-accent-gold);
-  text-align: center;
-  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.4);
-}
-
+/* The 48ch lede. cocktailClass.description is uncapped at the Zod boundary, so
+   a long admin paragraph will set ten lines here where the system expects two
+   or three. That is a content constraint and it belongs in classSchemas, not
+   in a smaller type role on this page - reported rather than absorbed. */
 .intro {
-  max-width: 70ch;
-  margin: 0.5em auto 2em;
-  text-align: center;
-  font-size: 1.15em;
-  line-height: 1.6;
-  color: var(--color-text-inverse);
+  composes: intro from "../../../components/ui/ContentLandingLayout.module.css";
 }
 
-.cta {
-  display: flex;
-  justify-content: center;
-  margin: 0 auto 2.5em;
-}
-
-.ctaButton {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0.85em 2.2em;
-  font-size: 1.1em;
-  font-weight: 700;
-  letter-spacing: 0.02em;
-  color: var(--color-bg-soft);
-  background: 
-    var(--color-accent-secondary);
-  border: 1px solid rgba(190, 152, 95, 0.5);
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-md);
-  text-decoration: none;
-  transition:
-    transform 0.2s ease,
-    box-shadow 0.2s ease,
-    filter 0.2s ease;
-}
-
-.ctaButton:hover {
-  transform: translateY(-2px);
-  filter: brightness(1.05);
-  box-shadow:
-    var(--shadow-md),
-    0 0 18px rgba(226, 176, 126, 0.45);
-}
-
-.ctaButton:focus-visible {
-  outline: 2px solid var(--color-accent-gold);
-  outline-offset: 3px;
-}
-
+/* --- Sections -------------------------------------------------------------
+   Each <section> is a direct child of <main>, so .root > * already gives it
+   the spine. position, z-index, width, max-width and margin-inline are all
+   forbidden here: at (0,1,0) against (0,1,0) any of them is an emission-order
+   contest, not an override. min-width is not on that list, and it is kept
+   because the album's Swiper is an overflow construct that has to be free to
+   shrink rather than dictate the section's width. */
 .section {
-  width: 100%;
-  /* Allow grid/carousel children to shrink instead of dictating section width. */
   min-width: 0;
-  margin-bottom: 2.5em;
 }
 
+/* Separation BETWEEN sections, deliberately not above the first. .header
+   already ends on --space-l, which is the header-to-first-content distance
+   every page in this system uses, and flex items do not collapse margins - a
+   margin on .section itself would add to it rather than replace it.
+
+   clamp(3rem, 7vw, 5rem) is the system's major-separation rung: the same value
+   .header's padding-bottom and .viewAllRow's margin-top already carry, so the
+   three structural gaps on this page all measure the same.
+
+   The adjacent-sibling selector rather than a modifier class because the album
+   section is conditionally rendered - with no photos there is no second
+   section and nothing to unwind. */
+.section + .section {
+  margin-block-start: clamp(3rem, 7vw, 5rem);
+}
+
+/* The system's section-head role, composed from its declaration site. This
+   page declares nothing of its own on top of it - see that rule's note on why
+   composing-and-overriding it is not available.
+
+   NO RULE UNDER THE HEAD. The old page underlined every section head in
+   --color-border-dark. On this ground the header's copper rule and the closing
+   hairline already bracket the body, and the schedule draws a hairline at the
+   top of every row - a third line 16px above the first of those reads as a
+   double rule, which is the same reason .emptyMessage carries no rules of its
+   own. */
 .sectionHeading {
-  font-size: 1.6em;
-  color: var(--color-accent-light);
-  text-align: center;
-  margin-bottom: 1em;
-  border-bottom: 1px solid var(--color-border-dark);
-  padding-bottom: 0.4em;
+  composes: sectionHeading from "../../../components/ui/ContentDetailShell.module.css";
 }
 
-@media (max-width: 600px) {
-  /* .page padding is now handled by the clamp above (floors at ~20px), so the
-     hard 12px cliff is gone. Only the inner spacing/type tweaks remain. */
-  .main {
-    padding: 1em 0;
-  }
-  .heading {
-    font-size: 1.9em;
-  }
-  .ctaButton {
-    width: 100%;
-    max-width: 22rem;
-  }
+/* --- Close ----------------------------------------------------------------
+   The hire CTA, moved from the top of the page to the foot, reusing the row
+   that closes all three landing pages and both detail pages byte for byte -
+   the same door out. Named .closeRow / .closeButton to match
+   ContentDetailShell's vocabulary for the same construct; this was
+   .cta / .ctaButton.
+
+   Moving it is a sequencing decision: "hire us" is the ask you make after the
+   schedule has shown the class is real and the album has shown it is good.
+   Asking before showing anything is what the page did. The empty case does not
+   invert the argument here, because with no dates and no photos the close is
+   roughly one screen from the header anyway.
+
+   Composing .viewAllButton also retires three things this file hand-rolled:
+   the 600px full-width rule (the composed one fires at 599px, the system's
+   breakpoint), the prefers-reduced-motion neutralisation, and the :hover
+   colour restatement that globals.css's `a:hover` at (0,1,1) otherwise wins
+   from a bare (0,1,0) base class. And it retires the brown fill -
+   --color-accent-secondary is 3.11:1 on this ground, against gold's 9.66:1.
+
+   Do NOT add width or max-width to .closeButton in a media query: the composed
+   rule already declares both at 599px at equal specificity, so a second
+   declaration is a contest in the 0-599px band even when the values agree. */
+.closeRow {
+  composes: viewAllRow from "../../../components/ui/ContentLandingLayout.module.css";
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .ctaButton {
-    transition-duration: 0.001ms;
-  }
-  .ctaButton:hover {
-    transform: none;
-  }
+.closeButton {
+  composes: viewAllButton from "../../../components/ui/ContentLandingLayout.module.css";
 }

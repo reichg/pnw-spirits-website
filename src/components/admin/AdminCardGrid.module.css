@@ -1,0 +1,288 @@
+/* ===========================================================================
+   How many records share a line - and the file that sets the density contract
+   AdminCard reads.
+
+   Three named densities rather than a numeric track width, because a number
+   would let each screen pick its own and reintroduce the per-surface drift
+   these shared modules exist to stop.
+
+   THE DENSITY EACH SCREEN TAKES, and one of these differs from the note in
+   admin.types.ts, which was written a wave before the density research landed:
+
+     rows   the blogs list, the recipes list, the classes sessions list
+     cards  the /admin landing (four navigation entries)
+     tiles  the classes photo album
+
+   `cards` was originally described as "the blog, recipe and landing grids". The
+   blogs and recipes lists take `rows`: a 3-up grid of 320px cards shows six of a
+   ten-record page, and the 80px line shows eight or nine. The grid is for
+   browsing by image; an admin is scanning by title.
+
+   THE DENSITY TRAVELS DOWN AS CUSTOM PROPERTIES. Each rule below sets the five
+   values AdminCard.module.css reads, and they inherit through the <li> to the
+   card. Not a modifier class on the card, and not a descendant selector: CSS
+   Modules hashes class names per file, so `.rows .card` cannot be written across
+   two modules, and a second class on the card root would sit at equal
+   specificity with .card and be settled by stylesheet emission order. This is
+   the mechanism the public list already uses for --archive-columns.
+   =========================================================================== */
+
+.grid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+
+  /* THE LIST IS WHAT MAKES A CONTROL REPEATED, so the list is what neutralises
+     the resting alarm. A standalone AdminButton tone="danger" is red before it
+     is touched, which is right for the one control in a confirmation dialog and
+     wrong twelve times over in a photo album; AdminCard's own Delete had
+     already settled that the resting paint answers REPETITION rather than
+     severity. Set on .grid rather than on .tiles because the criterion is "in a
+     list of records", not "in this one density" - a row list that grows an
+     inline Delete tomorrow inherits the same answer, and the album's Delete
+     stops disagreeing with the session row's Delete 600px above it.
+
+     Nothing outside a list is touched: AdminDialog portals into document.body,
+     so the confirming control is not a descendant of any grid. See
+     AdminButton.module.css .danger for the hover and focus restore. */
+  --admin-danger-rule: var(--hairline-strong);
+  --admin-danger-ink: var(--ink-2);
+}
+
+/* Grid items and flex items both refuse to shrink below their content's
+   intrinsic width by default, which is what would defeat the card title's
+   ellipsis two levels down. Stated on the item, where the track is resolved. */
+.item {
+  min-width: 0;
+}
+
+/* --- rows ----------------------------------------------------------------
+   The 80px line. Each card draws its own opening hairline, so the run is
+   bracketed at the top by the first card's rule; this closes it at the bottom.
+   Bracketing the block is what stops the last record's metadata hanging in
+   space above the pager and lets the pager sit in plain whitespace instead of
+   needing a rule of its own - which would be a third mark on a page that
+   already carries the copper header rule and the list's hairlines. */
+.rows {
+  --admin-card-flow: row;
+  --admin-card-align: center;
+  --admin-card-media: var(--record-thumb);
+  --admin-card-media-ratio: 1 / 1;
+  --admin-card-min-block: calc(var(--record-thumb) + 2 * var(--space-xs));
+
+  border-bottom: 1px solid var(--hairline);
+}
+
+/* The same opening-rule gate the landing takes, and the reason it is written
+   per-density rather than once on .grid is /admin/classes. Its sessions list is
+   ALSO `rows`, but it sits inside an AdminPanel, under that panel's heading and
+   description - so its first record's hairline is not doubled against anything
+   and is doing real work, bracketing the run against the description above it.
+   Clearing it there would not fix a defect, it would create one.
+
+   Nothing in this file can see that difference, and it does not have to: the
+   shell sets --admin-opening-rule only on its own first child
+   (AdminPageLayout.module.css `.header + *`), which on /admin/blogs and
+   /admin/recipes is the region holding this list and on /admin/classes is the
+   FIRST panel - not the second one, where the sessions list lives. So the
+   fallback resolves to --hairline there and the rule survives. Verified by
+   render at 1440 and 390 on all three screens.
+
+   Stated as a var() fallback rather than as a second selector for the same
+   reason the density contract is: one declaration site per fact. */
+.rows > .item:first-child {
+  --admin-card-rule: var(--admin-opening-rule, var(--hairline));
+}
+
+/* --- cards ---------------------------------------------------------------
+   TWO COLUMNS, AND THE /admin LANDING IS THE ONLY READER - the third
+   composition decision the research left open.
+
+   There are four destinations. A single ruled column of four gives each entry
+   1200px of spine to carry a label and a one-line hint, which is ~1000px of
+   empty measure per entry, four times - the "too centred, too empty" failure a
+   front door cannot afford. And the argument FOR a one-column ruled list is
+   scanning: a column the eye runs down, comparing a shared field across many
+   rows. Four unlike destinations are not scanned, they are read once. So the
+   ladder buys nothing and costs the page its composure.
+
+   Two columns halve the empty measure and turn four entries into a 2x2 block
+   that reads as a menu rather than as a queue. `cards` is still the honest name:
+   these are entries with room, not rows.
+
+   NO ROW GAP, deliberately. Each entry opens on its own hairline; with zero row
+   gap those rules land on one line across both columns and the block reads as a
+   ruled table of four. A row gap would float four separate rules at four
+   different heights.
+
+   COLUMN GAP IS --space-xl (64px), NOT --col-gap (~32px), and the reason is
+   measured rather than aesthetic - the public two-up list records it: each
+   entry's tint bleeds --space-s past its rule at both ends, so at 32px the two
+   bleeds meet in the middle and the two hairlines read as one rule with a nick
+   in it. 64px leaves 32px of clear ground between the tints.
+
+   THE SEAM IS AT 900px, matching the public list's, and for the same reason:
+   below it a two-up arrangement leaves each entry a column too narrow for a
+   label and a hint to sit on separate lines without both wrapping. */
+.cards {
+  --admin-card-flow: row;
+  --admin-card-align: center;
+  --admin-card-min-block: auto;
+
+  display: grid;
+  column-gap: var(--space-xl);
+  border-bottom: 1px solid var(--hairline);
+}
+
+/* THE FIRST ROW TAKES THE HEADER'S COPPER RULE AS ITS OPENER. This is the
+   defect AdminPanel.module.css answers at .panel:first-of-type, swept to the
+   other component that opens on a hairline directly under the page header.
+   AdminPageLayout's header closes on a copper rule and leaves --space-l below
+   it, so this block opened on TWO horizontal rules 40px apart carrying no
+   content between them - measured on /admin at 1440x900: copper at y199.7
+   (x120 w1200), then a hairline at y239.7 drawn TWICE, at x120 w568 and at
+   x752 w568, so the lower rule arrived with a 64px nick in it where the column
+   gap sits. One rule drawn twice is not a hierarchy of two tiers, and the
+   copper one is already the stronger and already says "the header ends and the
+   body begins".
+
+   NOT :first-of-type, WHICH IS THE FORM AdminPanel USES, and the 2x2 is exactly
+   why. A panel is one element in a single column, so "the first panel" and "the
+   first row" are the same element there. Here the first row is TWO entries
+   above the seam and ONE below it, so a selector matching a single first child
+   would clear the left column at 1440 and leave the right one doubled. The
+   count of entries in a row is a fact about the column count; the column count
+   is declared here; so the decision is declared here too, at the same 900px
+   seam, and travels down as a custom property - the mechanism this layer
+   already owns for --admin-danger-rule and for the --admin-card-* density
+   contract. A descendant selector is not available in any case: CSS Modules
+   hashes .cards and .card into two different files.
+
+   A colour rather than removing the border: the pseudo-element is absolutely
+   positioned and carries no layout, so there is nothing to collapse and the
+   whole contract stays one custom property.
+
+   THE VALUE IS THE SHELL'S PERMISSION, NOT A LITERAL, which is what keeps the
+   same rule correct on a screen where the list does NOT open the page. This
+   resolves to transparent only where AdminPageLayout.module.css has set
+   --admin-opening-rule on its own first child; elsewhere it falls back to
+   --hairline and the entry keeps its rule. See .rows above, where that
+   distinction is load-bearing.
+
+   `tiles` deliberately takes no gate of either kind: the album sits inside an
+   AdminPanel, so its first tile's rule is never the one under the copper. */
+
+/* --- One defect, three fixes, and whether they should be one ---------------
+   The same doubled rule appeared at three sites and now has three answers:
+   AdminPanel `.panel:first-of-type`, AdminNavCard via --admin-navcard-rule, and
+   AdminCard via --admin-card-rule. The last two already share a mechanism; the
+   question is AdminPanel.
+
+   THEY ARE ONE PROBLEM, not three that present alike. Every instance is the
+   same sentence - "the page header's copper rule is the opening rule, so the
+   first thing below it must not draw its own" - and the only thing that varies
+   is how far the first thing is from the shell: a panel IS the shell's first
+   child, a landing entry is a grandchild in a 2x2, a record is a grandchild in
+   a run. AdminPanel could read --admin-opening-rule too; `.panel:first-of-type`
+   only looks different because a panel is the one case where "first in the
+   shell" and "first in its own group" collapse to the same element, so the
+   positional gate the other two need is invisible there.
+
+   CONVERGING IS CHEAP AND IS NOT DONE HERE. It is two lines - AdminPanel's
+   border-top reads var(--admin-opening-rule, var(--hairline)) and its
+   :first-of-type block loses the border-top half - but that block ALSO drops
+   padding-top, which is a spacing decision this property says nothing about and
+   which would have to survive separately. AdminPanel.module.css was outside the
+   boundary of the pass that wrote this, and its :first-of-type comment records
+   a caveat of its own worth re-reading first. Recorded so the fourth site does
+   not arrive at a fourth answer. */
+.cards > .item:first-child {
+  --admin-navcard-rule: var(--admin-opening-rule, var(--hairline));
+}
+
+@media (min-width: 900px) {
+  .cards {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  /* Two columns, so the first row is the first TWO entries. Below this seam the
+     single-child rule above is already correct and this one must not apply, or
+     the second entry - which is then the whole second row - loses the rule that
+     separates it from the first. */
+  .cards > .item:nth-child(-n + 2) {
+    --admin-navcard-rule: var(--admin-opening-rule, var(--hairline));
+  }
+}
+
+/* --- tiles ---------------------------------------------------------------
+   The photo album, and it MUST stay a grid. Spatial order is the information
+   being edited; converting it to rows would destroy the thing the admin came to
+   change.
+
+   auto-FILL rather than auto-FIT, and the difference is visible the moment an
+   album is short: auto-fit collapses the empty tracks and stretches three
+   photographs across the full 1200px spine, so a three-photo album and a
+   twelve-photo album would show tiles at wildly different sizes and the drag
+   targets would move with the record count. auto-fill holds the track, so a
+   tile is the same object in every album.
+
+   11rem (176px) is the floor and it is the album's own constraint: at 4/3 that
+   is a 176 x 132px plate, which is the smallest at which a cocktail photograph
+   is still identifiable as a particular drink rather than as a coloured
+   rectangle - the same judgement the public row records at its 140px floor,
+   scaled to a thumbnail that never has to sell a click.
+
+   --admin-card-min-block: auto, because a tile is sized by its plate and its
+   caption field, and an 80px floor would be a floor a tile always clears. */
+.tiles {
+  --admin-card-flow: column;
+  --admin-card-align: stretch;
+  --admin-card-media: 100%;
+  --admin-card-media-ratio: 4 / 3;
+  --admin-card-min-block: auto;
+  /* The one density that asks the card to fill its stretched list item, so the
+     card has slack to push its action row onto its own bottom edge. Without it
+     a tile carrying a badge sits its Delete 18px below its unbadged neighbours
+     and the album's controls stop forming a line. */
+  --admin-card-block: 100%;
+
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(11rem, 1fr));
+  gap: var(--space-m);
+}
+
+/* --- Narrow viewports ----------------------------------------------------
+   Every breakpoint in this design layer is here, on the list, and none is in
+   AdminCard.module.css. A card is one record and cannot know how much room it
+   has; the list owns the horizontal space and therefore owns the decision - the
+   same seam ContentArchiveLayout.module.css draws when it declares its column
+   count on the list rather than on the row.
+
+   It is also what makes the mistake unavailable. These values are flex bases,
+   and flex-basis resolves against the MAIN axis: `100%` on the actions and `0`
+   on the content mean "give the actions their own line" in a ROW and "full
+   height" / "no height" in a COLUMN. Declared on the card they reached the photo
+   album, whose flow is column, and threw every tile's Delete 82px off the right
+   of a 390px viewport. Declared on .rows they cannot reach it at all. */
+@media (max-width: 599px) {
+  /* 56px plate + 16 + text + 8 + two 40px controls leaves a ~90px title, which
+     is not a title. The actions take the line below instead, at their full
+     40px target - the size that matters most on the device being held
+     one-handed. */
+  .rows {
+    --admin-card-wrap: wrap;
+    --admin-card-actions-basis: 100%;
+    --admin-card-actions-offset: 0;
+    /* Zero, so the text column yields its intrinsic width and the action line
+       lands under the whole row rather than hanging under the plate. */
+    --admin-card-content-basis: 0;
+  }
+
+  /* One column, in both two-dimensional densities. A 390px phone cannot hold
+     two of anything carrying a label and a hint, and the album's 176px
+     auto-fill floor would otherwise put two tiles in a ~350px content width
+     with 24px between them - two drag targets a thumb cannot separate. */
+  .tiles {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

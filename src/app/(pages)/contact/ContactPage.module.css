@@ -1,231 +1,290 @@
+/* ===========================================================================
+   /contact - migrated onto the editorial system.
+
+   WHAT THIS PAGE USED TO BE. Three stacked translucent-brown panels plus a
+   near-white card of round icon buttons, all at width: min(760px, 100%), all
+   of equal weight, centred on a blurred photographic ground. Four blocks
+   competing at one rank, and the loudest of them - the cream one - belonged to
+   no other surface on this site.
+
+   WHAT DOES THE RANKING NOW. The landing header verbatim - eyebrow, heading,
+   lede, copper rule - which is byte for byte the opening /recipes-landing,
+   /blogs-landing and /classes use, with the direct address ranked INSIDE the
+   lede sentence instead of getting a panel and a 1.9rem display size of its
+   own. The form is then the only thing below the copper rule, which is what
+   makes it the body of the page, and the channels close the page on the
+   system's hairline row. No panel survives, and none comes back: this system
+   has one filled surface in total (the gold CTA), recorded in
+   adminTokens.module.css.
+
+   WHY THE CHANNELS ARE A CLOSING ROW AND NOT THE MASTHEAD'S RIGHT TRACK.
+   They were built into the detail shell's two-up, on the reasoning that the
+   byline track is the furniture that holds the right edge of the spine.
+   Rendered, that was the wrong transfer, and the measurement is the argument.
+   ContentDetailShell's recorded answer - "it does NOT fill the right of the
+   spine below the copper rule, and no honest option does" - was written for a
+   636x1070 reading column, where the void is narrower than its content is tall
+   and the eye tracks down the column rather than across the gap. This page's
+   body measured 496x567 with a 656x567 void beside it at 1440px: an empty
+   shape wider than the content and just as deep has stopped being a margin.
+   And it had an open bottom edge, because /contact was the only page in this
+   system with no closing row - so the container was declared once, at the
+   copper rule, and never referenced again for the 771px down to the footer.
+
+   The channels are the fix because they are the only furniture on this page
+   that can hold a right edge without inventing content, and because the
+   measured reference they came from - Humaan, in the research - is "plain text
+   links at the far right of a HAIRLINE FOOTER ROW". Only the right-alignment
+   half of that had been transposed; restoring the row restores the reference's
+   actual geometry. The form now sits between two full-spine rules, copper
+   above and hairline below with a right-flush block resting on it, so the
+   right edge is declared twice and the gap between them reads as composed
+   negative space rather than as a hole. It also moves three off-site links
+   BELOW the page's only conversion path in the DOM, and therefore in the tab
+   order, where they belong: tab from page load used to reach Instagram,
+   Facebook and YouTube before any field, at every viewport.
+
+   COMPOSITION, NOT DUPLICATION. .page, .header, .eyebrow, .heading, .lede,
+   .channelsRow and .channelList are all `composes` of rules that already
+   exist, so the ground, the grain, the 1200px spine, the copper rule, the
+   closing hairline and the byline geometry have exactly one declaration site
+   each. Every composing rule here is DISJOINT from what it composes:
+   `composes` puts a second class name on the same element at the same
+   specificity, so a property declared on both would be settled by CSS Modules'
+   stylesheet emission order, which is not guaranteed.
+
+   This file declares no custom properties. editorialTokens.module.css is the
+   single declaration site and this page consumes it by inheritance.
+   =========================================================================== */
+
+/* The shell: ground, grain, page padding, and the rule that puts every direct
+   child of <main> on one 1200px spine. Nothing else belongs in this rule - in
+   particular not min-height, display, flex-direction, font-family, the old
+   Bottles.jpg ground with its ::before blur layer, or the page padding, all of
+   which arrive with the compose and all of which would contest it if restated.
+   .root::after paints the grain; ::before is free here, ::after is taken. */
 .page {
-  display: flex;
-  min-height: 100vh;
-  font-family: var(--font-geist-sans);
-  padding: clamp(32px, 6vw, 72px) clamp(12px, 4vw, 28px);
-  background: url("/images/Bottles.jpg");
-  background-size: cover;
-  background-repeat: no-repeat;
-  background-position: center;
-  position: relative;
-  overflow: hidden;
+  composes: root from "../../../components/ui/ContentLandingLayout.module.css";
 }
 
-.page::before {
-  content: "";
-  position: absolute;
-  inset: -12px;
-  width: 103%;
-  height: 103%;
-  background: inherit;
-  filter: blur(8px) brightness(0.2) saturate(1.05);
-  box-shadow:
-    0 0 0 8px rgba(40, 20, 10, 0.18) inset,
-    0 0 32px 0 rgba(0, 0, 0, 0.22) inset;
-  z-index: 0;
-  pointer-events: none;
-}
+/* --- Header ---------------------------------------------------------------
+   The landing header verbatim - eyebrow, heading, lede, copper rule - so
+   /contact opens on the same mark as /recipes-landing, /blogs-landing and
+   /classes, and named .header to match what those pages call it. It was the
+   detail shell's two-up masthead; see the file header for why the right track
+   went, and where it went to.
 
-.page > * {
-  position: relative;
-  z-index: 1;
-}
-
-.main {
-  min-height: 100%;
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: clamp(20px, 3vw, 32px);
-}
-
-.contactCard {
-  width: min(760px, 100%);
-  border-radius: var(--radius-md);
-  background: linear-gradient(
-    180deg,
-    rgba(39, 24, 5, 0.7) 0%,
-    rgba(49, 32, 6, 0.7) 100%
-  );
-  
-  border: 1px solid rgba(190, 152, 95, 0.3);
-  box-shadow: var(--shadow-md);
-  padding: clamp(22px, 4vw, 40px);
-  text-align: center;
-}
-
-.hero {
-  display: grid;
-  gap: 10px;
-  justify-items: center;
-  text-align: center;
-  margin-bottom: 14px;
+   A direct child of <main> may not declare position, z-index, width,
+   max-width or margin-inline: .root > * declares those five at the same
+   (0,1,0) specificity, so a second declaration is an emission-order contest
+   rather than an override. Neither this rule nor the composed one touches any
+   of them. */
+.header {
+  composes: header from "../../../components/ui/ContentLandingLayout.module.css";
 }
 
 .eyebrow {
-  margin: 0;
-  font-size: 0.8rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--color-accent-primary);
+  composes: eyebrow from "../../../components/ui/ContentLandingLayout.module.css";
 }
 
+/* THE <h1> IS THE LANDING .heading - --fs-page / 18ch / 64px - AND STAYS
+   THERE. An independent review recommended dropping it to --fs-title (52px) so
+   that it agreed with /classes. The rung is kept, because the two pages are
+   not disagreeing: they are the two sides of one rule this system already
+   runs.
+
+     A FIXED, SHORT, POSTER heading takes .heading / --fs-page / 18ch. The
+     reference is /recipes-landing, whose "Recipes" is structurally identical
+     to this page's "Contact" - authored in the source, one word, nothing above
+     it but the eyebrow, and unable to change length.
+
+     An ARBITRARY-LENGTH CONTENT title takes .title / --fs-title / 22ch. The
+     reference is /recipes/59, whose title is a record field; /classes composes
+     that same rule for that same reason, because its <h1> is the
+     admin-editable cocktailClass.title, uncapped in both schema.prisma and
+     classSchemas.
+
+   editorialTokens.module.css derives exactly this distinction at --fs-title -
+   "A landing heading is one or two words inside an 18ch cap ... so it can be a
+   poster. A detail heading carries an arbitrary article name" - and
+   ClassesPage.module.css states it from the other side. Recorded here so the
+   next reader does not derive it a third time: what selects the rung is
+   whether the text can change length, not whether the page is a landing. */
 .heading {
-  margin: 0;
-  font-size: clamp(1.9rem, 4vw, 2.6rem);
-  font-weight: 700;
-  color: var(--color-accent-gold);
-  line-height: 1.2;
-  text-align: center;
+  composes: heading from "../../../components/ui/ContentLandingLayout.module.css";
 }
 
-.text {
-  margin: 0;
-  font-size: clamp(1rem, 2vw, 1.08rem);
-  color: var(--color-accent-primary);
-  text-align: center;
-  line-height: 1.72;
+.lede {
+  composes: intro from "../../../components/ui/ContentLandingLayout.module.css";
 }
 
-.emailWrapper {
-  margin: clamp(14px, 2.5vw, 24px) 0 clamp(4px, 1vw, 8px);
-  text-align: center;
-}
+/* --- The direct address ---------------------------------------------------
+   Inline in the lede sentence, at the lede's own size. It was a 1.15-1.9rem
+   link in a panel of its own, which is larger than several of this site's page
+   headings and made the escape hatch outrank the form it is an escape from.
 
+   Gold is this system's accent-text colour (about 9.66:1 on --surface-0);
+   copper is reserved for rules. The hairline underline carries the affordance
+   at rest, so the link does not depend on hover to be discoverable.
+
+   The :hover rule restates `color`, and that is load-bearing rather than
+   redundant: globals.css has `a:hover { color: var(--color-bg-highlight) }` at
+   (0,1,1), which outranks this class's (0,1,0). .viewAllButton and .backLink
+   both carry the same restatement for the same reason. */
 .email {
   color: var(--color-accent-gold);
-  font-size: clamp(1.15rem, 3.5vw, 1.9rem);
-  font-weight: 600;
-  text-decoration: none;
-  display: inline-block;
-  position: relative;
-  padding: clamp(8px, 1.5vw, 14px) clamp(20px, 4vw, 36px);
-  word-break: break-all;
-  max-width: 100%;
-  border-radius: var(--radius-sm);
-  transition: text-shadow 0.5s ease;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-decoration-color: var(--hairline);
+  text-underline-offset: 0.2em;
+  transition:
+    color var(--dur-fast) ease,
+    text-decoration-color var(--dur-fast) ease;
 }
 
-.email::after {
-  content: "";
-  position: absolute;
-  left: clamp(20px, 4vw, 36px);
-  right: clamp(20px, 4vw, 36px);
-  bottom: clamp(6px, 1vw, 10px);
-  height: 2px;
-  background: var(--color-accent-gold);
-  border-radius: var(--radius-sm);
-  transform: scaleX(0);
-  transform-origin: left;
-  transition: transform 0.35s ease;
-}
-
-.email:hover {
-  text-shadow:
-    1px 1px 5px rgba(226, 176, 126, 0.9)
-}
-
-.email:hover::after,
-.email:focus-visible::after {
-  transform: scaleX(1);
+.email:hover,
+.email:focus-visible {
+  color: var(--color-accent-gold);
+  text-decoration-color: var(--color-accent-gold);
 }
 
 .email:focus-visible {
   outline: 2px solid var(--color-accent-gold);
-  outline-offset: 2px;
-  border-radius: var(--radius-sm);
+  outline-offset: 3px;
 }
 
-.formSection {
-  width: min(760px, 100%);
-  border-radius: var(--radius-md);
-  background: linear-gradient(
-    180deg,
-    rgba(39, 24, 5, 0.7) 0%,
-    rgba(49, 32, 6, 0.7) 100%
-  );
-  border: 1px solid rgba(190, 152, 95, 0.3);
-  box-shadow: var(--shadow-md);
-  padding: clamp(22px, 4vw, 40px);
+/* --- The form's spine child -----------------------------------------------
+   There is deliberately no rule for it, and that is worth stating because the
+   last two things put on it both had to come back off.
+
+   It carries no MARGIN. The composed .header already ends on --space-l, which
+   is the header-to-first-content distance every page in this system uses -
+   measured at 40px on /recipes-landing and on /classes. This page had
+   `margin-block-start: var(--space-m)` on top of that, which made the gap 64px
+   and gave the system's most-repeated structural distance two values on the
+   two pages shipped in the same batch. If the extra air is genuinely wanted it
+   is a change to .header's rung for every page, not a local addition here.
+
+   It carries no ACCESSIBLE NAME, because the <form> inside it carries one
+   instead (see ContactForm.tsx): a form landmark named for what it does is a
+   truer statement than a generic region wrapped around it. The <h2> that used
+   to supply that name via aria-labelledby is gone - it read "Send a message"
+   530px above a button reading SEND MESSAGE, which on a page with exactly one
+   form labels nothing the button does not already label.
+
+   The element exists at all only so that .form's --measure-prose cap is not
+   declared on a direct child of <main>, where .root > * already declares
+   max-width at equal specificity. That is the .emptyMessage > span pattern. */
+
+/* --- Close: the channels on the system's hairline row ---------------------
+   Full-spine hairline, --space-l of air under it: byte for byte the row that
+   closes /recipes-landing, /blogs-landing, /videos-landing, /classes and both
+   detail pages, so /contact finally ends the way every other page in this
+   system ends. See the file header for why the block that sits on it is the
+   channels. */
+.channelsRow {
+  composes: viewAllRow from "../../../components/ui/ContentLandingLayout.module.css";
 }
 
-.formHeading {
-  margin: 0 0 clamp(16px, 2.5vw, 22px);
-  font-size: clamp(1.4rem, 3vw, 1.8rem);
-  font-weight: 700;
-  color: var(--color-accent-gold);
-  text-align: center;
+/* Rank four, and set like it: three plain text links in the furniture
+   register, no icons, no circles, no fill.
+
+   margin-inline-start: auto is what flushes the block to the right edge the
+   hairline above it declares - the row is a flex container and this is its
+   only child. It is legal here where it would not be one level up: the five
+   properties .root > * owns are forbidden to a DIRECT child of <main>, and
+   this block is a child of the row, not of <main>. Below 900px it returns to
+   the left spine with everything else on the page. */
+.channels {
+  min-width: 0;
+  margin-inline-start: auto;
 }
 
-.channelsSection {
-  width: min(760px, 100%);
-  padding: clamp(14px, 2vw, 20px);
-  background: rgba(255, 248, 236, 0.9);
-  border: 1px solid rgba(190, 152, 95, 0.24);
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-sm);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 10px;
-}
+/* The label sits one tier UNDER the destinations it names - smaller, tracked
+   wider, at the quieter ink - so the three links out-read their own label.
+   That rank is the one thing Linear's measured contact form contributes here.
 
-.channelsHeading {
-  margin: 0;
-  font-size: clamp(1.05rem, 2.4vw, 1.2rem);
+   A <p> AND NOT AN <h2>, which is a semantics fix rather than a style one. The
+   visual rank above is right and is kept unchanged; the heading level was not.
+   Rendered at 12px it put a caption into the document outline as a sibling of
+   "Contact" at 64px - a heading level five times smaller than its peer at the
+   same level, which a screen reader's heading list reports as a section head.
+   The block keeps its accessible name by pointing <section aria-labelledby> at
+   this element's id instead, so the name is still the visible text and there
+   is no second copy of it to drift. */
+.channelsLabel {
+  margin: 0 0 var(--space-2xs);
+  font-size: var(--fs-eyebrow);
   font-weight: 600;
-  color: var(--color-text-primary);
-  text-align: center;
-  font-family: var(--font-geist-sans);
+  line-height: 1.4;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  text-align: right;
+  color: var(--ink-3);
 }
 
-.socialLinks {
-  display: flex;
-  justify-content: center;
-  gap: 18px;
+/* The byline's own rule: stacked, right-aligned, --fs-meta tracked caps, and
+   below 900px a horizontal strip whose separators are drawn inside the flex
+   gap by an absolutely positioned ::before - which is why a wrapped line never
+   starts with a stray tick. All of that arrives with the compose. The stacked
+   form is also what gives the closing row enough mass to answer the form
+   across the diagonal: a single line of links would close the page without
+   composing it. */
+.channelList {
+  composes: meta from "../../../components/ui/ContentDetailShell.module.css";
 }
 
-.socialLink {
-  width: 44px;
-  height: 44px;
-  border-radius: 999px;
-  border: 1px solid rgba(190, 152, 95, 0.3);
-  background: rgba(255, 255, 255, 0.85);
-  color: var(--color-accent-primary);
-  font-size: 1.35rem;
-  display: inline-flex;
-  justify-content: center;
-  align-items: center;
+/* --ink-2 (7.38:1) against the label's --ink-3, per the rank above.
+   line-height: 1.5rem on an inline-block gives the <a> a 24px border box at
+   every step of --fs-meta's clamp, which is what WCAG 2.2 SC 2.5.8 asks of a
+   standalone navigation control - these are list items, not links inside a
+   sentence, so the inline exception does not cover them. .backLink solves the
+   identical problem the identical way.
+
+   :hover restates `color` over globals.css `a:hover` at (0,1,1). The underline
+   going gold with it is a second focus signal that does not depend on the
+   outline, which matters because the composed .meta clips its own overflow
+   below 900px. */
+.channelLink {
+  display: inline-block;
+  line-height: 1.5rem;
+  color: var(--ink-2);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-decoration-color: var(--hairline);
+  text-underline-offset: 0.35em;
   transition:
-    color 0.2s ease,
-    background 0.2s ease,
-    transform 0.2s ease,
-    border-color 0.2s ease;
+    color var(--dur-fast) ease,
+    text-decoration-color var(--dur-fast) ease;
 }
 
-.socialLink:hover {
-  color: var(--color-bg-soft);
-  background: var(--color-accent-primary);
-  border-color: var(--color-accent-primary);
-  transform: translateY(-1px);
+.channelLink:hover,
+.channelLink:focus-visible {
+  color: var(--color-accent-gold);
+  text-decoration-color: var(--color-accent-gold);
 }
 
-.socialLink:focus-visible {
+.channelLink:focus-visible {
   outline: 2px solid var(--color-accent-gold);
   outline-offset: 2px;
 }
 
-@media (max-width: 600px) {
-  .page {
-    padding: 24px 8px;
+/* --- Responsive -----------------------------------------------------------
+   One rule, at the 899px the composed .meta already breaks at: the closing
+   block stops being a right-aligned column and becomes a left-aligned strip on
+   the spine, which is where every other mark on the page sits below that
+   width. A right-flush block in a 350px container is a second alignment in a
+   space too small to read it as a decision - the reasoning ContentDetailShell
+   records for the byline this list composes. The heading's 14ch cap at 599px
+   and the strip's separator ticks arrive with the composed classes and are
+   deliberately not restated here. */
+@media (max-width: 899px) {
+  .channels {
+    margin-inline-start: 0;
   }
 
-  .contactCard,
-  .formSection,
-  .channelsSection {
-    border-radius: var(--radius-sm);
+  .channelsLabel {
+    margin-bottom: var(--space-xs);
+    text-align: start;
   }
 }

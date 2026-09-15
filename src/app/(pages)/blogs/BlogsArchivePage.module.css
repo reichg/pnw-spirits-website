@@ -1,0 +1,26 @@
+/*
+ * Page-specific art direction only. Structure, tokens, page ground, grain and
+ * spine live in ContentArchiveLayout.module.css and cascade onto the same
+ * element, exactly as BlogsLandingPage.module.css relates to the landing shell.
+ */
+.blogsArchiveRoot {
+  /*
+   * Square, and declared here rather than left to ContentRow's fallback, so all
+   * three archives state their crop in the same place - a reader of this page
+   * can see its framing without first learning what the fallback is.
+   *
+   * Blog covers come from the same mixed-orientation S3 library as recipe
+   * covers; the measured case for 1 / 1 lives in
+   * ContentLandingLayout.module.css and is deliberately not repeated here.
+   */
+  --card-media-ratio: 1 / 1;
+}
+
+/*
+ * The look is declared once, on the archive shell, and referenced here. The
+ * link itself has to be built by the page - only the page knows how to spell
+ * its own base URL - but its appearance must not be re-typed per archive.
+ */
+.clearSearch {
+  composes: clearSearch from "../../../components/ui/ContentArchiveLayout.module.css";
+}

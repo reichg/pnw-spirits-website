@@ -1,0 +1,295 @@
+/* ===========================================================================
+   Content-landing shell - visual direction: "warm-dark editorial;
+   the photograph is the card."
+
+   Characteristics: editorial, warm-dark, tactile, restrained, quick.
+
+   TOKEN OWNERSHIP. Every token this design introduces is declared once, in
+   editorialTokens.module.css, and composed onto .root below. It is still
+   deliberately NOT in globals.css: changing the global --color-bg-deep would
+   reach LandingPage.module.css and Header.module.css, which is out of scope.
+   Composing means all three landing pages (/recipes-landing, /blogs-landing,
+   /videos-landing), ContentCard, and the content detail shells inherit one set
+   from one file, so per-page drift of the kind hand-tuned page CSS produces
+   (one page at brightness(0.2), the next at (0.25); saturate(1) vs (1.1))
+   cannot recur.
+   ContentCard.module.css consumes these by inheritance and declares none.
+   This file owns the shell: ground, grain, spine, header, grid, CTA. Add a
+   token to editorialTokens.module.css, never here - a token declared in both
+   places would be settled by stylesheet emission order, which is not
+   guaranteed (see --card-media-ratio below for the same trap).
+   =========================================================================== */
+
+.root {
+  /* Every token below - ground, ink, type scale, spacing, containers, motion -
+     is declared in editorialTokens.module.css and pulled in here. `composes`
+     puts a second class name on the same <main>, at the same specificity as
+     this one, which is safe precisely because that rule declares nothing but
+     custom properties: there is no real declaration for the two to contest.
+     See that file's header before adding anything to it. */
+  composes: editorialSurface from "./editorialTokens.module.css";
+
+  /* --- Card media ratio ---------------------------------------------------
+     Deliberately NOT declared here. A page class and .root land on the same
+     <main> at equal specificity, so declaring the ratio in both places would
+     leave the winner decided by CSS Modules stylesheet emission order, which
+     is not guaranteed. Instead the default lives in the single place that
+     consumes it - `aspect-ratio: var(--card-media-ratio, 1 / 1)` in
+     ContentCard.module.css - so a page that needs a different ratio is the
+     only declaration on the element and always wins.
+
+     Page contract - ONE token, ONE crop, at every viewport:
+       --card-media-ratio   1 / 1 on all three pages today
+
+     Videos is the page that keeps attracting a 16 / 9 "correction". It is
+     wrong and was measured twice: the API serves hqdefault, which is 480x360
+     (4:3), and the channel shoots vertical, so 57.5% of that canvas is
+     blurred pillarbox filler. 16 / 9 trims 12.5% off the top and bottom of
+     the real frame and shrinks it to 42.5% of the card width, against 56.7%
+     at 1 / 1 - it crops the glass and magnifies the filler. See the
+     measurements in VideoLandingPage.module.css before changing it.
+
+     One ratio per page, never a second one for a breakpoint: size changes
+     across breakpoints, framing does not. Two ratios compose the same
+     photograph two different ways on the same page.
+
+     Why square. The brand library in public/images is 6 portrait at 2:3
+     (0.667) and 4 landscape at 3:2 (1.5), close to an even split. With
+     object-fit:cover the worst-case loss is:
+       4 / 5 -> portrait loses 17% of height, landscape loses 47% of width
+       1 / 1 -> either orientation loses 33%
+       5 / 4 -> portrait loses 47% of height, landscape loses 17% of width
+     1 / 1 minimises the worst case, and the rendered files confirm the
+     arithmetic: at 4 / 5 the landscape studio shots were magnified until the
+     garnish ran off the frame edge, while the portraits were untouched - so a
+     three-card row had three different apparent focal distances. Square holds
+     every glass complete, with its own air, at one distance. */
+
+  /* --- Shell -------------------------------------------------------------- */
+  position: relative;
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  font-family: var(--font-primary);
+  background: var(--surface-0);
+  color: var(--ink-1);
+  padding: clamp(3rem, 9vw, 7rem) var(--gutter) clamp(4rem, 10vw, 8rem);
+}
+
+/* Every direct child shares one left-aligned 1200px spine, and is lifted above
+   the grain layer and above any page-supplied background pseudo-element. */
+.root > * {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: var(--container);
+  margin-inline: auto;
+}
+
+/* Fine film grain instead of a blurred photographic backdrop: about 1 kB
+   inline, zero network requests, one static compositing layer. Uses ::after
+   because a page-level class on the same <main> owns ::before.
+
+   The image and its alpha are --grain-image / --grain-opacity, declared once in
+   editorialTokens.module.css and composed onto .root. They were a literal here
+   until the admin shell needed the same mark and copied it; two copies of a
+   1kB data URI is exactly the drift this file's header argues against. The
+   LAYER stays here because it is shell geometry - which pseudo is free, what
+   z-index the spine sits above - and that differs per shell. */
+.root::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: var(--grain-opacity);
+  background-repeat: repeat;
+  background-size: 200px 200px;
+  background-image: var(--grain-image);
+}
+
+/* --- Page header ---------------------------------------------------------
+   Asymmetric: the title block occupies the left of the spine and the right is
+   deliberately left empty. The copper rule at the foot of the header is the
+   hard reset that announces the row and states the container width. */
+.header {
+  padding-bottom: clamp(3rem, 7vw, 5rem);
+  margin-bottom: var(--space-l);
+  border-bottom: 1px solid var(--rule-accent);
+}
+
+/* Copper-gold rather than --color-accent-copper: at 11-12px the copper is
+   ~4.6:1, which is marginal, while the gold is ~9.1:1 on --surface-0. Copper
+   stays the colour of rules; gold is the colour of accent text. */
+.eyebrow {
+  margin-bottom: var(--space-m);
+  font-size: var(--fs-eyebrow);
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-accent-gold);
+}
+
+.heading {
+  margin: 0;
+  max-width: 18ch;
+  font-family: var(--font-primary);
+  font-size: var(--fs-page);
+  font-weight: 600;
+  line-height: 1.04;
+  letter-spacing: -0.02em;
+  color: var(--ink-1);
+}
+
+.intro {
+  margin-top: var(--space-m);
+  max-width: 48ch;
+  font-size: var(--fs-lede);
+  line-height: 1.55;
+  color: var(--ink-2);
+}
+
+/* --- Card row ------------------------------------------------------------- */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--col-gap);
+}
+
+/* Entrance stagger index, consumed by .card in ContentCard.module.css.
+   Declared here rather than as an inline style because ContentCardProps (a
+   normative cross-slice contract) exposes no index prop. Cards past the third
+   share the last delay, which is correct: they would be below the fold. */
+.grid > * {
+  --card-index: 3;
+}
+.grid > *:nth-child(1) {
+  --card-index: 0;
+}
+.grid > *:nth-child(2) {
+  --card-index: 1;
+}
+.grid > *:nth-child(3) {
+  --card-index: 2;
+}
+
+/* --- Empty state ---------------------------------------------------------
+   Set as a lede on the page ground, not as a card: no panel, no radius, no
+   shadow, and no rules of its own - the header rule above and the CTA rule
+   below already bracket it, and adding a third pair would put four hairlines
+   inside 320px. */
+/* --empty-block-pad, defaulting to the public 64px. The KNOB, not the value:
+   an archive page's empty state is the whole body of the page and wants the
+   section rung; the admin composes this rule and lands up to three of them
+   inside one screen's panels, where 64px of air top and bottom reads as a
+   broken layout rather than as composure. The fallback is what keeps every
+   public reader on exactly the measurement they had - see
+   AdminEmptyState.module.css for the override and its reasoning. */
+.emptyMessage {
+  padding-block: var(--empty-block-pad, var(--space-xl));
+  font-size: var(--fs-lede);
+  line-height: 1.55;
+  color: var(--ink-2);
+}
+
+/* The block keeps the full container width inherited from .root > *, so it
+   starts on the same left edge as the heading and the rules; only the text
+   measure is capped. Capping the block itself instead would either centre the
+   measure (margin-inline:auto) or pull it into the gutter (margin-inline:0),
+   because the block is a stretched column-flex child of .root. */
+.emptyMessage > span {
+  display: block;
+  max-width: 48ch;
+}
+
+/* --- Conversion ----------------------------------------------------------
+   Closes the page on the same left spine as the header, bracketed by a rule
+   that echoes the header's. */
+.viewAllRow {
+  display: flex;
+  margin-top: clamp(3rem, 7vw, 5rem);
+  padding-top: var(--space-l);
+  border-top: 1px solid var(--hairline);
+}
+
+/* Filled CTA. Matches the interaction contract of the /classes .ctaButton
+   (translateY plus brightness on hover, outline on :focus-visible); the fill
+   is gold rather than that page's brown, which has almost no figure/ground
+   separation on the warm-dark ground. Gold on --surface-0 is about 9.1:1.
+
+   The control is a single <a> (a next/link Link), not a <button>: interactive
+   content inside an anchor is invalid HTML. So every property a button would
+   have received from the UA or from the global `button` rule has to be stated
+   here - background, color, border, radius, cursor, and the centring - plus
+   text-decoration, which globals.css only happens to reset on `a`. */
+.viewAllButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.95em 2.4em;
+  font-family: var(--font-primary);
+  font-size: var(--fs-body);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--surface-0);
+  background: var(--color-accent-gold);
+  border: 1px solid var(--color-accent-gold);
+  border-radius: var(--radius-xs);
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    transform var(--dur-fast) ease,
+    filter var(--dur-fast) ease;
+}
+
+/* Restating the ink on hover is load-bearing, not redundant: globals.css has
+   `a:hover { color: var(--color-bg-highlight) }`, and (0,1,1) outranks this
+   rule's (0,1,0), so without this the label would swap colour on hover. */
+.viewAllButton:hover {
+  color: var(--surface-0);
+  transform: translateY(-2px);
+  filter: brightness(1.05);
+}
+
+/* Ink rather than gold: a gold ring around a gold button reads as a halo. */
+.viewAllButton:focus-visible {
+  outline: 2px solid var(--ink-1);
+  outline-offset: 3px;
+}
+
+/* --- Responsive ----------------------------------------------------------
+   Three states only. The 2-up stage is skipped on purpose: with exactly three
+   items it orphans the third card at half width, which reads as a bug.
+   600-899px is handled by ContentCard's horizontal-row composition, so the
+   grid only has to stop being a grid. */
+@media (max-width: 899px) {
+  .grid {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+}
+
+@media (max-width: 599px) {
+  .header {
+    padding-bottom: var(--space-l);
+  }
+  .heading {
+    max-width: 14ch;
+  }
+  .viewAllButton {
+    width: 100%;
+    max-width: 22rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .viewAllButton {
+    transition-duration: 0.001ms;
+  }
+  .viewAllButton:hover {
+    transform: none;
+  }
+}
